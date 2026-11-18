@@ -32,3 +32,14 @@ venv
 /mealie/frontend/
 
 crowdin.yml
+
+# Local secrets, data, and generated Aspire files
+.env
+.env.*
+.dev.env
+frontend/.env*
+**/node_modules
+**/.aspire
+**/.nuxt
+**/.output
+dev/data

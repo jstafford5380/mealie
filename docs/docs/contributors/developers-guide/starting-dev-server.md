@@ -6,6 +6,25 @@
 
 After reading through the [Code Contributions Guide](../developers-guide/code-contributions.md) and forking the repo you can start working. This project is developed with :whale: docker and as such you will be greatly aided by using docker for development. It's not necessary but it is helpful.
 
+## With Aspire
+
+Install Node.js 24 or later and [Aspire CLI](https://aspire.dev/get-started/install-cli/) 13.6.5 or later.
+Start Docker Desktop.
+From the repository root, run:
+
+```sh
+npm run dev:aspire
+```
+
+Open the dashboard URL from the command output.
+Select the frontend HTTP URL to open Mealie.
+Aspire starts Nuxt, FastAPI, PostgreSQL, and Mailpit in containers.
+It assigns available service ports and keeps separate data for each checkout.
+Source edits trigger hot reload.
+The TypeScript AppHost does not require the .NET SDK or a host Python installation.
+
+See `dev/aspire/README.md` for data reset, background sessions, and application checks.
+
 ## With [VSCode Dev Containers](https://code.visualstudio.com/docs/remote/containers)
 
 Prerequisites

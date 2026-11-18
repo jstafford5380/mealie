@@ -1,0 +1,8 @@
+{
+  "name": "mealie-dev",
+  "private": true,
+  "scripts": {
+    "dev:aspire": "node dev/aspire/dev.mjs",
+    "dev:aspire:check": "node dev/aspire/check.mjs"
+  }
+}
