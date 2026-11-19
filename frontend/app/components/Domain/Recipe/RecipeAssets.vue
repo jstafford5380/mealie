@@ -1,203 +1,208 @@
 <template>
-  <div v-if="model.length > 0 || edit">
-    <v-card
-      v-if="edit"
-      class="mt-4"
+  <section
+    v-if="model.length > 0 || edit"
+    class="font-sans"
+    :aria-label="$t('asset.assets')"
+  >
+    <h2
+      v-if="!edit"
+      class="m-0 mb-2 text-sm font-semibold text-muted-foreground"
     >
-      <v-list-item class="pr-2 pl-0">
-        <v-card-title>
-          {{ $t("asset.assets") }}
-        </v-card-title>
-        <template #append>
-          <v-btn
-            v-if="edit"
-            variant="plain"
-            :icon="$globals.icons.create"
-            @click="state.newAssetDialog = true"
-          />
-        </template>
-      </v-list-item>
-      <v-divider class="mx-2" />
-      <v-list
-        v-if="model.length > 0"
-        lines="two"
-        :flat="!edit"
+      {{ $t("asset.assets") }}
+    </h2>
+    <ul
+      v-if="model.length"
+      class="m-0 flex list-none flex-col gap-1 p-0"
+    >
+      <li
+        v-for="(item, i) in model"
+        :key="item.fileName ?? i"
+        class="group/asset flex items-center gap-1 rounded-control transition-colors hover:bg-highlight/60"
       >
-        <v-list-item
-          v-for="(item, i) in model"
-          :key="i"
-          :href="!edit && !isImage(item.fileName) ? assetURL(item.fileName ?? '') : undefined"
-          :target="!edit && !isImage(item.fileName) ? '_blank' : undefined"
-          class="pr-2"
-          @click="handleRowClick($event, item)"
+        <a
+          :href="assetURL(item.fileName ?? '')"
+          :target="isImage(item.fileName) ? undefined : '_blank'"
+          rel="noopener"
+          class="flex min-w-0 flex-1 items-center gap-3 p-1.5 text-[15px] text-foreground no-underline"
+          @click="handleViewClick($event, item)"
         >
-          <template #prepend>
-            <v-avatar size="48" rounded="lg" class="elevation-1">
-              <v-img
-                v-if="isImage(item.fileName)"
-                :src="assetURL(item.fileName ?? '')"
-                :alt="item.name"
-                loading="lazy"
-                cover
-              />
-              <v-icon v-else size="large">
-                {{ getIconDefinition(item.icon).icon }}
-              </v-icon>
-            </v-avatar>
-          </template>
-
-          <v-list-item-title>
-            {{ item.name }}
-          </v-list-item-title>
-          <template #append>
-            <v-menu v-if="edit" location="bottom end">
-              <template #activator="{ props: menuProps }">
-                <v-btn
-                  v-bind="menuProps"
-                  icon
-                  variant="plain"
-                >
-                  <v-icon :icon="$globals.icons.dotsVertical" />
-                </v-btn>
-              </template>
-              <v-list density="compact" min-width="220">
-                <v-list-item
-                  :href="!isImage(item.fileName) ? assetURL(item.fileName ?? '') : undefined"
-                  :target="!isImage(item.fileName) ? '_blank' : undefined"
-                  :prepend-icon="$globals.icons.eye"
-                  :title="$t('general.view')"
-                  @click="handleViewClick($event, item)"
-                />
-                <v-list-item
-                  :href="assetURL(item.fileName ?? '')"
-                  :prepend-icon="$globals.icons.download"
-                  :title="$t('general.download')"
-                  download
-                  @click.stop
-                />
-                <v-list-item
-                  v-if="edit"
-                  :prepend-icon="$globals.icons.contentCopy"
-                  :title="$t('general.copy')"
-                  @click="copyText(assetEmbed(item.fileName ?? ''))"
-                />
-                <v-list-item
-                  v-if="edit"
-                  :prepend-icon="$globals.icons.delete"
-                  :title="$t('general.delete')"
-                  @click="model.splice(i, 1)"
-                />
-              </v-list>
-            </v-menu>
-            <v-btn
-              v-if="!edit"
-              icon
-              variant="plain"
-              :href="assetURL(item.fileName ?? '')"
-              download
-              @click.stop
+          <span class="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-item bg-muted">
+            <img
+              v-if="isImage(item.fileName)"
+              :src="assetURL(item.fileName ?? '')"
+              :alt="item.name"
+              loading="lazy"
+              class="size-full object-cover"
             >
-              <v-icon> {{ $globals.icons.download }} </v-icon>
-            </v-btn>
-          </template>
-        </v-list-item>
-      </v-list>
-    </v-card>
-    <section
-      v-else
-      class="font-sans"
-      :aria-label="$t('asset.assets')"
-    >
-      <h2 class="m-0 mb-2 text-sm font-semibold text-muted-foreground">
-        {{ $t("asset.assets") }}
-      </h2>
-      <ul class="m-0 flex list-none flex-col gap-1 p-0">
-        <li
-          v-for="(item, i) in model"
-          :key="i"
+            <MdiIcon
+              v-else
+              :path="getIconDefinition(item.icon).icon"
+              class="size-6 text-muted-foreground"
+            />
+          </span>
+          <span class="min-w-0 flex-1 truncate font-medium">{{ item.name }}</span>
+        </a>
+        <Button
+          v-if="!edit"
+          as="a"
+          variant="ghost"
+          size="icon"
+          :href="assetURL(item.fileName ?? '')"
+          download
+          :aria-label="`${$t('general.download')}: ${item.name}`"
+          :title="$t('general.download')"
         >
-          <a
-            :href="assetURL(item.fileName ?? '')"
-            :target="isImage(item.fileName) ? undefined : '_blank'"
-            rel="noopener"
-            class="flex items-center gap-3 rounded-control p-1.5 text-[15px] text-foreground no-underline transition-colors hover:bg-highlight"
-            @click="handleRowClick($event, item)"
+          <MdiIcon
+            :path="$globals.icons.download"
+            class="size-4"
+          />
+        </Button>
+        <DropdownMenu
+          v-else
+          :modal="false"
+        >
+          <DropdownMenuTrigger as-child>
+            <Button
+              variant="ghost"
+              size="icon"
+              :aria-label="`${$t('general.menu')}: ${item.name}`"
+            >
+              <EllipsisVerticalIcon class="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            class="min-w-48"
           >
-            <span class="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-item bg-muted">
-              <img
-                v-if="isImage(item.fileName)"
-                :src="assetURL(item.fileName ?? '')"
-                :alt="item.name"
-                loading="lazy"
-                class="size-full object-cover"
+            <DropdownMenuItem as-child>
+              <a
+                :href="assetURL(item.fileName ?? '')"
+                :target="isImage(item.fileName) ? undefined : '_blank'"
+                rel="noopener"
+                @click="handleViewClick($event, item)"
               >
+                <MdiIcon
+                  :path="$globals.icons.eye"
+                  class="size-4"
+                />
+                {{ $t('general.view') }}
+              </a>
+            </DropdownMenuItem>
+            <DropdownMenuItem as-child>
+              <a
+                :href="assetURL(item.fileName ?? '')"
+                download
+              >
+                <MdiIcon
+                  :path="$globals.icons.download"
+                  class="size-4"
+                />
+                {{ $t('general.download') }}
+              </a>
+            </DropdownMenuItem>
+            <DropdownMenuItem @select="copyText(assetEmbed(item.fileName ?? ''))">
               <MdiIcon
-                v-else
-                :path="getIconDefinition(item.icon).icon"
-                class="size-6 text-muted-foreground"
+                :path="$globals.icons.contentCopy"
+                class="size-4"
               />
-            </span>
-            <span class="min-w-0 flex-1 truncate font-medium">{{ item.name }}</span>
-          </a>
-        </li>
-      </ul>
-    </section>
+              {{ $t('general.copy') }}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              variant="destructive"
+              @select="model.splice(i, 1)"
+            >
+              <MdiIcon
+                :path="$globals.icons.delete"
+                class="size-4"
+              />
+              {{ $t('general.delete') }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </li>
+    </ul>
+    <p
+      v-else
+      class="m-0 rounded-card border border-dashed px-4 py-6 text-center text-sm text-muted-foreground"
+    >
+      {{ $t('asset.no-assets-yet') }}
+    </p>
+    <div
+      v-if="edit"
+      class="mt-4 flex justify-end"
+    >
+      <Button
+        variant="outline"
+        @click="state.newAssetDialog = true"
+      >
+        <PlusIcon class="size-4" />
+        {{ $t('asset.new-asset') }}
+      </Button>
+    </div>
+
     <RecipeImageLightbox
       v-if="lightbox.open"
       v-model="lightbox.open"
       v-model:index="lightbox.index"
       :items="lightboxItems"
     />
-    <div class="d-flex ml-auto mt-2">
-      <v-spacer />
-      <BaseDialog
-        v-model="state.newAssetDialog"
-        :title="$t('asset.new-asset')"
-        :icon="getIconDefinition(state.newAsset.icon).icon"
-        can-submit
-        @submit="addAsset"
-      >
-        <v-card-text class="pt-4">
-          <v-text-field
-            v-model="state.newAsset.name"
-            :label="$t('general.name')"
-          />
-          <div class="d-flex justify-space-between">
-            <v-select
-              v-model="state.newAsset.icon"
-              density="compact"
-              :prepend-icon="getIconDefinition(state.newAsset.icon).icon"
-              :items="iconOptions"
-              item-title="title"
-              item-value="name"
-              class="mr-2"
-            >
-              <template #item="{ props: itemProps, item }">
-                <v-list-item v-bind="itemProps">
-                  <template #prepend>
-                    <v-avatar>
-                      <v-icon>
-                        {{ item.icon }}
-                      </v-icon>
-                    </v-avatar>
-                  </template>
-                </v-list-item>
-              </template>
-            </v-select>
-            <AppButtonUpload
-              :post="false"
-              file-name="file"
-              :text-btn="false"
-              @uploaded="setFileObject"
+    <BaseDialog
+      v-model="state.newAssetDialog"
+      :title="$t('asset.new-asset')"
+      :icon="getIconDefinition(state.newAsset.icon).icon"
+      can-submit
+      :submit-disabled="!state.fileObject?.name"
+      @submit="addAsset"
+    >
+      <div class="flex flex-col gap-4 px-6 pb-2">
+        <div class="flex flex-wrap items-center gap-3">
+          <Button
+            variant="outline"
+            @click="assetFileInput?.click()"
+          >
+            <MdiIcon
+              :path="$globals.icons.upload"
+              class="size-4"
             />
-          </div>
-        </v-card-text>
-      </BaseDialog>
-    </div>
-  </div>
+            {{ $t('asset.choose-file') }}
+          </Button>
+          <span class="min-w-0 flex-1 truncate text-sm text-muted-foreground">
+            {{ state.fileObject?.name || $t('asset.no-file-chosen') }}
+          </span>
+          <input
+            ref="assetFileInput"
+            type="file"
+            class="display-none"
+            @change="onAssetFile"
+          >
+        </div>
+        <TextField
+          v-model="state.newAsset.name"
+          :label="$t('general.name')"
+        />
+        <SelectField
+          v-model="state.newAsset.icon"
+          :label="$t('asset.icon')"
+          :items="iconOptions"
+          item-title="title"
+          item-value="name"
+        />
+      </div>
+    </BaseDialog>
+  </section>
 </template>
 
 <script setup lang="ts">
+import { EllipsisVerticalIcon, PlusIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import SelectField from "~/components/ui/field/SelectField.vue";
+import TextField from "~/components/ui/field/TextField.vue";
 import { MdiIcon } from "~/components/ui/mdi-icon";
 import { useStaticRoutes, useUserApi } from "~/composables/api";
 import { alert } from "~/composables/use-toast";
@@ -307,16 +312,6 @@ function handleViewClick(event: Event, item: RecipeAsset) {
   openLightbox(item);
 }
 
-// The row itself only opens the lightbox outside edit mode; the menu's view action
-// (which exists only while editing) goes straight to handleViewClick.
-function handleRowClick(event: Event, item: RecipeAsset) {
-  if (props.edit) {
-    return;
-  }
-
-  handleViewClick(event, item);
-}
-
 const { recipeAssetPath } = useStaticRoutes();
 function assetURL(assetName: string) {
   return recipeAssetPath(props.recipeId, assetName);
@@ -324,6 +319,16 @@ function assetURL(assetName: string) {
 
 function assetEmbed(name: string) {
   return `<img src="${serverBase}${assetURL(name)}" height="100%" width="100%" />`;
+}
+
+const assetFileInput = ref<HTMLInputElement>();
+function onAssetFile(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = "";
+  if (file) {
+    setFileObject(file);
+  }
 }
 
 function setFileObject(fileObject: File) {

@@ -66,6 +66,14 @@ The same row is used in the parser dialog, and the substitution editor (also sha
 | Bulk add dialog: textarea plus a list of utilities with play buttons. | Textarea, a "Clean up" row of labelled buttons (Trim whitespace, Remove first character, Split numbered lines; descriptions on hover), and a live line count. |
 | Image drop target: grey overlay with white text. | A dashed primary outline with "Drop image" while dragging; the upload shows a thin progress bar. |
 
+### Organizers and assets (implemented)
+
+| Before | Now |
+| --- | --- |
+| Categories, tags and tools as Vuetify multi-autocompletes with a floating label, label-style chips and a "+" append icon. | Chip pickers: selected items as removable chips, a search box inside the field, a list with checkmarks, and "Create “…”" when nothing matches exactly. Backspace in an empty search box removes the last chip. The "+" button beside the field still opens the create dialog (with On Hand for tools). Used the same way in the query filter builder, the recipe data page and bulk import. |
+| Assets editor: a card with its own title, a list with a ⋮ menu (View, Download, Copy, Delete) and a "+" icon in the header. | A plain list inside the Assets section with the same ⋮ actions, an empty state, and a "New Asset" button. The reader's asset list has a Download button on each row again. |
+| New asset dialog: name, an icon select, and an icon-only upload button. | "Choose file" with the chosen file name shown, then Name (defaults to the file name) and Icon. Create stays disabled until a file is chosen. |
+
 ## Page mode, draft, and save
 
 Source: [RecipePage](../frontend/app/components/Domain/Recipe/RecipePage/RecipePage.vue).

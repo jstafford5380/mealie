@@ -28,7 +28,11 @@
     "pdf": "PDF",
     "recipe": "Recipe",
     "show-assets": "Show Assets",
-    "error-submitting-form": "Error Submitting Form"
+    "error-submitting-form": "Error Submitting Form",
+    "no-assets-yet": "No assets yet. Add a PDF, photo or other file to keep with this recipe.",
+    "choose-file": "Choose file",
+    "no-file-chosen": "No file chosen",
+    "icon": "Icon"
   },
   "category": {
     "categories": "Categories",

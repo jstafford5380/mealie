@@ -9,26 +9,26 @@
       :submit-disabled="!name"
       @submit="select"
     >
-      <v-form>
-        <v-card-text>
-          <v-text-field
-            v-model="name"
-            :label="properties.label"
-            :rules="[rules.required]"
-            autofocus
-          />
-          <v-checkbox
-            v-if="itemType === Organizer.Tool"
-            v-model="onHand"
-            :label="$t('tool.on-hand')"
-          />
-        </v-card-text>
-      </v-form>
+      <div class="flex flex-col gap-3 px-6 pb-2">
+        <TextField
+          v-model="name"
+          :label="properties.label"
+          :rules="[rules.required]"
+          autofocus
+        />
+        <CheckboxField
+          v-if="itemType === Organizer.Tool"
+          v-model="onHand"
+          :label="$t('tool.on-hand')"
+        />
+      </div>
     </BaseDialog>
   </div>
 </template>
 
 <script setup lang="ts">
+import CheckboxField from "~/components/ui/field/CheckboxField.vue";
+import TextField from "~/components/ui/field/TextField.vue";
 import { useUserApi } from "~/composables/api";
 import { useCategoryStore, useTagStore, useToolStore } from "~/composables/store";
 import { type RecipeOrganizer, Organizer } from "~/lib/api/types/non-generated";

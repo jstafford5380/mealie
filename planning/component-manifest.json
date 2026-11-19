@@ -1040,42 +1040,36 @@
       "source": "frontend/app/components/Domain/Recipe/RecipeAssets.vue",
       "name": "RecipeAssets",
       "components": [
-        "AppButtonUpload",
         "BaseDialog",
+        "Button",
+        "DropdownMenu",
+        "DropdownMenuContent",
+        "DropdownMenuItem",
+        "DropdownMenuTrigger",
+        "EllipsisVerticalIcon",
+        "HTMLInputElement",
         "MdiIcon",
+        "PlusIcon",
         "RecipeAsset",
-        "RecipeImageLightbox"
+        "RecipeImageLightbox",
+        "SelectField",
+        "TextField"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipeImageLightbox.vue",
-        "frontend/app/components/global/AppButtonUpload.vue",
-        "frontend/app/components/global/BaseDialog.vue"
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-avatar",
-        "v-btn",
-        "v-card",
-        "v-card-text",
-        "v-card-title",
-        "v-divider",
-        "v-icon",
-        "v-img",
-        "v-list",
-        "v-list-item",
-        "v-list-item-title",
-        "v-menu",
-        "v-select",
-        "v-spacer",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
-        "click: copyText(assetEmbed(item.fileName ?? ''))",
-        "click: handleRowClick($event, item)",
+        "change: onAssetFile",
+        "click: assetFileInput?.click()",
         "click: handleViewClick($event, item)",
-        "click: model.splice(i, 1)",
         "click: state.newAssetDialog = true",
-        "submit: addAsset",
-        "uploaded: setFileObject"
+        "select: copyText(assetEmbed(item.fileName ?? ''))",
+        "select: model.splice(i, 1)",
+        "submit: addAsset"
       ],
       "models": [
         "lightbox.index",
@@ -1089,7 +1083,7 @@
         "edit",
         "isImage(item.fileName)",
         "lightbox.open",
-        "model.length > 0",
+        "model.length",
         "model.length > 0 || edit"
       ],
       "dynamicComponents": [],
@@ -2184,17 +2178,16 @@
       "name": "RecipeOrganizerDialog",
       "components": [
         "BaseDialog",
-        "Props"
+        "CheckboxField",
+        "Props",
+        "TextField"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseDialog.vue"
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-card-text",
-        "v-checkbox",
-        "v-form",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
         "submit: select"
       ],
@@ -2270,35 +2263,45 @@
       "source": "frontend/app/components/Domain/Recipe/RecipeOrganizerSelector.vue",
       "name": "RecipeOrganizerSelector",
       "components": [
-        "BaseButton",
+        "Button",
+        "CheckIcon",
+        "ComboboxAnchor",
+        "ComboboxContent",
+        "ComboboxEmpty",
+        "ComboboxInput",
+        "ComboboxItem",
+        "ComboboxPortal",
+        "ComboboxRoot",
+        "ComboboxViewport",
+        "MdiIcon",
+        "PlusIcon",
         "Props",
         "RecipeOrganizerDialog",
-        "T"
+        "T",
+        "XIcon"
       ],
       "dependencies": [
-        "frontend/app/components/Domain/Recipe/RecipeOrganizerDialog.vue",
-        "frontend/app/components/global/BaseButton.vue"
+        "frontend/app/components/Domain/Recipe/RecipeOrganizerDialog.vue"
       ],
-      "vuetify": [
-        "v-autocomplete",
-        "v-chip"
-      ],
+      "vuetify": [],
       "events": [
-        "click: createItem()",
-        "click:append: dialog = true",
-        "click:close: removeByIndex(index)",
+        "click.stop: removeByIndex(index)",
+        "click: dialog = true",
         "created-item: appendCreated",
-        "keyup.enter: handleEnter",
-        "update:model-value: resetSearchInput"
+        "keydown.backspace: onBackspace",
+        "update:model-value: onSelect"
       ],
       "models": [
         "dialog",
-        "searchInput",
-        "selected"
+        "open",
+        "searchInput"
       ],
       "conditions": [
+        "!showCreate",
+        "icon",
+        "isSelected(item)",
         "showAdd",
-        "showAdd && searchInput"
+        "showCreate"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": []
