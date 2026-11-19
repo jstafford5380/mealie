@@ -181,7 +181,9 @@
     "request-failed-with-status": "The request failed with status {status}. Your changes may not have been saved.",
     "request-failed-no-response": "The server could not be reached. Your changes may not have been saved.",
     "increase": "Increase",
-    "decrease": "Decrease"
+    "decrease": "Decrease",
+    "help": "Help",
+    "opens-in-new-tab": "opens in a new tab"
   },
   "group": {
     "create-group": "Create Group",

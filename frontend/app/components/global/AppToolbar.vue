@@ -1,11 +1,10 @@
 <template>
-  <v-toolbar
-    color="transparent"
-    flat
+  <div
+    data-slot="app-toolbar"
+    class="flex min-h-14 flex-wrap items-center gap-2 py-2"
   >
     <BaseButton
       color="null"
-      rounded
       secondary
       @click="$router.go(-1)"
     >
@@ -15,7 +14,7 @@
       {{ $t('general.back') }}
     </BaseButton>
     <slot />
-  </v-toolbar>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -26,6 +25,3 @@ defineProps({
   },
 });
 </script>
-
-<style lang="scss" scoped>
-</style>

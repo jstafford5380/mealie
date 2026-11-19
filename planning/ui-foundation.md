@@ -47,4 +47,5 @@ When adding a primitive from the registry (or with the CLI): replace `rounded-md
 | A page-level `<v-form>` now validates the fields of an AutoForm inside it (admin create/edit user, household, group, setup). | Vuetify ignored fields of a nested form, so those pages could submit with empty required AutoForm fields and rely on server errors. |
 | AutoForm column widths apply from the `sm` breakpoint; on phones every field is full width. | Two fields side by side were too narrow on phones. |
 | Password fields have a show/hide toggle. | Accessibility and fewer typos; new `user.show-password`/`user.hide-password` strings. |
+| The screen-awake switch catches a refused wake-lock request instead of raising an unhandled error. | Browsers refuse the lock without a user gesture or in embedded views; this showed the Nuxt error overlay on recipe pages. The preference is kept and retried. |
 | Vuetify background/surface use the new palette (`#F5F7F3`/`#FFFFFF` light, `#141816`/`#1C211E` dark). | Old and new pages share one background during the migration. |

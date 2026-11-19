@@ -1,40 +1,45 @@
 <template>
-  <v-tooltip
-    ref="copyToolTip"
-    v-model="show"
-    location="top"
-    :open-on-hover="false"
-    :open-on-click="true"
-    close-delay="500"
-    transition="slide-y-transition"
-  >
-    <template #activator="{ props: hoverProps }">
-      <v-btn
-        variant="flat"
-        :icon="icon"
-        :color="color"
-        retain-focus-on-click
-        :class="btnClass"
-        :disabled="copyText !== '' ? false : true"
-        v-bind="hoverProps"
-        @click="textToClipboard()"
+  <TooltipProvider>
+    <!-- Controlled: shows the copy result after a click, not on hover. -->
+    <Tooltip :open="show">
+      <TooltipTrigger as-child>
+        <Button
+          :variant="buttonVariant"
+          :size="icon ? 'icon' : 'default'"
+          :class="btnClass"
+          :disabled="copyText === ''"
+          :aria-label="icon ? $t('general.copy') : undefined"
+          @click="textToClipboard()"
+        >
+          <MdiIcon
+            :path="$globals.icons.contentCopy"
+            class="size-[18px]"
+          />
+          {{ icon ? "" : $t("general.copy") }}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent
+        side="top"
+        class="flex items-center gap-1.5"
       >
-        <v-icon>{{ $globals.icons.contentCopy }}</v-icon>
-        {{ icon ? "" : $t("general.copy") }}
-      </v-btn>
-    </template>
-    <span v-if="!isSupported || copiedSuccess !== null">
-      <v-icon start>
-        {{ $globals.icons.clipboardCheck }}
-      </v-icon>
-      <slot v-if="!isSupported"> {{ $t("general.your-browser-does-not-support-clipboard") }} </slot>
-      <slot v-else> {{ copiedSuccess ? $t("general.copied_message") : $t("general.clipboard-copy-failure") }} </slot>
-    </span>
-  </v-tooltip>
+        <MdiIcon
+          :path="$globals.icons.clipboardCheck"
+          class="size-4"
+        />
+        <span role="status">
+          <slot v-if="!isSupported"> {{ $t("general.your-browser-does-not-support-clipboard") }} </slot>
+          <slot v-else> {{ copiedSuccess ? $t("general.copied_message") : $t("general.clipboard-copy-failure") }} </slot>
+        </span>
+      </TooltipContent>
+    </Tooltip>
+  </TooltipProvider>
 </template>
 
 <script setup lang="ts">
 import { useClipboard } from "@vueuse/core";
+import { Button } from "~/components/ui/button";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "~/components/ui/tooltip";
 
 const props = defineProps({
   copyText: {
@@ -54,6 +59,8 @@ const props = defineProps({
     default: "",
   },
 });
+
+const buttonVariant = computed(() => (props.color === "primary" || props.color === "success" ? "default" : props.icon ? "ghost" : "outline"));
 
 const { copy, copied, isSupported } = useClipboard({ legacy: true });
 const show = ref(false);
@@ -81,5 +88,3 @@ async function textToClipboard() {
   }, 3000);
 }
 </script>
-
-<style lang="scss" scoped></style>

@@ -1,36 +1,32 @@
 <template>
-  <v-card
-    :min-width="minWidth"
-    :to="to"
-    :hover="to ? true : false"
+  <component
+    :is="to ? NuxtLink : 'div'"
+    :to="to || undefined"
+    data-slot="stats-card"
+    class="flex items-center gap-3 rounded-card border bg-card p-4 font-sans text-card-foreground"
+    :class="to && 'transition-colors hover:border-primary/40 hover:bg-highlight/40 focus-visible:outline-2 focus-visible:outline-offset-2'"
+    :style="minWidth ? { minWidth } : undefined"
   >
-    <div class="d-flex flex-no-wrap">
-      <v-avatar
-        class="ml-3 mr-0 mt-3"
-        color="primary"
-        size="36"
-      >
-        <v-icon
-          color="white"
-          class="pa-1"
-          size="x-large"
-        >
-          {{ activeIcon }}
-        </v-icon>
-      </v-avatar>
-      <div>
-        <v-card-title class="text-subtitle-1 pt-2 pb-2">
-          <slot name="title" />
-        </v-card-title>
-        <v-card-subtitle class="pb-2">
-          <slot name="value" />
-        </v-card-subtitle>
-      </div>
-    </div>
-  </v-card>
+    <span class="flex size-10 shrink-0 items-center justify-center rounded-control bg-highlight text-highlight-foreground">
+      <MdiIcon
+        :path="activeIcon"
+        class="size-[22px]"
+      />
+    </span>
+    <span class="flex min-w-0 flex-col">
+      <span class="text-sm text-muted-foreground">
+        <slot name="title" />
+      </span>
+      <span class="text-xl font-bold tabular-nums">
+        <slot name="value" />
+      </span>
+    </span>
+  </component>
 </template>
 
 <script setup lang="ts">
+import { MdiIcon } from "~/components/ui/mdi-icon";
+
 const props = defineProps({
   icon: {
     type: String,
@@ -46,11 +42,10 @@ const props = defineProps({
   },
 });
 
+const NuxtLink = resolveComponent("NuxtLink");
 const { $globals } = useNuxtApp();
 
 const activeIcon = computed(() => {
   return props.icon ?? $globals.icons.primary;
 });
 </script>
-
-<style scoped></style>

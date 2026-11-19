@@ -1,22 +1,27 @@
 <template>
   <div>
-    <v-btn
-      variant="outlined"
-      class="rounded-xl my-1 mx-1"
+    <Button
+      :as="NuxtLink"
       :to="to"
+      variant="outline"
+      class="m-1 rounded-full"
     >
-      <v-icon
+      <MdiIcon
         v-if="icon != ''"
-        start
-      >
-        {{ icon }}
-      </v-icon>
+        :path="icon"
+        class="size-[18px]"
+      />
       {{ text }}
-    </v-btn>
+    </Button>
   </div>
 </template>
 
 <script setup lang="ts">
+import { Button } from "~/components/ui/button";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+
+const NuxtLink = resolveComponent("NuxtLink");
+
 defineProps({
   to: {
     type: String,
