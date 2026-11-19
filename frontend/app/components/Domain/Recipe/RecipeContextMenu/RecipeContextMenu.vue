@@ -14,23 +14,20 @@
       @update:model-value="onMenuToggle"
     >
       <template #activator="{ props: activatorProps }">
-        <v-btn
-          icon
-          :variant="fab ? 'flat' : undefined"
-          :rounded="fab ? 'circle' : undefined"
-          :size="fab ? 'small' : undefined"
-          :color="fab ? 'info' : 'secondary'"
-          :fab="fab"
+        <button
+          type="button"
           v-bind="activatorProps"
+          :aria-label="$t('general.actions')"
+          :class="fab
+            ? 'inline-flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-sm ring-1 ring-border transition-colors hover:bg-highlight'
+            : 'inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-highlight hover:text-foreground'"
           @click.prevent
         >
-          <v-icon
-            :size="!fab ? undefined : 'x-large'"
-            :color="fab ? 'white' : 'secondary'"
-          >
-            {{ icon }}
-          </v-icon>
-        </v-btn>
+          <MdiIcon
+            :path="icon"
+            :class="fab ? 'size-6' : 'size-5'"
+          />
+        </button>
       </template>
 
       <RecipeContextMenuContent
@@ -46,6 +43,7 @@
 </template>
 
 <script setup lang="ts">
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import type { RecipeOut } from "~/lib/api/types/recipe";
 import type { ContextMenuIncludes } from "./RecipeContextMenuContent.vue";
 

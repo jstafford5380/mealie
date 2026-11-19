@@ -1,184 +1,181 @@
 <template>
-  <div>
-    <v-row
+  <section class="flex flex-col gap-4 font-sans">
+    <div
       v-if="!disableToolbar"
-      class="align-center pb-2"
+      class="flex flex-wrap items-center gap-2"
     >
-      <v-icon
+      <h2
         v-if="title"
-        size="large"
-        start
+        class="m-0 me-auto flex min-w-0 items-center gap-2 text-xl font-bold tracking-tight text-foreground"
       >
-        {{ displayTitleIcon }}
-      </v-icon>
-      <span class="text-headline-small">{{ title }}</span>
-      <v-spacer />
-      <v-btn
-        :icon="$vuetify.display.xs"
-        variant="text"
+        <MdiIcon
+          v-if="icon"
+          :path="displayTitleIcon"
+          class="size-5 text-muted-foreground"
+        />
+        <span class="truncate">{{ title }}</span>
+      </h2>
+      <span
+        v-else
+        class="me-auto"
+      />
+      <Button
+        variant="outline"
         :disabled="recipes.length === 0"
         @click="navigateRandom"
       >
-        <v-icon :start="!$vuetify.display.xs">
-          {{ $globals.icons.diceMultiple }}
-        </v-icon>
-        {{ $vuetify.display.xs ? null : $t("general.random") }}
-      </v-btn>
-      <v-menu
+        <MdiIcon
+          :path="$globals.icons.diceMultiple"
+          class="size-[18px]"
+        />
+        <span class="max-sm:sr-only">{{ $t("general.random") }}</span>
+      </Button>
+      <DropdownMenu
         v-if="!disableSort"
-        offset-y
-        start
+        :modal="false"
       >
-        <template #activator="{ props: activatorProps }">
-          <v-btn
-            variant="text"
-            :icon="$vuetify.display.xs"
-            v-bind="activatorProps"
-            :loading="sortLoading"
+        <DropdownMenuTrigger as-child>
+          <Button
+            variant="outline"
+            :disabled="sortLoading"
           >
-            <v-icon :start="!$vuetify.display.xs">
-              {{ sortIcon }}
-            </v-icon>
-            {{ $vuetify.display.xs ? null : $t("general.sort") }}
-          </v-btn>
-        </template>
-        <v-list>
-          <v-list-item @click="sortRecipes(EVENTS.az)">
-            <div class="d-flex align-center flex-nowrap">
-              <v-icon class="mr-2" inline>
-                {{ $globals.icons.orderAlphabeticalAscending }}
-              </v-icon>
-              <v-list-item-title>{{ $t("general.sort-alphabetically") }}</v-list-item-title>
-            </div>
-          </v-list-item>
-          <v-list-item @click="sortRecipes(EVENTS.rating)">
-            <div class="d-flex align-center flex-nowrap">
-              <v-icon class="mr-2" inline>
-                {{ $globals.icons.star }}
-              </v-icon>
-              <v-list-item-title>{{ $t("general.rating") }}</v-list-item-title>
-            </div>
-          </v-list-item>
-          <v-list-item @click="sortRecipes(EVENTS.created)">
-            <div class="d-flex align-center flex-nowrap">
-              <v-icon class="mr-2" inline>
-                {{ $globals.icons.newBox }}
-              </v-icon>
-              <v-list-item-title>{{ $t("general.created") }}</v-list-item-title>
-            </div>
-          </v-list-item>
-          <v-list-item @click="sortRecipes(EVENTS.updated)">
-            <div class="d-flex align-center flex-nowrap">
-              <v-icon class="mr-2" inline>
-                {{ $globals.icons.update }}
-              </v-icon>
-              <v-list-item-title>{{ $t("general.updated") }}</v-list-item-title>
-            </div>
-          </v-list-item>
-          <v-list-item v-if="isOwnGroup" @click="sortRecipes(EVENTS.lastMade)">
-            <div class="d-flex align-center flex-nowrap">
-              <v-icon class="mr-2" inline>
-                {{ $globals.icons.chefHat }}
-              </v-icon>
-              <v-list-item-title>{{ $t("general.last-made") }}</v-list-item-title>
-            </div>
-          </v-list-item>
-          <v-list-item @click="sortRecipes(EVENTS.totalTime)">
-            <div class="d-flex align-center flex-nowrap">
-              <v-icon class="mr-2" inline>
-                {{ $globals.icons.clockOutline }}
-              </v-icon>
-              <v-list-item-title>{{ $t("recipe.total-time") }}</v-list-item-title>
-            </div>
-          </v-list-item>
-          <v-list-item @click="sortRecipes(EVENTS.shuffle)">
-            <div class="d-flex align-center flex-nowrap">
-              <v-icon class="mr-2" inline>
-                {{ $globals.icons.diceMultiple }}
-              </v-icon>
-              <v-list-item-title>{{ $t("general.random") }}</v-list-item-title>
-            </div>
-          </v-list-item>
-        </v-list>
-      </v-menu>
-      <ContextMenu
-        v-if="!$vuetify.display.smAndDown"
-        :items="[
-          {
-            title: $t('general.toggle-view'),
-            icon: $globals.icons.eye,
-            event: 'toggle-dense-view',
-          },
-        ]"
-        @toggle-dense-view="toggleMobileCards()"
-      />
-    </v-row>
-    <div v-if="recipes && ready">
-      <div class="mt-2">
-        <v-row v-if="!useMobileCards">
-          <v-col
-            v-for="recipe in recipes"
-            :key="recipe.id"
-            :sm="6"
-            :md="6"
-            :lg="4"
-            :xl="3"
-          >
-            <RecipeCard
-              :name="recipe.name"
-              :description="recipe.description!"
-              :slug="recipe.slug"
-              :rating="recipe.rating!"
-              :image="recipe.image!"
-              :tags="recipe.tags"
-              :recipe-id="recipe.id"
-              @item-selected="(item, urlPrefix) => emit('itemSelected', item, urlPrefix)"
+            <MdiIcon
+              :path="sortIcon"
+              class="size-[18px]"
             />
-          </v-col>
-        </v-row>
-        <v-row
-          v-else
-          density="comfortable"
+            <span class="max-sm:sr-only">{{ $t("general.sort") }}</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          class="min-w-52"
         >
-          <v-col
-            v-for="recipe in recipes"
-            :key="recipe.id"
-            cols="12"
-            :sm="singleColumn ? '12' : '12'"
-            :md="singleColumn ? '12' : '6'"
-            :lg="singleColumn ? '12' : '4'"
-            :xl="singleColumn ? '12' : '3'"
+          <DropdownMenuItem
+            v-for="option in sortOptions"
+            :key="option.event"
+            :class="option.active && 'font-semibold'"
+            @select="sortRecipes(option.event)"
           >
-            <RecipeCardMobile
-              :name="recipe.name"
-              :description="recipe.description!"
-              :slug="recipe.slug"
-              :rating="recipe.rating!"
-              :image="recipe.image!"
-              :tags="recipe.tags"
-              :recipe-id="recipe.id"
-              @item-selected="(item, urlPrefix) => emit('itemSelected', item, urlPrefix)"
-            />
-          </v-col>
-        </v-row>
+            <MdiIcon :path="option.icon" />
+            <span class="flex-1">{{ option.label }}</span>
+            <span
+              v-if="option.active"
+              class="text-xs text-muted-foreground"
+            >{{ preferences.orderDirection === "asc" ? "↑" : "↓" }}</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <div
+        role="group"
+        :aria-label="$t('general.toggle-view')"
+        class="flex rounded-control border border-input bg-card p-0.5"
+      >
+        <button
+          type="button"
+          :aria-pressed="!useMobileCards"
+          :aria-label="$t('general.grid-view')"
+          class="inline-flex size-9 items-center justify-center rounded-item text-muted-foreground aria-pressed:bg-highlight aria-pressed:text-highlight-foreground"
+          @click="setListView(false)"
+        >
+          <LayoutGridIcon class="size-[18px]" />
+        </button>
+        <button
+          type="button"
+          :aria-pressed="useMobileCards"
+          :aria-label="$t('general.list-view')"
+          class="inline-flex size-9 items-center justify-center rounded-item text-muted-foreground aria-pressed:bg-highlight aria-pressed:text-highlight-foreground"
+          @click="setListView(true)"
+        >
+          <ListIcon class="size-[18px]" />
+        </button>
       </div>
-      <v-card v-intersect="infiniteScroll" variant="flat" />
     </div>
-    <v-fade-transition>
-      <AppLoader
-        v-if="loading"
-        :loading="loading"
-        :waiting-text="$t('general.loading-recipes')"
+
+    <template v-if="recipes && ready">
+      <div
+        v-if="!useMobileCards"
+        class="grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-5 md:grid-cols-3 2xl:grid-cols-4"
+      >
+        <RecipeTile
+          v-for="recipe in recipes"
+          :key="recipe.id"
+          :name="recipe.name || ''"
+          :description="recipe.description"
+          :slug="recipe.slug || ''"
+          :rating="recipe.rating"
+          :image="recipe.image"
+          :tags="recipe.tags"
+          :total-time="recipe.totalTime"
+          :recipe-id="recipe.id || ''"
+          @item-selected="(item, urlPrefix) => emit('itemSelected', item, urlPrefix)"
+        />
+      </div>
+      <div
+        v-else
+        class="grid grid-cols-1 gap-3"
+        :class="!singleColumn && 'lg:grid-cols-2 2xl:grid-cols-3'"
+      >
+        <RecipeRow
+          v-for="recipe in recipes"
+          :key="recipe.id"
+          :name="recipe.name || ''"
+          :description="recipe.description"
+          :slug="recipe.slug || ''"
+          :rating="recipe.rating"
+          :image="recipe.image"
+          :tags="recipe.tags"
+          :total-time="recipe.totalTime"
+          :recipe-id="recipe.id || ''"
+          @item-selected="(item, urlPrefix) => emit('itemSelected', item, urlPrefix)"
+        />
+      </div>
+      <div
+        ref="sentinel"
+        class="h-px"
+        aria-hidden="true"
       />
-    </v-fade-transition>
+    </template>
+
+    <div
+      v-if="loading && (!ready || recipes.length === 0)"
+      class="grid grid-cols-2 gap-x-3 gap-y-6 sm:gap-x-5 md:grid-cols-3 2xl:grid-cols-4"
+      role="status"
+      :aria-label="$t('general.loading-recipes')"
+    >
+      <div
+        v-for="n in 8"
+        :key="n"
+        class="flex flex-col gap-2.5"
+      >
+        <Skeleton class="aspect-[4/3] w-full rounded-card" />
+        <Skeleton class="h-4 w-4/5" />
+        <Skeleton class="h-3 w-1/2" />
+      </div>
+    </div>
+    <div
+      v-else-if="loading"
+      class="flex justify-center py-6"
+      role="status"
+    >
+      <Spinner
+        class="size-6 text-primary"
+        :label="$t('general.loading-recipes')"
+      />
+    </div>
     <AppScrollToTop />
-  </div>
+  </section>
 </template>
 
 <script setup lang="ts">
-import { useThrottleFn } from "@vueuse/core";
-import RecipeCard from "./RecipeCard.vue";
-import RecipeCardMobile from "./RecipeCardMobile.vue";
+import { LayoutGridIcon, ListIcon } from "@lucide/vue";
+import { useIntersectionObserver, useThrottleFn } from "@vueuse/core";
+import { Button } from "~/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/components/ui/dropdown-menu";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+import { Skeleton } from "~/components/ui/skeleton";
+import { Spinner } from "~/components/ui/spinner";
+import RecipeRow from "./RecipeRow.vue";
+import RecipeTile from "./RecipeTile.vue";
 import type { UrlPrefixParam } from "./RecipeChips.vue";
 import { useLoggedInState } from "~/composables/use-logged-in-state";
 import { useLazyRecipes } from "~/composables/recipes";
@@ -214,7 +211,6 @@ const emit = defineEmits<{
   itemSelected: [item: TagOut, urlPrefix: UrlPrefixParam];
 }>();
 
-const display = useDisplay();
 const preferences = useUserSortPreferences();
 
 const EVENTS = {
@@ -233,9 +229,8 @@ const NULLS_LAST_ORDER_BY = ["total_time_seconds"];
 const auth = useMealieAuth();
 const { $globals } = useNuxtApp();
 const { isOwnGroup } = useLoggedInState();
-const useMobileCards = computed(() => {
-  return display.smAndDown.value || preferences.value.useMobileCards;
-});
+// List view is a saved preference on any screen size; phones default to the two-column grid.
+const useMobileCards = computed(() => !!preferences.value.useMobileCards);
 
 const displayTitleIcon = computed(() => {
   return props.icon || $globals.icons.tags;
@@ -499,13 +494,28 @@ async function navigateRandom() {
   router.push(`/g/${groupSlug.value}/r/${recipe.slug}`);
 }
 
-function toggleMobileCards() {
-  preferences.value.useMobileCards = !preferences.value.useMobileCards;
+function setListView(list: boolean) {
+  preferences.value.useMobileCards = list;
 }
-</script>
 
-<style>
-.transparent {
-  opacity: 1;
-}
-</style>
+const i18n = useI18n();
+const sortOptions = computed(() => [
+  { event: EVENTS.az, orderBy: "name", label: i18n.t("general.sort-alphabetically"), icon: $globals.icons.orderAlphabeticalAscending },
+  { event: EVENTS.rating, orderBy: "rating", label: i18n.t("general.rating"), icon: $globals.icons.star },
+  { event: EVENTS.created, orderBy: "created_at", label: i18n.t("general.created"), icon: $globals.icons.newBox },
+  { event: EVENTS.updated, orderBy: "updated_at", label: i18n.t("general.updated"), icon: $globals.icons.update },
+  { event: EVENTS.lastMade, orderBy: "last_made", label: i18n.t("general.last-made"), icon: $globals.icons.chefHat },
+  { event: EVENTS.totalTime, orderBy: "total_time_seconds", label: i18n.t("recipe.total-time"), icon: $globals.icons.clockOutline },
+  { event: EVENTS.shuffle, orderBy: "random", label: i18n.t("general.random"), icon: $globals.icons.diceMultiple },
+]
+  .filter(option => isOwnGroup.value || option.event !== EVENTS.lastMade)
+  .map(option => ({ ...option, active: effectiveOrderBy.value === option.orderBy })));
+
+// Infinite scroll: load the next page when the end of the list comes into view.
+const sentinel = ref<HTMLElement | null>(null);
+useIntersectionObserver(sentinel, ([entry]) => {
+  if (entry?.isIntersecting) {
+    infiniteScroll();
+  }
+}, { rootMargin: "600px 0px" });
+</script>

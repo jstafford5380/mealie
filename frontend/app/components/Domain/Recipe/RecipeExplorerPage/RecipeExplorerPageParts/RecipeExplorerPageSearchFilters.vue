@@ -6,9 +6,10 @@
     v-model:require-all="state.requireAllCategories"
     :items="categories"
   >
-    <v-icon start>
-      {{ $globals.icons.categories }}
-    </v-icon>
+    <MdiIcon
+      :path="$globals.icons.categories"
+      class="size-4"
+    />
     {{ $t("category.categories") }}
   </SearchFilter>
 
@@ -19,9 +20,10 @@
     v-model:require-all="state.requireAllTags"
     :items="tags"
   >
-    <v-icon start>
-      {{ $globals.icons.tags }}
-    </v-icon>
+    <MdiIcon
+      :path="$globals.icons.tags"
+      class="size-4"
+    />
     {{ $t("tag.tags") }}
   </SearchFilter>
 
@@ -32,9 +34,10 @@
     v-model:require-all="state.requireAllTools"
     :items="tools"
   >
-    <v-icon start>
-      {{ $globals.icons.potSteam }}
-    </v-icon>
+    <MdiIcon
+      :path="$globals.icons.potSteam"
+      class="size-4"
+    />
     {{ $t("tool.tools") }}
   </SearchFilter>
 
@@ -45,9 +48,10 @@
     v-model:require-all="state.requireAllFoods"
     :items="foods"
   >
-    <v-icon start>
-      {{ $globals.icons.foods }}
-    </v-icon>
+    <MdiIcon
+      :path="$globals.icons.foods"
+      class="size-4"
+    />
     {{ $t("general.foods") }}
   </SearchFilter>
 
@@ -58,14 +62,16 @@
     :items="households"
     radio
   >
-    <v-icon start>
-      {{ $globals.icons.household }}
-    </v-icon>
+    <MdiIcon
+      :path="$globals.icons.household"
+      class="size-4"
+    />
     {{ $t("household.households") }}
   </SearchFilter>
 </template>
 
 <script setup lang="ts">
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { useLoggedInState } from "~/composables/use-logged-in-state";
 import { useRecipeExplorerSearch } from "~/composables/use-recipe-explorer-search";
 import {

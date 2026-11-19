@@ -183,7 +183,10 @@
     "increase": "Increase",
     "decrease": "Decrease",
     "help": "Help",
-    "opens-in-new-tab": "opens in a new tab"
+    "opens-in-new-tab": "opens in a new tab",
+    "grid-view": "Grid view",
+    "list-view": "List view",
+    "scroll-to-top": "Scroll to top"
   },
   "group": {
     "create-group": "Create Group",
@@ -407,7 +410,8 @@
     "calendar-feed-event-details-change-warning": "Changing these will update the calendar link, so if you've already subscribed you'll need to replace it with the new link.",
     "calendar-feed-event-title": "Event Title",
     "calendar-feed-event-description": "Event Description",
-    "calendar-feed-url": "Calendar Link"
+    "calendar-feed-url": "Calendar Link",
+    "today": "Today"
   },
   "migration": {
     "new-migration": "New Migration",
@@ -737,7 +741,8 @@
     "cover-image": "Cover image",
     "include-linked-recipes": "Include Linked Recipes",
     "include-linked-recipe-ingredients": "Include Linked Recipe Ingredients",
-    "toggle-recipe": "Toggle Recipe"
+    "toggle-recipe": "Toggle Recipe",
+    "rating-out-of-five": "Rated {rating} out of 5"
   },
   "recipe-finder": {
     "recipe-finder": "Recipe Finder",
@@ -770,7 +775,9 @@
     "advanced": "Advanced",
     "auto-search": "Auto Search",
     "no-results": "No results found",
-    "type-to-search": "Type to search..."
+    "type-to-search": "Type to search...",
+    "selected": "selected",
+    "match": "Match"
   },
   "settings": {
     "admin-settings": "Admin Settings",

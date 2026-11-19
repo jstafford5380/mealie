@@ -1,30 +1,38 @@
 <template>
-  <div class="rating-display">
-    <span
+  <span
+    class="inline-flex items-center gap-px"
+    :class="showGroupAverage || !ratingValue ? 'text-muted-foreground/60' : 'text-brand'"
+    role="img"
+    :aria-label="$t('recipe.rating-out-of-five', { rating: Math.round(ratingValue * 10) / 10 })"
+  >
+    <svg
       v-for="(star, index) in ratingDisplay"
       :key="index"
-      class="star"
-      :class="{
-        'star-half': star === 'half',
-        'text-secondary': !showGroupAverage,
-        'text-grey-darken-1': showGroupAverage,
-      }"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      class="size-[15px]"
     >
-      <!-- We render both the full and empty stars for "half" stars because they're layered over each other -->
-      <span
-        v-if="star === 'empty' || star === 'half'"
-        class="star-empty"
-      >
-        ☆
-      </span>
-      <span
-        v-if="star === 'full' || star === 'half'"
-        class="star-full"
-      >
-        ★
-      </span>
-    </span>
-  </div>
+      <defs v-if="star === 'half'">
+        <linearGradient :id="`half-${uid}`">
+          <stop
+            offset="50%"
+            stop-color="currentColor"
+          />
+          <stop
+            offset="50%"
+            stop-color="transparent"
+          />
+        </linearGradient>
+      </defs>
+      <path
+        d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"
+        :fill="star === 'full' ? 'currentColor' : star === 'half' ? `url(#half-${uid})` : 'none'"
+        stroke="currentColor"
+        stroke-width="1.6"
+        stroke-linejoin="round"
+      />
+    </svg>
+  </span>
 </template>
 
 <script setup lang="ts">
@@ -44,6 +52,7 @@ const props = defineProps({
 });
 
 const { userRatings } = useUserSelfRatings();
+const uid = useId();
 
 const userRating = computed(() => {
   return userRatings.value.find(r => r.recipeId === props.recipeId)?.rating ?? null;
@@ -75,28 +84,3 @@ const ratingDisplay = computed<Star[]>(
   },
 );
 </script>
-
-<style lang="scss" scoped>
-.rating-display {
-  display: inline-flex;
-  align-items: center;
-  gap: 1px;
-
-  .star {
-    font-size: 18px;
-    transition: color 0.2s ease;
-    user-select: none;
-    position: relative;
-    display: inline-block;
-    &.star-half {
-      .star-full {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 50%;
-        overflow: hidden;
-      }
-    }
-  }
-}
-</style>

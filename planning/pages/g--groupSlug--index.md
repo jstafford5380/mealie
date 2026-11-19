@@ -25,6 +25,17 @@ Route: `/g/:groupSlug`. Source: [index.vue](../../frontend/app/pages/g/[groupSlu
 - Preserve every [shared card-list function](../shared-recipe-cards.md), including infinite paging, random navigation, compact/mobile view, favorites, read-only ratings, tag chips, context menu, and scroll restoration.
 - Preserve all nested [recipe actions/dialogs](../shared-recipe-actions.md), particularly meal-plan dates/type and ingredient selection for shopping lists.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Centered search box; blue filter buttons with corner badges; a "Recipes" section header with its own toolbar below a divider. | Page title, full-width search, then one row of filter chips (count shown inside the chip) with Sort and search settings at the end of the row; Random and the grid/list toggle above the results. |
+| Filter menus: Vuetify list with radio/checkbox items. | Popover with option search, Has all / Has any segmented control, Clear Selection, and a virtualised list (40px rows, 300px). Second click on the selected household radio clears it, as before. |
+| Search settings menu with a switch and Reset. | Same controls in a popover. Manual search still shows a full-width Search button when Auto Search is off. |
+| — | New: "Today" strip for members, listing today's meal-plan entries (recipe or note) with links to the recipes (scale carried in the query) and to the meal planner. Hidden when nothing is planned. |
+
+Search/session/URL hydration, sorting rules and public-group restrictions are unchanged (use-recipe-explorer-search.ts was not modified).
+
 ## Screenshots
 
 ### Full explorer, category filter, and selected results
@@ -72,6 +83,6 @@ These additional cases remain for replacement validation. See the [handoff evide
 
 ## Shadcn Vue replacement checklist
 
-- [ ] Compose Input, Popover/DropdownMenu, searchable checkbox/radio lists, ToggleGroup, Badge, Switch, Button, and shared cards/dialogs.
-- [ ] Preserve URL/session hydration, all filter types/combinators, manual/automatic search, sort preferences, and public-group restrictions.
+- [x] Compose Input, Popover/DropdownMenu, searchable checkbox/radio lists, ToggleGroup, Badge, Switch, Button, and shared cards/dialogs.
+- [x] Preserve URL/session hydration, all filter types/combinators, manual/automatic search, sort preferences, and public-group restrictions.
 - [ ] Preserve query seeds, nested action workflows, compact preference, and keyboard/focus behavior.

@@ -1,6 +1,6 @@
 # Shared recipe cards and paged sections
 
-Sources: [RecipeCardSection](../frontend/app/components/Domain/Recipe/RecipeCardSection.vue), [desktop card](../frontend/app/components/Domain/Recipe/RecipeCard.vue), [compact card](../frontend/app/components/Domain/Recipe/RecipeCardMobile.vue), [favorite](../frontend/app/components/Domain/Recipe/RecipeFavoriteBadge.vue), [rating](../frontend/app/components/Domain/Recipe/RecipeCardRating.vue), [image](../frontend/app/components/Domain/Recipe/RecipeCardImage.vue), [chips](../frontend/app/components/Domain/Recipe/RecipeChips.vue).
+Sources: [RecipeCardSection](../frontend/app/components/Domain/Recipe/RecipeCardSection.vue), [grid tile](../frontend/app/components/Domain/Recipe/RecipeTile.vue) (replaces the removed RecipeCard.vue), [list row](../frontend/app/components/Domain/Recipe/RecipeRow.vue), [compact card](../frontend/app/components/Domain/Recipe/RecipeCardMobile.vue), [favorite](../frontend/app/components/Domain/Recipe/RecipeFavoriteBadge.vue), [rating](../frontend/app/components/Domain/Recipe/RecipeCardRating.vue), [image](../frontend/app/components/Domain/Recipe/RecipeCardImage.vue), [chips](../frontend/app/components/Domain/Recipe/RecipeChips.vue).
 
 ## Functions to preserve
 
@@ -28,9 +28,24 @@ Sources: [RecipeCardSection](../frontend/app/components/Domain/Recipe/RecipeCard
 - Preserve custom action slots and leading/appended context-menu entries for consumers such as meal plans.
 - Full context-menu and nested dialog contracts: [shared recipe actions](shared-recipe-actions.md).
 
+## Redesign (implemented)
+
+RecipeCardSection keeps its props, events, paging, seeded random order, sort preferences and scroll restoration; its presentation is new. Changes users will notice:
+
+| Before | Now |
+| --- | --- |
+| Elevated cards; compact cards forced on small screens; "Toggle View" hidden in a ⋮ menu on desktop. | Photo tiles (name in the recipe serif, time, rating, up to two tags) in a 2/3/4-column grid on every screen size, or list rows. A visible grid/list toggle on all screen sizes saves the preference. |
+| Description revealed on hover over the image (desktop only). | Same on desktop (gradient overlay); list rows show two lines of the description inline. |
+| Rating stars use the secondary colour; group average grey. | Marigold for the user's own rating, muted for the group average or no rating; numeric rating announced to screen readers. |
+| Sort menu with icons only. | Sort menu shows the active sort and its direction. |
+| Intersection directive loader; spinner. | Skeleton tiles on first load, spinner while loading more; pages load 600px before the end of the list. |
+| Total time not shown on cards. | Total time shown when the recipe has one. |
+
+The favorite button and read-only rating were restyled in place (RecipeFavoriteBadge, RecipeCardRating), so other screens using them change too. The card action menu (RecipeContextMenu) keeps its existing dialogs until the recipe-actions redesign.
+
 ## Shadcn Vue replacement checklist
 
-- [ ] Compose Card/linked article, Button, DropdownMenu, Tooltip, Badge, read-only rating output, Skeleton, and accessible compact/list alternatives.
-- [ ] Preserve query scope, pagination/scroll restoration, sorting/null placement, seeded random order, and responsive preference.
+- [x] Compose Card/linked article, Button, DropdownMenu, Tooltip, Badge, read-only rating output, Skeleton, and accessible compact/list alternatives.
+- [x] Preserve query scope, pagination/scroll restoration, sorting/null placement, seeded random order, and responsive preference.
 - [ ] Preserve favorites, thumbnails/fallback, tag filter events, sanitized descriptions, scale propagation, and action configuration.
-- [ ] Give favorite/menu/compact-toolbar icons names and avoid nested interactive elements inside an undifferentiated card link.
+- [x] Give favorite/menu/compact-toolbar icons names and avoid nested interactive elements inside an undifferentiated card link.

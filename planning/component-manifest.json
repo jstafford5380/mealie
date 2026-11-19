@@ -1140,52 +1140,6 @@
       "vuetifyAPIs": []
     },
     {
-      "source": "frontend/app/components/Domain/Recipe/RecipeCard.vue",
-      "name": "RecipeCard",
-      "components": [
-        "Props",
-        "RecipeCardImage",
-        "RecipeCardRating",
-        "RecipeChips",
-        "RecipeContextMenu",
-        "RecipeFavoriteBadge",
-        "SafeMarkdown"
-      ],
-      "dependencies": [
-        "frontend/app/components/Domain/Recipe/RecipeCardImage.vue",
-        "frontend/app/components/Domain/Recipe/RecipeCardRating.vue",
-        "frontend/app/components/Domain/Recipe/RecipeChips.vue",
-        "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenu.vue",
-        "frontend/app/components/Domain/Recipe/RecipeFavoriteBadge.vue",
-        "frontend/app/components/global/SafeMarkdown.vue"
-      ],
-      "vuetify": [
-        "v-card",
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-expand-transition",
-        "v-hover",
-        "v-spacer"
-      ],
-      "events": [
-        "click.self: $emit('click')",
-        "deleted: $emit('delete', slug)",
-        "item-selected: (item, urlPrefix) => $emit('itemSelected', item, urlPrefix)"
-      ],
-      "models": [],
-      "conditions": [
-        "description",
-        "isHovering",
-        "isOwnGroup",
-        "isOwnGroup && showRecipeContent",
-        "showRecipeContent",
-        "tags.length > 0"
-      ],
-      "dynamicComponents": [],
-      "vuetifyAPIs": []
-    },
-    {
       "source": "frontend/app/components/Domain/Recipe/RecipeCardImage.vue",
       "name": "RecipeCardImage",
       "components": [
@@ -1291,8 +1245,7 @@
       "events": [],
       "models": [],
       "conditions": [
-        "star === 'empty' || star === 'half'",
-        "star === 'full' || star === 'half'"
+        "star === 'half'"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": []
@@ -1301,62 +1254,49 @@
       "source": "frontend/app/components/Domain/Recipe/RecipeCardSection.vue",
       "name": "RecipeCardSection",
       "components": [
-        "AppLoader",
         "AppScrollToTop",
-        "ContextMenu",
+        "Button",
+        "DropdownMenu",
+        "DropdownMenuContent",
+        "DropdownMenuItem",
+        "DropdownMenuTrigger",
+        "HTMLElement",
+        "LayoutGridIcon",
+        "ListIcon",
+        "MdiIcon",
         "Props",
-        "RecipeCard",
-        "RecipeCardMobile"
+        "RecipeRow",
+        "RecipeTile",
+        "Skeleton",
+        "Spinner"
       ],
       "dependencies": [
-        "frontend/app/components/Domain/Recipe/RecipeCard.vue",
-        "frontend/app/components/Domain/Recipe/RecipeCardMobile.vue",
-        "frontend/app/components/Layout/LayoutParts/AppScrollToTop.vue",
-        "frontend/app/components/global/AppLoader.vue",
-        "frontend/app/components/global/ContextMenu.vue"
+        "frontend/app/components/Domain/Recipe/RecipeRow.vue",
+        "frontend/app/components/Domain/Recipe/RecipeTile.vue",
+        "frontend/app/components/Layout/LayoutParts/AppScrollToTop.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-col",
-        "v-fade-transition",
-        "v-icon",
-        "v-list",
-        "v-list-item",
-        "v-list-item-title",
-        "v-menu",
-        "v-row",
-        "v-spacer"
-      ],
+      "vuetify": [],
       "events": [
         "click: navigateRandom",
-        "click: sortRecipes(EVENTS.az)",
-        "click: sortRecipes(EVENTS.created)",
-        "click: sortRecipes(EVENTS.lastMade)",
-        "click: sortRecipes(EVENTS.rating)",
-        "click: sortRecipes(EVENTS.shuffle)",
-        "click: sortRecipes(EVENTS.totalTime)",
-        "click: sortRecipes(EVENTS.updated)",
+        "click: setListView(false)",
+        "click: setListView(true)",
         "item-selected: (item, urlPrefix) => emit('itemSelected', item, urlPrefix)",
-        "toggle-dense-view: toggleMobileCards()"
+        "select: sortRecipes(option.event)"
       ],
       "models": [],
       "conditions": [
-        "!$vuetify.display.smAndDown",
         "!disableSort",
         "!disableToolbar",
         "!useMobileCards",
-        "isOwnGroup",
+        "icon",
         "loading",
+        "loading && (!ready || recipes.length === 0)",
+        "option.active",
         "recipes && ready",
         "title"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify",
-        "useDisplay",
-        "v-intersect"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/Recipe/RecipeChips.vue",
@@ -1384,6 +1324,7 @@
       "name": "RecipeContextMenu",
       "components": [
         "ContextMenuIncludes",
+        "MdiIcon",
         "Props",
         "RecipeContextMenuContent"
       ],
@@ -1391,8 +1332,6 @@
         "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenuContent.vue"
       ],
       "vuetify": [
-        "v-btn",
-        "v-icon",
         "v-menu"
       ],
       "events": [
@@ -1757,16 +1696,15 @@
       "components": [
         "InstanceType",
         "RecipeCardSection",
-        "RecipeExplorerPageSearch"
+        "RecipeExplorerPageSearch",
+        "RecipeExplorerToday"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipeCardSection.vue",
-        "frontend/app/components/Domain/Recipe/RecipeExplorerPage/RecipeExplorerPageParts/RecipeExplorerPageSearch.vue"
+        "frontend/app/components/Domain/Recipe/RecipeExplorerPage/RecipeExplorerPageParts/RecipeExplorerPageSearch.vue",
+        "frontend/app/components/Domain/Recipe/RecipeExplorerPage/RecipeExplorerPageParts/RecipeExplorerToday.vue"
       ],
-      "vuetify": [
-        "v-container",
-        "v-divider"
-      ],
+      "vuetify": [],
       "events": [
         "append-recipes: appendRecipes",
         "item-selected: onItemSelected",
@@ -1775,6 +1713,7 @@
       ],
       "models": [],
       "conditions": [
+        "isOwnGroup",
         "ready"
       ],
       "dynamicComponents": [],
@@ -1784,28 +1723,31 @@
       "source": "frontend/app/components/Domain/Recipe/RecipeExplorerPage/RecipeExplorerPageParts/RecipeExplorerPageSearch.vue",
       "name": "RecipeExplorerPageSearch",
       "components": [
-        "RecipeExplorerPageSearchFilters"
+        "Button",
+        "DropdownMenu",
+        "DropdownMenuContent",
+        "DropdownMenuItem",
+        "DropdownMenuSeparator",
+        "DropdownMenuTrigger",
+        "MdiIcon",
+        "Popover",
+        "PopoverContent",
+        "PopoverTrigger",
+        "RecipeExplorerPageSearchFilters",
+        "SearchIcon",
+        "Switch",
+        "XIcon"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipeExplorerPage/RecipeExplorerPageParts/RecipeExplorerPageSearchFilters.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-card-text",
-        "v-divider",
-        "v-icon",
-        "v-list",
-        "v-list-item",
-        "v-menu",
-        "v-switch",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
-        "click.stop: v.value === 'random' ? setRandomOrderByWrapper() : setOrderBy(v.value)",
         "click: reset",
-        "click: toggleOrderDirection",
+        "click: state.search = ''",
         "keyup.enter: hideKeyboard",
+        "select: (e: Event) => {\n              if (v.value === 'random') { e.preventDefault(); setRandomOrderByWrapper(); }\n              else { setOrderBy(v.value); }\n            }",
+        "select: toggleOrderDirection",
         "submit.prevent: search"
       ],
       "models": [
@@ -1814,25 +1756,23 @@
       ],
       "conditions": [
         "!state.auto",
+        "state.search",
         "v.value === 'random' && showRandomLoading"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/Recipe/RecipeExplorerPage/RecipeExplorerPageParts/RecipeExplorerPageSearchFilters.vue",
       "name": "RecipeExplorerPageSearchFilters",
       "components": [
+        "MdiIcon",
         "SearchFilter"
       ],
       "dependencies": [
         "frontend/app/components/Domain/SearchFilter.vue"
       ],
-      "vuetify": [
-        "v-icon"
-      ],
+      "vuetify": [],
       "events": [],
       "models": [
         "selectedCategories",
@@ -1856,28 +1796,44 @@
       "vuetifyAPIs": []
     },
     {
+      "source": "frontend/app/components/Domain/Recipe/RecipeExplorerPage/RecipeExplorerPageParts/RecipeExplorerToday.vue",
+      "name": "RecipeExplorerToday",
+      "components": [
+        "MdiIcon",
+        "NuxtLink",
+        "PlanEntryOut"
+      ],
+      "dependencies": [],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "entries && entries.length",
+        "entry.recipe?.image && entry.recipe?.id"
+      ],
+      "dynamicComponents": [
+        "recipeLink(entry) ? NuxtLink : 'div'"
+      ],
+      "vuetifyAPIs": []
+    },
+    {
       "source": "frontend/app/components/Domain/Recipe/RecipeFavoriteBadge.vue",
       "name": "RecipeFavoriteBadge",
       "components": [
+        "MdiIcon",
         "Props"
       ],
       "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-icon",
-        "v-tooltip"
-      ],
+      "vuetify": [],
       "events": [
-        "click.prevent: toggleFavorite"
+        "click.prevent.stop: toggleFavorite"
       ],
       "models": [],
       "conditions": [
         "isFavorite || showAlways"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "v-tooltip"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/Recipe/RecipeImageLightbox.vue",
@@ -3407,6 +3363,42 @@
       "vuetifyAPIs": []
     },
     {
+      "source": "frontend/app/components/Domain/Recipe/RecipeRow.vue",
+      "name": "RecipeRow",
+      "components": [
+        "ClockIcon",
+        "MdiIcon",
+        "RecipeCardRating",
+        "RecipeContextMenu",
+        "RecipeFavoriteBadge",
+        "SafeMarkdown"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeCardRating.vue",
+        "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenu.vue",
+        "frontend/app/components/Domain/Recipe/RecipeFavoriteBadge.vue",
+        "frontend/app/components/global/SafeMarkdown.vue"
+      ],
+      "vuetify": [],
+      "events": [
+        "click.prevent: emit('itemSelected', tag, 'tags')",
+        "deleted: emit('delete', slug)",
+        "error: imageFailed = true"
+      ],
+      "models": [],
+      "conditions": [
+        "description",
+        "imageUrl",
+        "isOwnGroup && actionable",
+        "totalTime"
+      ],
+      "dynamicComponents": [
+        "to ? NuxtLink : 'div'",
+        "to ? NuxtLink : 'span'"
+      ],
+      "vuetifyAPIs": []
+    },
+    {
       "source": "frontend/app/components/Domain/Recipe/RecipeScaleEditButton.vue",
       "name": "RecipeScaleEditButton",
       "components": [
@@ -3569,6 +3561,42 @@
         "substitutedFoods?.length"
       ],
       "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeTile.vue",
+      "name": "RecipeTile",
+      "components": [
+        "ClockIcon",
+        "MdiIcon",
+        "RecipeCardRating",
+        "RecipeContextMenu",
+        "RecipeFavoriteBadge",
+        "SafeMarkdown"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeCardRating.vue",
+        "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenu.vue",
+        "frontend/app/components/Domain/Recipe/RecipeFavoriteBadge.vue",
+        "frontend/app/components/global/SafeMarkdown.vue"
+      ],
+      "vuetify": [],
+      "events": [
+        "click.prevent: emit('itemSelected', tag, 'tags')",
+        "deleted: emit('delete', slug)",
+        "error: imageFailed = true"
+      ],
+      "models": [],
+      "conditions": [
+        "description",
+        "imageUrl",
+        "isOwnGroup && actionable",
+        "totalTime"
+      ],
+      "dynamicComponents": [
+        "to ? NuxtLink : 'div'",
+        "to ? NuxtLink : 'span'"
+      ],
       "vuetifyAPIs": []
     },
     {
@@ -3848,43 +3876,33 @@
       "source": "frontend/app/components/Domain/SearchFilter.vue",
       "name": "SearchFilter",
       "components": [
-        "ISearchableItem"
+        "ChevronDownIcon",
+        "HTMLElement",
+        "ISearchableItem",
+        "Popover",
+        "PopoverContent",
+        "PopoverTrigger",
+        "SearchIcon",
+        "Separator"
       ],
       "dependencies": [],
-      "vuetify": [
-        "v-alert",
-        "v-badge",
-        "v-btn",
-        "v-btn-toggle",
-        "v-card",
-        "v-card-text",
-        "v-checkbox-btn",
-        "v-divider",
-        "v-list-item",
-        "v-list-item-action",
-        "v-menu",
-        "v-radio",
-        "v-radio-group",
-        "v-row",
-        "v-spacer",
-        "v-text-field",
-        "v-virtual-scroll"
-      ],
+      "vuetify": [],
       "events": [
+        "change: toggleItem(row.item)",
         "click: clearSelection",
-        "click: handleRadioClick(item)"
+        "click: combinator = option.value",
+        "click: toggleRadio(row.item)",
+        "scroll: onScroll"
       ],
       "models": [
-        "combinator",
         "searchInput",
-        "selected",
-        "selectedRadio",
         "state.menu"
       ],
       "conditions": [
         "filtered.length > 0",
         "radio",
-        "requireAll != undefined"
+        "requireAll != undefined",
+        "selectedCount > 0"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": []
@@ -4339,13 +4357,12 @@
     {
       "source": "frontend/app/components/Layout/LayoutParts/AppScrollToTop.vue",
       "name": "AppScrollToTop",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-fade-transition",
-        "v-icon"
+      "components": [
+        "ArrowUpIcon",
+        "Transition"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [
         "click: scrollToTop"
       ],

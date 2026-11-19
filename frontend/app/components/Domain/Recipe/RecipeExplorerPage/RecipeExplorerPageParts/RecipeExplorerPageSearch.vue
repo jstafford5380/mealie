@@ -1,139 +1,140 @@
 <template>
-  <div class="search-container pb-8">
-    <form
-      class="search-box pa-2"
-      @submit.prevent="search"
-    >
-      <div class="d-flex justify-center mb-2">
-        <v-text-field
-          ref="input"
-          v-model="state.search"
-          variant="outlined"
-          hide-details
-          clearable
-          color="primary"
-          :placeholder="$t('search.search-placeholder')"
-          :prepend-inner-icon="$globals.icons.search"
-          @keyup.enter="hideKeyboard"
-        />
-      </div>
-      <div class="search-row">
-        <RecipeExplorerPageSearchFilters />
-        <!-- Sort Options -->
-        <v-menu
-          offset-y
-          nudge-bottom="3"
-        >
-          <template #activator="{ props }">
-            <v-btn
-              class="ml-auto"
-              size="small"
-              color="accent"
-              v-bind="props"
-            >
-              <v-icon :start="!$vuetify.display.xs">
-                {{ state.orderDirection === "asc" ? $globals.icons.sortDescending : $globals.icons.sortAscending }}
-              </v-icon>
-              {{ $vuetify.display.xs ? null : sortText }}
-            </v-btn>
-          </template>
-          <v-card>
-            <v-list>
-              <v-list-item
-                slim
-                density="comfortable"
-                :prepend-icon="state.orderDirection === 'asc' ? $globals.icons.sortAscending : $globals.icons.sortDescending"
-                :title="state.orderDirection === 'asc' ? $t('general.sort-descending') : $t('general.sort-ascending')"
-                @click="toggleOrderDirection"
-              />
-              <v-divider />
-              <v-list-item
-                v-for="v in sortable"
-                :key="v.name"
-                :active="state.orderBy === v.value"
-                slim
-                density="comfortable"
-                @click.stop="v.value === 'random' ? setRandomOrderByWrapper() : setOrderBy(v.value)"
-              >
-                <template #prepend>
-                  <v-icon>{{ v.icon }}</v-icon>
-                </template>
-
-                <template #title>
-                  <span>{{ v.name }}</span>
-                  <v-icon
-                    v-if="v.value === 'random' && showRandomLoading"
-                    size="small"
-                    class="ml-3"
-                  >
-                    {{ $globals.icons.refreshCircle }}
-                  </v-icon>
-                </template>
-              </v-list-item>
-            </v-list>
-          </v-card>
-        </v-menu>
-
-        <!-- Settings -->
-        <v-menu
-          offset-y
-          bottom
-          start
-          nudge-bottom="3"
-          :close-on-content-click="false"
-        >
-          <template #activator="{ props }">
-            <v-btn
-              size="small"
-              color="accent"
-              dark
-              v-bind="props"
-            >
-              <v-icon size="small">
-                {{ $globals.icons.cog }}
-              </v-icon>
-            </v-btn>
-          </template>
-          <v-card>
-            <v-card-text>
-              <v-switch
-                v-model="state.auto"
-                :label="$t('search.auto-search')"
-                single-line
-                color="primary"
-              />
-              <v-btn
-                block
-                color="primary"
-                @click="reset"
-              >
-                {{ $t("general.reset") }}
-              </v-btn>
-            </v-card-text>
-          </v-card>
-        </v-menu>
-      </div>
-      <div
-        v-if="!state.auto"
-        class="search-button-container"
+  <form
+    class="flex flex-col gap-3"
+    role="search"
+    @submit.prevent="search"
+  >
+    <label class="flex h-12 items-center gap-3 rounded-control border border-input bg-card px-4 shadow-xs focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/25">
+      <SearchIcon class="size-5 shrink-0 text-muted-foreground" />
+      <input
+        ref="input"
+        v-model="state.search"
+        type="search"
+        enterkeyhint="search"
+        autocomplete="off"
+        :aria-label="$t('search.search')"
+        :placeholder="$t('search.search-placeholder')"
+        class="min-w-0 flex-1 border-0 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground [&::-webkit-search-cancel-button]:hidden"
+        @keyup.enter="hideKeyboard"
       >
-        <v-btn
-          size="x-large"
-          color="primary"
-          type="submit"
-          block
+      <button
+        v-if="state.search"
+        type="button"
+        class="inline-flex size-8 items-center justify-center rounded-item text-muted-foreground hover:bg-highlight hover:text-highlight-foreground"
+        :aria-label="$t('general.clear')"
+        @click="state.search = ''"
+      >
+        <XIcon class="size-4" />
+      </button>
+    </label>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <RecipeExplorerPageSearchFilters />
+      <span class="flex-1" />
+      <!-- Sort -->
+      <DropdownMenu :modal="false">
+        <DropdownMenuTrigger as-child>
+          <Button
+            variant="outline"
+            size="sm"
+            class="h-9 rounded-full"
+          >
+            <MdiIcon
+              :path="state.orderDirection === 'asc' ? $globals.icons.sortAscending : $globals.icons.sortDescending"
+              class="size-[18px]"
+            />
+            <span class="max-sm:sr-only">{{ sortText }}</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          class="min-w-56"
         >
-          <v-icon start>
-            {{ $globals.icons.search }}
-          </v-icon>
-          {{ $t("search.search") }}
-        </v-btn>
-      </div>
-    </form>
-  </div>
+          <DropdownMenuItem @select="toggleOrderDirection">
+            <MdiIcon :path="state.orderDirection === 'asc' ? $globals.icons.sortDescending : $globals.icons.sortAscending" />
+            {{ state.orderDirection === "asc" ? $t("general.sort-descending") : $t("general.sort-ascending") }}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            v-for="v in sortable"
+            :key="v.value"
+            :class="activeOrderBy === v.value && 'bg-highlight/60 font-semibold text-highlight-foreground'"
+            :aria-current="activeOrderBy === v.value ? 'true' : undefined"
+            @select="(e: Event) => {
+              if (v.value === 'random') { e.preventDefault(); setRandomOrderByWrapper(); }
+              else { setOrderBy(v.value); }
+            }"
+          >
+            <MdiIcon :path="v.icon" />
+            <span class="flex-1">{{ v.name }}</span>
+            <MdiIcon
+              v-if="v.value === 'random' && showRandomLoading"
+              :path="$globals.icons.refreshCircle"
+              class="size-4"
+            />
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <!-- Search settings -->
+      <Popover>
+        <PopoverTrigger as-child>
+          <Button
+            variant="outline"
+            size="icon-sm"
+            class="size-9 rounded-full"
+            :aria-label="$t('general.settings')"
+          >
+            <MdiIcon
+              :path="$globals.icons.cog"
+              class="size-[18px]"
+            />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent
+          align="end"
+          class="flex w-64 flex-col gap-3"
+        >
+          <label class="flex items-center justify-between gap-3 text-[15px] font-medium">
+            {{ $t("search.auto-search") }}
+            <Switch v-model="state.auto" />
+          </label>
+          <Button
+            variant="outline"
+            class="w-full"
+            @click="reset"
+          >
+            {{ $t("general.reset") }}
+          </Button>
+        </PopoverContent>
+      </Popover>
+    </div>
+
+    <Button
+      v-if="!state.auto"
+      type="submit"
+      size="lg"
+      class="w-full sm:mx-auto sm:max-w-sm"
+    >
+      <SearchIcon class="size-5" />
+      {{ $t("search.search") }}
+    </Button>
+  </form>
 </template>
 
 <script setup lang="ts">
+import { SearchIcon, XIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
+import { Switch } from "~/components/ui/switch";
 import RecipeExplorerPageSearchFilters from "./RecipeExplorerPageSearchFilters.vue";
 import { useRecipeExplorerSearch, clearRecipeExplorerSearchState } from "~/composables/use-recipe-explorer-search";
 
@@ -177,8 +178,10 @@ onUnmounted(() => {
   clearRecipeExplorerSearchState(groupSlug.value);
 });
 
+const activeOrderBy = computed(() => (!isOwnGroup.value && state.value.orderBy === "last_made" ? "created_at" : state.value.orderBy));
+
 const sortText = computed(() => {
-  const orderBy = !isOwnGroup.value && state.value.orderBy === "last_made" ? "created_at" : state.value.orderBy;
+  const orderBy = activeOrderBy.value;
   const sort = sortable.value.find(s => s.value === orderBy);
   if (!sort) return "";
   return `${sort.name}`;
@@ -226,7 +229,7 @@ const sortable = computed(() => [
 const input: Ref<any> = ref(null);
 
 function hideKeyboard() {
-  input.value?.blur();
+  (input.value as HTMLInputElement | null)?.blur();
 }
 
 // function to show refresh icon
@@ -237,26 +240,3 @@ async function setRandomOrderByWrapper() {
   await setRandomOrderBy();
 }
 </script>
-
-<style scoped>
-.search-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.65rem;
-  margin-top: 1rem;
-}
-
-.search-container {
-  display: flex;
-  justify-content: center;
-}
-
-.search-box {
-  width: 950px;
-}
-
-.search-button-container {
-  margin: 3rem auto 0 auto;
-  max-width: 500px;
-}
-</style>

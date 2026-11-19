@@ -18,6 +18,10 @@ vi.mock("~/composables/recipes", () => ({
   }),
 }));
 
+vi.mock("~/composables/api", () => ({
+  useStaticRoutes: () => ({ recipeSmallImage: () => "img" }),
+}));
+
 vi.mock("~/composables/use-users/preferences", () => ({
   useUserSortPreferences: () => mocks.preferences,
 }));
@@ -27,37 +31,19 @@ const recipes = [{ id: "1", name: "Soup", slug: "soup", description: "", rating:
 
 const wrappers: VueWrapper[] = [];
 
-const passthrough = { template: "<div><slot /></div>" };
-
 async function mountSection() {
   const wrapper = mount(RecipeCardSection, {
     props: { recipes, disableToolbar: true },
     global: {
       mocks: { $globals: { icons: {} } },
       stubs: {
-        VRow: passthrough,
-        VCol: passthrough,
-        VCard: passthrough,
-        VCardTitle: passthrough,
-        VCardActions: passthrough,
-        VList: passthrough,
-        VListItem: passthrough,
-        VListItemTitle: passthrough,
-        VListItemSubtitle: passthrough,
-        VExpandTransition: passthrough,
-        VFadeTransition: passthrough,
-        VImg: passthrough,
-        VHover: { template: "<div><slot :is-hovering=\"false\" :props=\"{}\" /></div>" },
-        VChip: { template: "<button class=\"tag-chip\" type=\"button\"><slot /></button>" },
-        RecipeCardImage: true,
+        NuxtLink: { template: "<a><slot /></a>" },
         RecipeCardRating: true,
         RecipeFavoriteBadge: true,
         RecipeContextMenu: true,
         SafeMarkdown: true,
-        AppLoader: true,
         AppScrollToTop: true,
       },
-      directives: { intersect: {} },
     },
   });
   wrappers.push(wrapper);
@@ -67,7 +53,6 @@ async function mountSection() {
 
 describe("RecipeCardSection", () => {
   beforeEach(() => {
-    vi.stubGlobal("useDisplay", () => ({ smAndDown: ref(false) }));
     vi.stubGlobal("useMealieAuth", () => ({ user: ref({ groupSlug: "family" }) }));
     vi.stubGlobal("useNuxtApp", () => ({ $globals: { icons: {} } }));
     vi.stubGlobal("useRoute", () => reactive({ path: "/g/family", params: { groupSlug: "family" } }));
@@ -86,14 +71,14 @@ describe("RecipeCardSection", () => {
   });
 
   test.each([
-    ["desktop cards", false],
-    ["mobile cards", true],
+    ["grid tiles", false],
+    ["list rows", true],
   ])("clicking a tag on %s emits itemSelected", async (_, useMobileCards) => {
     mocks.preferences.value.useMobileCards = useMobileCards;
     const wrapper = await mountSection();
 
-    const chip = wrapper.find(".tag-chip");
-    expect(chip.exists()).toBe(true);
+    const chip = wrapper.findAll("button").find(button => button.text() === "Dinner")!;
+    expect(chip?.exists()).toBe(true);
     await chip.trigger("click");
 
     expect(wrapper.emitted("itemSelected")).toEqual([[tag, "tags"]]);

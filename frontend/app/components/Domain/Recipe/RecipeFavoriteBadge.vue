@@ -1,34 +1,25 @@
 <template>
-  <v-tooltip
-    location="bottom"
-    nudge-right="50"
-    :color="buttonStyle ? 'info' : 'secondary'"
+  <button
+    v-if="isFavorite || showAlways"
+    type="button"
+    :aria-pressed="isFavorite"
+    :aria-label="isFavorite ? $t('recipe.remove-from-favorites') : $t('recipe.add-to-favorites')"
+    :title="isFavorite ? $t('recipe.remove-from-favorites') : $t('recipe.add-to-favorites')"
+    v-bind="$attrs"
+    :class="buttonStyle
+      ? 'inline-flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-sm ring-1 ring-border transition-colors hover:bg-highlight'
+      : 'inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-highlight hover:text-destructive'"
+    @click.prevent.stop="toggleFavorite"
   >
-    <template #activator="{ props: tooltipProps }">
-      <v-btn
-        v-if="isFavorite || showAlways"
-        icon
-        :variant="buttonStyle ? 'flat' : undefined"
-        :rounded="buttonStyle ? 'circle' : undefined"
-        size="small"
-        :color="buttonStyle ? 'info' : 'secondary'"
-        :fab="buttonStyle"
-        v-bind="{ ...tooltipProps, ...$attrs }"
-        @click.prevent="toggleFavorite"
-      >
-        <v-icon
-          :size="!buttonStyle ? undefined : 'x-large'"
-          :color="buttonStyle ? 'white' : 'secondary'"
-        >
-          {{ isFavorite ? $globals.icons.heart : $globals.icons.heartOutline }}
-        </v-icon>
-      </v-btn>
-    </template>
-    <span>{{ isFavorite ? $t("recipe.remove-from-favorites") : $t("recipe.add-to-favorites") }}</span>
-  </v-tooltip>
+    <MdiIcon
+      :path="isFavorite ? $globals.icons.heart : $globals.icons.heartOutline"
+      :class="[buttonStyle ? 'size-6' : 'size-5', isFavorite && 'text-destructive']"
+    />
+  </button>
 </template>
 
 <script setup lang="ts">
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { useUserSelfRatings } from "~/composables/use-users";
 import { useUserApi } from "~/composables/api";
 
@@ -37,6 +28,8 @@ interface Props {
   showAlways?: boolean;
   buttonStyle?: boolean;
 }
+defineOptions({ inheritAttrs: false });
+
 const props = withDefaults(defineProps<Props>(), {
   recipeId: "",
   showAlways: false,
