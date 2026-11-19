@@ -2,6 +2,27 @@
 
 This contract covers RecipePage and both ordinary/shared recipe routes. The page documents identify remaining evidence checks.
 
+## Redesign: reader and Cook mode (implemented)
+
+The reader (View) and Cook mode are rebuilt on the new design. RecipePage.vue still owns modes, drafts, saving, scaling and conversion. The editor (Edit, JSON, Parse) keeps its current components inside the page and is redesigned in its own pass. Changes users will notice:
+
+| Before | Now |
+| --- | --- |
+| Header card with a separate action bar (favourite, timeline, edit, ⋮) above the image; title, description and time cards beneath. | One header: recipe name in the serif, description, a facts row (total, prep, cook, yield), rating, owner, source site, Last made. The photo sits beside the text on desktop and above it on phones or with the landscape setting. Tap the photo for the lightbox. |
+| "Cook Mode" button tucked into the Instructions heading. | **Cook Mode** is the main button in the header, next to favourite, timeline, edit and the ⋮ menu. |
+| "Original URL" button at the bottom of the page. | The source site shows by name in the header (for example "example.com ↗"). Edit still has the Original URL field. |
+| Servings shown as a chip opening a menu with a number field and ± buttons. | Servings is a − / "Serves N" / + stepper. Tap the label to type an exact number or reset. Recipes that can't scale show a plain "Serves N" label. The meal planner's scale control uses the same component. |
+| Unit system as a toggle button. | Unit system is a dropdown ("As written", Metric, US) with the current choice marked. |
+| Ingredient list items with a checkbox; substitutions on hover. | Checkbox rows: tap anywhere on the row; checked rows dim and are struck through. Section titles become small headings. Substitutions open in a popover on tap (works on phones). |
+| Required tools in a list with checkboxes. | Same, as checkbox rows; checking marks the tool on hand as before. |
+| Instruction cards; tapping the card header collapsed it with a check icon; section headers were coloured bars. | A numbered method. Tap a step (or its number) to mark it done; done steps fold to one line with a check. Tap a section heading to fold the whole section. Durations are chips; linked notes open in a bottom sheet. |
+| Done steps reset whenever the page reloaded or the instructions changed. | Done steps are kept for the browser tab (like checked ingredients), shared with Cook mode, and cleared when you finish cooking. |
+| Categories and tags in cards; nutrition in a card list; assets in a card list. | Categories and tags as chips under small headings; nutrition as a compact table; assets as a simple list (images open the lightbox, other files open in a new tab). On desktop these sit under the ingredients; on smaller screens after the method. |
+| Notes in plain card text. | Notes as highlighted callouts. |
+| Comments in outlined cards with a Vuetify textarea. | A comment thread: avatar, name, date, text; Delete beside your own (or any, for admins). The Submit button appears once you type; Ctrl/⌘+Enter also submits. |
+| Cook mode: two scrolling columns, or every step with its linked ingredients inline when links exist. Floating × in the corner. | Cook mode is a full-screen, one-step-at-a-time view: large step text, a progress bar (tap a segment to jump), Previous / Next (arrow keys too) and **Finish** on the last step. A side panel (below the step on phones) shows the step's linked ingredients, or all ingredients and tools; a "This step / All ingredients" switch appears when the recipe has links, and unlinked ingredients are listed under the step's. Linked notes appear as callouts under the step. Servings, units and Keep screen awake stay available. It reopens on the first unfinished step. |
+| Floating save button: only appeared if the page loaded in edit mode. | Appears whenever the editor toolbar scrolls out of view, however edit mode was opened. |
+
 ## Page mode, draft, and save
 
 Source: [RecipePage](../frontend/app/components/Domain/Recipe/RecipePage/RecipePage.vue).

@@ -109,41 +109,29 @@
       </BaseDialog>
     </div>
     <div>
-      <div v-if="lastMadeReady" class="d-flex justify-center flex-wrap">
-        <v-row no-gutters class="d-flex flex-wrap align-center" style="font-size: larger">
-          <v-tooltip location="bottom">
-            <template #activator="{ props: tooltipProps }">
-              <v-btn
-                rounded
-                variant="outlined"
-                size="large"
-                v-bind="tooltipProps"
-                class="font-weight-400"
-                style="border-color: rgb(var(--v-theme-primary));"
-                @click="madeThisDialog = true"
-              >
-                <v-icon start size="large" color="primary">
-                  {{ $globals.icons.calendar }}
-                </v-icon>
-                <span class="opacity-80">
-                  <strong>{{ $t("general.last-made") }}</strong>
-                  <br>
-                  {{ lastMade ? $d(new Date(lastMade)) : $t("general.never") }}
-                </span>
-                <v-icon end size="large" color="primary">
-                  {{ $globals.icons.createAlt }}
-                </v-icon>
-              </v-btn>
-            </template>
-            <span>{{ $t("recipe.made-this") }}</span>
-          </v-tooltip>
-        </v-row>
-      </div>
+      <button
+        v-if="lastMadeReady"
+        type="button"
+        class="inline-flex h-10 items-center gap-2 rounded-control border border-input bg-card px-3 text-sm transition-colors hover:bg-highlight"
+        :title="$t('recipe.made-this')"
+        @click="madeThisDialog = true"
+      >
+        <MdiIcon
+          :path="$globals.icons.chefHat"
+          class="size-[18px] text-primary"
+        />
+        <span>
+          <span class="font-semibold">{{ $t("general.last-made") }}:</span>
+          {{ lastMade ? $d(new Date(lastMade)) : $t("general.never") }}
+        </span>
+        <span class="sr-only">— {{ $t("recipe.made-this") }}</span>
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { whenever } from "@vueuse/core";
 import { formatISO } from "date-fns";
 import { useUserApi } from "~/composables/api";

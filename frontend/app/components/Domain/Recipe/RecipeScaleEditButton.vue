@@ -1,126 +1,86 @@
 <template>
-  <div v-if="yieldDisplay">
-    <div class="text-center d-flex align-center">
-      <div>
-        <v-menu
-          v-model="menu"
-          :disabled="!canEditScale"
-          offset-y
-          top
-          nudge-top="6"
-          :close-on-content-click="false"
+  <div
+    v-if="yieldDisplay"
+    class="inline-flex items-center font-sans"
+  >
+    <div
+      v-if="canEditScale"
+      role="group"
+      :aria-label="$t('recipe.servings')"
+      class="inline-flex h-10 items-center rounded-control border border-input bg-card"
+    >
+      <button
+        type="button"
+        class="inline-flex h-full w-10 items-center justify-center rounded-s-control text-muted-foreground hover:bg-highlight hover:text-highlight-foreground disabled:opacity-40"
+        :disabled="disableDecrement"
+        :aria-label="$t('recipe.decrease-scale-label')"
+        @click="recalculateScale(yieldQuantity - 1)"
+      >
+        <MinusIcon class="size-4" />
+      </button>
+      <Popover v-model:open="menu">
+        <PopoverTrigger as-child>
+          <button
+            type="button"
+            class="h-full px-2 text-sm font-semibold hover:bg-highlight/60"
+            :title="$t('recipe.edit-scale')"
+          >
+            <SafeInlineHtml :html="yieldDisplay" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent
+          align="center"
+          class="flex w-64 flex-col gap-2"
         >
-          <template #activator="{ props: activatorProps }">
-            <v-tooltip
-              v-if="canEditScale"
-              size="small"
-              location="top"
-              color="secondary-darken-1"
+          <label
+            :for="inputId"
+            class="text-sm font-semibold"
+          >{{ $t("recipe.servings") }}</label>
+          <div class="flex items-center gap-2">
+            <input
+              :id="inputId"
+              type="number"
+              min="0"
+              step="any"
+              inputmode="decimal"
+              :value="yieldQuantity"
+              class="h-10 min-w-0 flex-1 rounded-control border border-input bg-card px-3 text-base outline-none focus:border-ring focus:ring-3 focus:ring-ring/25"
+              @change="recalculateScale(Number(($event.target as HTMLInputElement).value) || 0)"
             >
-              <template #activator="{ props: tooltipProps }">
-                <v-card
-                  class="pa-1 px-2"
-                  dark
-                  color="secondary-darken-1"
-                  size="small"
-                  v-bind="{ ...activatorProps, ...tooltipProps }"
-                  :style="{ cursor: canEditScale ? '' : 'default' }"
-                >
-                  <v-icon
-                    v-if="canEditScale"
-                    size="small"
-                    class="mr-2"
-                  >
-                    {{ $globals.icons.edit }}
-                  </v-icon>
-                  <SafeInlineHtml :html="yieldDisplay" />
-                </v-card>
-              </template>
-              <span> {{ $t("recipe.edit-scale") }} </span>
-            </v-tooltip>
-            <v-card
-              v-else
-              class="pa-1 px-2"
-              dark
-              color="secondary-darken-1"
-              size="small"
-              v-bind="activatorProps"
-              :style="{ cursor: canEditScale ? '' : 'default' }"
+            <Button
+              variant="outline"
+              size="icon"
+              :aria-label="$t('recipe.reset-servings-count')"
+              :title="$t('recipe.reset-servings-count')"
+              @click="scale = 1"
             >
-              <v-icon
-                v-if="canEditScale"
-                size="small"
-                class="mr-2"
-              >
-                {{ $globals.icons.edit }}
-              </v-icon>
-              <SafeInlineHtml :html="yieldDisplay" />
-            </v-card>
-          </template>
-          <v-card min-width="300px">
-            <v-card-title class="mb-0">
-              {{ $t("recipe.servings") }}
-            </v-card-title>
-            <v-card-text class="mt-n5">
-              <div class="mt-4 d-flex align-center">
-                <v-number-input
-                  :model-value="yieldQuantity"
-                  :precision="null"
-                  :min="0"
-                  variant="underlined"
-                  control-variant="hidden"
-                  @update:model-value="recalculateScale($event || 0)"
-                />
-                <v-tooltip
-                  location="end"
-                  color="secondary-darken-1"
-                >
-                  <template #activator="{ props: resetTooltipProps }">
-                    <v-btn
-                      v-bind="resetTooltipProps"
-                      icon
-                      flat
-                      class="mx-1"
-                      size="small"
-                      @click="scale = 1"
-                    >
-                      <v-icon>
-                        {{ $globals.icons.undo }}
-                      </v-icon>
-                    </v-btn>
-                  </template>
-                  <span> {{ $t("recipe.reset-servings-count") }} </span>
-                </v-tooltip>
-              </div>
-            </v-card-text>
-          </v-card>
-        </v-menu>
-      </div>
-      <BaseButtonGroup
-        v-if="canEditScale"
-        class="pl-2"
-        :large="false"
-        :buttons="[
-          {
-            icon: $globals.icons.minus,
-            text: $t('recipe.decrease-scale-label'),
-            event: 'decrement',
-            disabled: disableDecrement,
-          },
-          {
-            icon: $globals.icons.createAlt,
-            text: $t('recipe.increase-scale-label'),
-            event: 'increment',
-          },
-        ]"
-        @decrement="recalculateScale(yieldQuantity - 1)"
-        @increment="recalculateScale(yieldQuantity + 1)"
-      />
+              <RotateCcwIcon class="size-4" />
+            </Button>
+          </div>
+        </PopoverContent>
+      </Popover>
+      <button
+        type="button"
+        class="inline-flex h-full w-10 items-center justify-center rounded-e-control text-muted-foreground hover:bg-highlight hover:text-highlight-foreground"
+        :aria-label="$t('recipe.increase-scale-label')"
+        @click="recalculateScale(yieldQuantity + 1)"
+      >
+        <PlusIcon class="size-4" />
+      </button>
     </div>
+    <span
+      v-else
+      class="inline-flex h-10 items-center rounded-control bg-subtle px-3 text-sm font-semibold text-subtle-foreground"
+    >
+      <SafeInlineHtml :html="yieldDisplay" />
+    </span>
   </div>
 </template>
 
 <script setup lang="ts">
+import { MinusIcon, PlusIcon, RotateCcwIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { calculateScaleFromYield, useScaledAmount } from "~/composables/recipes/use-scaled-amount";
 
 interface Props {
@@ -136,6 +96,7 @@ const scale = defineModel<number>({ required: true });
 
 const i18n = useI18n();
 const menu = ref<boolean>(false);
+const inputId = `servings-${useId()}`;
 const canEditScale = computed(() => props.editScale && props.recipeServings > 0);
 
 function recalculateScale(newYield: number) {

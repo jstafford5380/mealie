@@ -1,18 +1,66 @@
 <template>
-  <div @click.prevent>
-    <v-rating
-      :model-value="displayRating"
-      :active-color="showGroupAverage ? 'grey-darken-1' : 'secondary'"
-      color="secondary-lighten-3"
-      length="5"
-      :half-increments="showGroupAverage"
-      :density="small ? 'compact' : 'default'"
-      :size="small ? 'x-small' : undefined"
-      :readonly="isReadonly"
-      :hover="!isReadonly && canHover"
-      :clearable="!!displayRating"
-      @update:model-value="updateRating(+$event)"
-    />
+  <div
+    class="inline-flex items-center"
+    @click.prevent
+  >
+    <span
+      v-if="isReadonly"
+      role="img"
+      :aria-label="$t('recipe.rating-out-of-five', { rating: Math.round(displayRating * 10) / 10 })"
+      class="inline-flex gap-0.5"
+      :class="showGroupAverage || !displayRating ? 'text-muted-foreground/60' : 'text-brand'"
+    >
+      <svg
+        v-for="n in 5"
+        :key="n"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        :class="small ? 'size-4' : 'size-5'"
+      >
+        <path
+          :d="STAR"
+          :fill="displayRating >= n ? 'currentColor' : displayRating >= n - 0.75 ? 'currentColor' : 'none'"
+          :fill-opacity="displayRating >= n ? 1 : displayRating >= n - 0.75 ? 0.5 : 1"
+          stroke="currentColor"
+          stroke-width="1.6"
+          stroke-linejoin="round"
+        />
+      </svg>
+    </span>
+    <div
+      v-else
+      role="radiogroup"
+      :aria-label="$t('general.rating')"
+      class="inline-flex"
+      @mouseleave="hover = 0"
+    >
+      <button
+        v-for="n in 5"
+        :key="n"
+        type="button"
+        role="radio"
+        :aria-checked="displayRating === n"
+        :aria-label="$t('recipe.rating-out-of-five', { rating: n })"
+        class="inline-flex items-center justify-center rounded-full text-brand transition-transform hover:scale-110 focus-visible:outline-2 focus-visible:outline-ring"
+        :class="small ? 'size-7' : 'size-9'"
+        @mouseenter="canHover && (hover = n)"
+        @click="updateRating(n)"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          :class="small ? 'size-4' : 'size-[22px]'"
+        >
+          <path
+            :d="STAR"
+            :fill="(hover || displayRating) >= n ? 'currentColor' : 'none'"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linejoin="round"
+          />
+        </svg>
+      </button>
+    </div>
   </div>
 </template>
 
@@ -34,6 +82,9 @@ const props = withDefaults(defineProps<Props>(), {
   slug: "",
   small: false,
 });
+
+const STAR = "M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z";
+const hover = ref(0);
 
 const groupRating = defineModel<number | null>({ default: 0 });
 
@@ -91,5 +142,3 @@ async function updateRating(val?: number) {
   }
 }
 </script>
-
-<style lang="scss" scoped></style>

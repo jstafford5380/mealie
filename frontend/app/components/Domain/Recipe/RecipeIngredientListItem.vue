@@ -1,33 +1,55 @@
 <template>
-  <div class="text-subtitle-1 dense-markdown ingredient-item">
+  <div class="ingredient-item text-[15.5px] leading-normal text-foreground">
     <SafeMarkdown
       v-if="parsedIng.quantity"
-      class="d-inline"
+      class="ing-inline ing-quantity font-semibold"
       :source="parsedIng.quantity"
     />
     <template v-if="parsedIng.unit">
-      {{ parsedIng.unit }}
+      <span class="font-semibold">{{ parsedIng.unit }}</span>{{ " " }}
     </template>
     <template v-if="parsedIng.note && !parsedIng.name">
-      <SafeMarkdown class="text-bold d-inline" :source="parsedIng.note" />
-      <RecipeIngredientSubstitutions v-if="showSubstitutions" :ingredient="ingredient" :scale="scale" />
+      <SafeMarkdown
+        class="ing-inline"
+        :source="parsedIng.note"
+      />
+      <RecipeIngredientSubstitutions
+        v-if="showSubstitutions"
+        :ingredient="ingredient"
+        :scale="scale"
+      />
     </template>
     <template v-else-if="parsedIng.recipeLink">
-      <SafeMarkdown class="text-bold d-inline" :source="parsedIng.recipeLink" />
-      <RecipeIngredientSubstitutions v-if="showSubstitutions" :ingredient="ingredient" :scale="scale" />
-      <SafeMarkdown v-if="parsedIng.note" class="note" :source="parsedIng.note" />
+      <SafeMarkdown
+        class="ing-inline [&_a]:font-medium [&_a]:text-primary [&_a]:underline"
+        :source="parsedIng.recipeLink"
+      />
+      <RecipeIngredientSubstitutions
+        v-if="showSubstitutions"
+        :ingredient="ingredient"
+        :scale="scale"
+      />
+      <SafeMarkdown
+        v-if="parsedIng.note"
+        class="ing-note"
+        :source="parsedIng.note"
+      />
     </template>
     <template v-else>
       <SafeMarkdown
         v-if="parsedIng.name"
-        class="text-bold d-inline"
+        class="ing-inline"
         :source="parsedIng.name"
       />
       <!-- sits before the note, which takes a full block row beneath -->
-      <RecipeIngredientSubstitutions v-if="showSubstitutions" :ingredient="ingredient" :scale="scale" />
+      <RecipeIngredientSubstitutions
+        v-if="showSubstitutions"
+        :ingredient="ingredient"
+        :scale="scale"
+      />
       <SafeMarkdown
         v-if="parsedIng.note"
-        class="note"
+        class="ing-note"
         :source="parsedIng.note"
       />
     </template>
@@ -60,77 +82,28 @@ const parsedIng = computed(() => {
 });
 </script>
 
-<style lang="scss">
-// Ensure continuous inline flow to prevent orphan quantities on line wrap
-.ingredient-item {
-  display: block;
-  line-height: 1.5;
-  word-break: normal;
-
-  .d-inline {
-    display: inline;
-    & > p {
-      display: inline;
-      &:has(> sub) > sup {
-        letter-spacing: -0.05rem;
-      }
-    }
-    sup {
-      & + span {
-        letter-spacing: -0.05rem;
-      }
-      &:before {
-        letter-spacing: 0rem;
-      }
-    }
-
-    &:not(.text-bold):not(.note)::after {
-      content: " ";
-    }
-  }
-
-  .text-bold {
-    display: inline;
-    font-weight: bold;
-    white-space: normal;
-    word-break: break-word;
-
-    &::before {
-      content: " ";
-    }
-    & > p {
-      display: inline;
-    }
-  }
-
-  // vuetify sizes an icon button for a toolbar, far taller than the line of text this one
-  // sits on; left alone it sets the row's height and pushes the note down. sized to the line
-  // instead, so the box, the icon glyph and the line are all the same height -- the glyph
-  // follows font-size, not the box, so it renders unchanged
-  .v-btn--icon {
-    margin-inline-start: 0.25em;
-    line-height: inherit;
-    width: 1lh;
-    height: 1lh;
-
-    // the tap target stays finger-sized as a transparent halo over the rows either side,
-    // rather than a taller box that would push them apart
-    &::before {
-      content: "";
-      position: absolute;
-      inset: -0.75rem;
-    }
-  }
+<style>
+/* Keeps quantity, unit and name in one inline flow so a quantity never wraps alone. */
+.ingredient-item .ing-inline,
+.ingredient-item .ing-inline > p {
+  display: inline;
+  margin: 0;
 }
-
-.note {
-  width: 100%;
+.ingredient-item .ing-quantity::after {
+  content: " ";
+}
+.ingredient-item .ing-inline sup + span {
+  letter-spacing: -0.05rem;
+}
+.ingredient-item .ing-note {
   display: block;
   margin-top: 2px;
-  line-height: 1.35em;
-  font-size: 0.85em;
-  opacity: 0.7;
-  white-space: normal;
+  font-size: 0.86em;
+  line-height: 1.35;
+  color: var(--muted-foreground);
   word-break: break-word;
+}
+.ingredient-item .ing-note p {
+  margin: 0;
 }
 </style>

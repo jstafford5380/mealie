@@ -1,61 +1,81 @@
 <template>
-  <div>
-    <!-- Recipe Categories -->
-    <v-card
-      v-if="recipe.recipeCategory.length > 0 || isEditForm"
-      :class="{ 'mt-10': !isEditForm }"
+  <!-- Reader -->
+  <div
+    v-if="!isEditForm"
+    class="flex flex-col gap-6 font-sans"
+  >
+    <section
+      v-if="recipe.recipeCategory.length > 0"
+      :aria-label="$t('recipe.categories')"
     >
+      <h2 class="m-0 mb-2 text-sm font-semibold text-muted-foreground">
+        {{ $t("recipe.categories") }}
+      </h2>
+      <RecipeChips
+        :items="recipe.recipeCategory"
+        v-bind="$attrs"
+      />
+    </section>
+    <section
+      v-if="recipe.tags.length > 0"
+      :aria-label="$t('tag.tags')"
+    >
+      <h2 class="m-0 mb-2 text-sm font-semibold text-muted-foreground">
+        {{ $t("tag.tags") }}
+      </h2>
+      <RecipeChips
+        :items="recipe.tags"
+        url-prefix="tags"
+        v-bind="$attrs"
+      />
+    </section>
+    <RecipeNutrition
+      v-if="recipe.settings.showNutrition"
+      v-model="recipe.nutrition"
+      :edit="false"
+    />
+    <RecipeAssets
+      v-if="recipe.settings.showAssets"
+      v-model="recipe.assets"
+      :edit="false"
+      :slug="recipe.slug"
+      :recipe-id="recipe.id"
+      :hero-image-url="heroImageUrl"
+      :hero-image-alt="recipe.name"
+    />
+  </div>
+
+  <!-- Editor (redesigned in its own pass) -->
+  <div v-else>
+    <v-card>
       <v-card-title class="py-2">
         {{ $t("recipe.categories") }}
       </v-card-title>
       <v-divider class="mx-2" />
       <v-card-text>
         <RecipeOrganizerSelector
-          v-if="isEditForm"
           v-model="recipe.recipeCategory"
           :return-object="true"
           :show-add="true"
           selector-type="categories"
         />
-        <RecipeChips
-          v-else
-          :items="recipe.recipeCategory"
-          v-bind="$attrs"
-        />
       </v-card-text>
     </v-card>
-
-    <!-- Recipe Tags -->
-    <v-card
-      v-if="recipe.tags.length > 0 || isEditForm"
-      class="mt-4"
-    >
+    <v-card class="mt-4">
       <v-card-title class="py-2">
         {{ $t("tag.tags") }}
       </v-card-title>
       <v-divider class="mx-2" />
       <v-card-text>
         <RecipeOrganizerSelector
-          v-if="isEditForm"
           v-model="recipe.tags"
           :return-object="true"
           :show-add="true"
           selector-type="tags"
         />
-        <RecipeChips
-          v-else
-          :items="recipe.tags"
-          url-prefix="tags"
-          v-bind="$attrs"
-        />
       </v-card-text>
     </v-card>
-
-    <!-- Recipe Tools Edit -->
-    <v-card
-      v-if="isEditForm"
-      class="mt-4"
-    >
+    <v-card class="mt-4">
       <v-card-title class="py-2">
         {{ $t('tool.required-tools') }}
       </v-card-title>
@@ -67,17 +87,16 @@
         />
       </v-card-text>
     </v-card>
-
     <RecipeNutrition
       v-if="recipe.settings.showNutrition"
       v-model="recipe.nutrition"
       class="mt-4"
-      :edit="isEditForm"
+      edit
     />
     <RecipeAssets
       v-if="recipe.settings.showAssets"
       v-model="recipe.assets"
-      :edit="isEditForm"
+      edit
       :slug="recipe.slug"
       :recipe-id="recipe.id"
       :hero-image-url="heroImageUrl"

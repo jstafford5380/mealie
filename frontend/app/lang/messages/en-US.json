@@ -186,7 +186,8 @@
     "opens-in-new-tab": "opens in a new tab",
     "grid-view": "Grid view",
     "list-view": "List view",
-    "scroll-to-top": "Scroll to top"
+    "scroll-to-top": "Scroll to top",
+    "previous": "Previous"
   },
   "group": {
     "create-group": "Create Group",
@@ -742,7 +743,13 @@
     "include-linked-recipes": "Include Linked Recipes",
     "include-linked-recipe-ingredients": "Include Linked Recipe Ingredients",
     "toggle-recipe": "Toggle Recipe",
-    "rating-out-of-five": "Rated {rating} out of 5"
+    "rating-out-of-five": "Rated {rating} out of 5",
+    "view-image": "View photo",
+    "step-of": "Step {step} of {total}",
+    "exit-cook-mode": "Exit cook mode",
+    "for-this-step": "This step",
+    "all-ingredients": "All ingredients",
+    "finish-cooking": "Finish"
   },
   "recipe-finder": {
     "recipe-finder": "Recipe Finder",

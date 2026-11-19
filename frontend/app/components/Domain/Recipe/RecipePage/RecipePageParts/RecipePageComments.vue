@@ -1,91 +1,94 @@
 <template>
-  <div>
-    <v-card-title class="headline pb-3">
-      <v-icon class="mr-2">
-        {{ $globals.icons.commentTextMultipleOutline }}
-      </v-icon>
+  <section
+    class="mx-auto w-full max-w-[760px] font-sans"
+    :aria-label="$t('recipe.comments')"
+  >
+    <h2 class="m-0 mb-4 flex items-center gap-2 text-xl font-bold tracking-tight">
       {{ $t("recipe.comments") }}
-    </v-card-title>
-    <v-divider class="mx-2" />
-    <div
+      <span
+        v-if="recipe.comments.length"
+        class="rounded-full bg-subtle px-2 text-sm font-semibold text-subtle-foreground"
+      >{{ recipe.comments.length }}</span>
+    </h2>
+    <form
       v-if="user.id"
-      class="d-flex flex-column"
+      class="mb-6 flex items-start gap-3"
+      @submit.prevent="submitComment"
     >
-      <div
-        class="d-flex mt-3"
-        style="gap: 10px"
-      >
-        <UserAvatar
-          :tooltip="false"
-          size="40"
-          :user-id="user.id"
+      <Avatar class="mt-0.5 size-9">
+        <AvatarImage
+          :src="avatarUrl(user.id)"
+          alt=""
         />
-
-        <v-textarea
+        <AvatarFallback class="bg-highlight text-xs font-bold text-highlight-foreground">
+          {{ initials(user.fullName) }}
+        </AvatarFallback>
+      </Avatar>
+      <div class="flex min-w-0 flex-1 flex-col gap-2">
+        <textarea
           v-model="comment"
-          hide-details
-          density="compact"
-          single-line
-          variant="outlined"
-          auto-grow
           rows="2"
+          :aria-label="$t('recipe.join-the-conversation')"
           :placeholder="$t('recipe.join-the-conversation')"
+          class="field-sizing-content min-h-[4.5rem] w-full resize-none rounded-control border border-input bg-card px-3 py-2 text-[15px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/25"
+          @keydown.meta.enter="submitComment"
+          @keydown.ctrl.enter="submitComment"
         />
-      </div>
-      <div class="ml-auto mt-1">
-        <BaseButton
-          size="small"
-          :disabled="!comment.trim()"
-          @click="submitComment"
+        <Button
+          v-if="comment.trim()"
+          type="submit"
+          class="self-end"
         >
-          <template #icon>
-            {{ $globals.icons.check }}
-          </template>
           {{ $t("general.submit") }}
-        </BaseButton>
+        </Button>
       </div>
-    </div>
-    <div
-      v-for="recipeComment in recipe.comments"
-      :key="recipeComment.id"
-      class="d-flex my-2"
-      style="gap: 10px"
-    >
-      <UserAvatar
-        :tooltip="false"
-        size="40"
-        :user-id="recipeComment.userId"
-      />
-      <v-card
-        variant="outlined"
-        class="flex-grow-1"
+    </form>
+    <ul class="m-0 flex list-none flex-col gap-5 p-0">
+      <li
+        v-for="recipeComment in recipe.comments"
+        :key="recipeComment.id"
+        class="group flex items-start gap-3"
       >
-        <v-card-text class="pa-3 pb-0">
-          <p class="">
-            {{ recipeComment.user.fullName }} • {{ $d(Date.parse(recipeComment.createdAt), "medium") }}
-          </p>
-          <SafeMarkdown :source="recipeComment.text" />
-        </v-card-text>
-        <v-card-actions class="justify-end mt-0 pt-0">
-          <v-btn
-            v-if="user.id == recipeComment.user.id || user.admin"
-            color="error"
-            variant="text"
-            size="x-small"
-            @click="deleteComment(recipeComment.id)"
-          >
-            {{ $t("general.delete") }}
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </div>
-  </div>
+        <Avatar class="mt-0.5 size-9">
+          <AvatarImage
+            :src="avatarUrl(recipeComment.userId)"
+            alt=""
+          />
+          <AvatarFallback class="bg-highlight text-xs font-bold text-highlight-foreground">
+            {{ initials(recipeComment.user.fullName) }}
+          </AvatarFallback>
+        </Avatar>
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-baseline gap-x-2 text-sm">
+            <span class="font-semibold">{{ recipeComment.user.fullName }}</span>
+            <time
+              class="text-muted-foreground"
+              :datetime="recipeComment.createdAt"
+            >{{ $d(Date.parse(recipeComment.createdAt), "medium") }}</time>
+            <button
+              v-if="user.id == recipeComment.user.id || user.admin"
+              type="button"
+              class="ms-auto rounded-item px-1.5 text-xs font-semibold text-destructive opacity-70 hover:bg-destructive/10 hover:opacity-100"
+              @click="deleteComment(recipeComment.id)"
+            >
+              {{ $t("general.delete") }}
+            </button>
+          </div>
+          <SafeMarkdown
+            class="mt-0.5 text-[15.5px] leading-relaxed [&_p]:m-0 [&_p+p]:mt-2"
+            :source="recipeComment.text"
+          />
+        </div>
+      </li>
+    </ul>
+  </section>
 </template>
 
 <script setup lang="ts">
 import { useUserApi } from "~/composables/api";
 import type { RecipeOut } from "~/lib/api/types/recipe";
-import UserAvatar from "~/components/Domain/User/UserAvatar.vue";
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
+import { Button } from "~/components/ui/button";
 import { usePageUser } from "~/composables/recipe-page/shared-state";
 import SafeMarkdown from "~/components/global/SafeMarkdown.vue";
 
@@ -93,6 +96,13 @@ const recipe = defineModel<RecipeOut>({ required: true });
 const api = useUserApi();
 const { user } = usePageUser();
 const comment = ref("");
+
+function avatarUrl(id: string) {
+  return `/api/media/users/${id}/profile.webp`;
+}
+function initials(name?: string | null) {
+  return (name || "?").split(/\s+/).map(p => p[0]).join("").slice(0, 2).toUpperCase();
+}
 
 async function submitComment() {
   const text = comment.value.trim();

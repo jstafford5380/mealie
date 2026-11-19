@@ -1,53 +1,60 @@
 <template>
-  <v-menu
-    v-if="hasSubstitutions"
-    location="bottom start"
-    max-width="360"
-  >
-    <template #activator="{ props: menuProps }">
+  <Popover v-if="hasSubstitutions">
+    <PopoverTrigger as-child>
       <!-- click, not hover alone: this is read in a kitchen, on a phone, where nothing hovers -->
-      <v-btn
-        v-bind="menuProps"
-        icon
-        variant="plain"
+      <button
+        type="button"
+        class="relative ms-1 inline-flex size-[1.4em] translate-y-[0.15em] items-center justify-center rounded-full align-baseline text-muted-foreground transition-colors before:absolute before:-inset-2 hover:bg-highlight hover:text-highlight-foreground"
         :aria-label="$t('recipe.substitutions')"
         @click.stop
       >
-        <v-icon>
-          {{ $globals.icons.swapHorizontal }}
-        </v-icon>
-      </v-btn>
-    </template>
-    <v-card class="ingredient-substitutions">
-      <v-card-text class="py-2 px-3 text-body-2">
-        <div
-          v-for="section, sectionIndex in sections"
-          :key="section.key"
-          :class="[section.dimmed ? 'food-substitutions' : '', sectionIndex ? 'mt-5' : '']"
-        >
-          <div class="text-caption font-weight-medium substitution-header">
-            {{ section.title }}
-          </div>
-          <div
-            v-for="substitution, i in section.items"
-            :key="i"
-            class="substitution"
-          >
-            <template v-if="substitution.substituteFood">
-              <span class="substitution-primary">{{ substitutionFoodName(substitution, pluralFood) }}</span>
-              <SafeMarkdown v-if="substitution.note" class="substitution-note" :source="substitution.note" />
-            </template>
-            <!-- with no food the note is the substitution itself, so it reads like one, the way
-                 an ingredient with a note and no food renders bold rather than dimmed -->
-            <SafeMarkdown v-else-if="substitution.note" class="substitution-primary" :source="substitution.note" />
-          </div>
+        <MdiIcon
+          :path="$globals.icons.swapHorizontal"
+          class="size-[1em]"
+        />
+      </button>
+    </PopoverTrigger>
+    <PopoverContent
+      align="start"
+      class="w-[min(360px,calc(100vw-2rem))] p-3 text-sm"
+      @click.stop
+    >
+      <div
+        v-for="section, sectionIndex in sections"
+        :key="section.key"
+        :class="[section.dimmed && 'text-muted-foreground', sectionIndex && 'mt-4']"
+      >
+        <div class="mb-1.5 border-b pb-1 text-xs font-semibold text-muted-foreground">
+          {{ section.title }}
         </div>
-      </v-card-text>
-    </v-card>
-  </v-menu>
+        <div
+          v-for="substitution, i in section.items"
+          :key="i"
+          class="leading-snug [&+&]:mt-2 [&_p]:m-0"
+        >
+          <template v-if="substitution.substituteFood">
+            <span class="font-semibold">{{ substitutionFoodName(substitution, pluralFood) }}</span>
+            <SafeMarkdown
+              v-if="substitution.note"
+              class="opacity-75"
+              :source="substitution.note"
+            />
+          </template>
+          <!-- with no food the note is the substitution itself, so it reads like one -->
+          <SafeMarkdown
+            v-else-if="substitution.note"
+            class="font-semibold"
+            :source="substitution.note"
+          />
+        </div>
+      </div>
+    </PopoverContent>
+  </Popover>
 </template>
 
 <script setup lang="ts">
+import { MdiIcon } from "~/components/ui/mdi-icon";
+import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { substitutionFoodName, useFoodPlurality, useIngredientSubstitutions } from "~/composables/recipes";
 import type { IngredientFoodSubstitution, RecipeIngredient } from "~/lib/api/types/recipe";
 
@@ -92,42 +99,3 @@ const sections = computed<SubstitutionSection[]>(() => [
   },
 ].filter(section => section.items.length));
 </script>
-
-<style lang="scss" scoped>
-.ingredient-substitutions {
-  .substitution-header {
-    border-bottom: thin solid rgba(var(--v-theme-on-surface), 0.12);
-    padding-bottom: 0.2rem;
-    margin-bottom: 0.4rem;
-  }
-
-  .substitution {
-    line-height: 1.35;
-
-    & + .substitution {
-      margin-top: 0.5rem;
-    }
-  }
-
-  .substitution-primary {
-    font-weight: bold;
-  }
-
-  // matches the dimming the ingredient note already uses
-  .substitution-note {
-    opacity: 0.7;
-  }
-
-  .substitution-primary,
-  .substitution-note {
-    :deep(p) {
-      display: inline;
-      margin: 0;
-    }
-  }
-
-  .food-substitutions {
-    opacity: 0.7;
-  }
-}
-</style>

@@ -1,42 +1,42 @@
 <template>
-  <div>
+  <div class="flex flex-col gap-6 font-sans">
     <RecipeIngredients
       :value="recipe.recipeIngredient"
       :scale="scale"
       :is-cook-mode="isCookMode"
       :storage-key="ingredientStorageKey"
     />
-    <div v-if="!isEditMode && recipe.tools && recipe.tools.length > 0">
-      <h2 class="mt-4 text-h5 font-weight-medium opacity-80">
+    <section
+      v-if="!isEditMode && recipe.tools && recipe.tools.length > 0"
+      :aria-label="$t('tool.required-tools')"
+    >
+      <h2
+        class="m-0 mb-2 font-bold tracking-tight"
+        :class="isCookMode ? 'text-base' : 'text-xl'"
+      >
         {{ $t('tool.required-tools') }}
       </h2>
-      <v-list density="compact">
-        <v-list-item
+      <ul class="m-0 list-none p-0">
+        <li
           v-for="(tool, index) in recipe.tools"
           :key="index"
-          density="compact"
-          class="px-1"
         >
-          <template #prepend>
-            <v-checkbox
-              v-model="recipeTools[index].onHand"
-              hide-details
-              class="pt-0 py-auto"
-              color="secondary"
-              density="compact"
-              @change="updateTool(index)"
+          <label class="flex cursor-pointer items-center gap-3 py-2 text-[15.5px]">
+            <Checkbox
+              v-model="recipeTools[index]!.onHand"
+              class="size-5"
+              @update:model-value="updateTool(index)"
             />
-          </template>
-          <v-list-item-title>
-            {{ tool.name }}
-          </v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </div>
+            <span :class="recipeTools[index]?.onHand && 'text-muted-foreground'">{{ tool.name }}</span>
+          </label>
+        </li>
+      </ul>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
+import { Checkbox } from "~/components/ui/checkbox";
 import type { RecipeToolWithOnHand } from "~/composables/store/use-tool-store";
 import { useLoggedInState } from "~/composables/use-logged-in-state";
 import { usePageState, usePageUser } from "~/composables/recipe-page/shared-state";

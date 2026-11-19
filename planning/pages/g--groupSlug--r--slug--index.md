@@ -80,7 +80,7 @@ These additional cases remain for replacement validation. See the [handoff evide
 
 ## Shadcn Vue replacement checklist
 
-- [ ] Replace layout and action toolbar with semantic structure, Buttons, DropdownMenu, Dialog/Sheet, and accessible icon labels.
+- [ ] Replace layout and action toolbar with semantic structure, Buttons, DropdownMenu, Dialog/Sheet, and accessible icon labels. (Reader and Cook mode done; see the redesign table in `shared-recipe-page.md`. Editor, recipe actions menu and dialogs remain.)
 - [ ] Preserve form/JSON modes, unsaved-draft protection, ingredient/step editors, references, Markdown, durations, and parser flow.
 - [ ] Preserve scaling/conversion, recipe permissions, ratings/favorites, timeline/comments, asset/lightbox interactions, and print preferences.
 - [ ] Keep specialized sortable, crop, Markdown, JSON, file, wake-lock, and print capabilities through explicit integrations.

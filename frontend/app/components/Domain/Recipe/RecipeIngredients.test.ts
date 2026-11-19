@@ -30,25 +30,6 @@ function mountIngredients(value: RecipeIngredient[], storageKey = "recipe-ingred
       stubs: {
         AppButtonCopy: true,
         RecipeIngredientListItem: true,
-        VCheckbox: {
-          props: ["modelValue"],
-          emits: ["update:modelValue"],
-          template: `
-            <button
-              class="checkbox"
-              type="button"
-              :aria-pressed="modelValue ? 'true' : 'false'"
-              @click="$emit('update:modelValue', !modelValue)"
-            />
-          `,
-        },
-        VDivider: true,
-        VListItem: {
-          template: "<div class=\"list-item\" @click=\"$emit('click', $event)\"><slot name=\"prepend\" /><slot /></div>",
-        },
-        VListItemTitle: {
-          template: "<div><slot /></div>",
-        },
       },
     },
   });
@@ -65,15 +46,15 @@ describe("RecipeIngredients", () => {
 
   test("restores checked ingredients from session storage by reference id", async () => {
     const firstWrapper = mountIngredients([ingredients.curryPaste, ingredients.coconutMilk]);
-    await firstWrapper.findAll(".checkbox")[0].trigger("click");
+    await firstWrapper.findAll("[role='checkbox']")[0].trigger("click");
     await nextTick();
 
-    expect(firstWrapper.findAll(".checkbox")[0].attributes("aria-pressed")).toBe("true");
+    expect(firstWrapper.findAll("[role='checkbox']")[0].attributes("aria-checked")).toBe("true");
     firstWrapper.unmount();
 
     const secondWrapper = mountIngredients([ingredients.coconutMilk, ingredients.curryPaste]);
 
-    expect(secondWrapper.findAll(".checkbox")[0].attributes("aria-pressed")).toBe("false");
-    expect(secondWrapper.findAll(".checkbox")[1].attributes("aria-pressed")).toBe("true");
+    expect(secondWrapper.findAll("[role='checkbox']")[0].attributes("aria-checked")).toBe("false");
+    expect(secondWrapper.findAll("[role='checkbox']")[1].attributes("aria-checked")).toBe("true");
   });
 });

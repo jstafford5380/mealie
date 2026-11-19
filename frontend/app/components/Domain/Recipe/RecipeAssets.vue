@@ -1,6 +1,9 @@
 <template>
   <div v-if="model.length > 0 || edit">
-    <v-card class="mt-4">
+    <v-card
+      v-if="edit"
+      class="mt-4"
+    >
       <v-list-item class="pr-2 pl-0">
         <v-card-title>
           {{ $t("asset.assets") }}
@@ -100,6 +103,45 @@
         </v-list-item>
       </v-list>
     </v-card>
+    <section
+      v-else
+      class="font-sans"
+      :aria-label="$t('asset.assets')"
+    >
+      <h2 class="m-0 mb-2 text-sm font-semibold text-muted-foreground">
+        {{ $t("asset.assets") }}
+      </h2>
+      <ul class="m-0 flex list-none flex-col gap-1 p-0">
+        <li
+          v-for="(item, i) in model"
+          :key="i"
+        >
+          <a
+            :href="assetURL(item.fileName ?? '')"
+            :target="isImage(item.fileName) ? undefined : '_blank'"
+            rel="noopener"
+            class="flex items-center gap-3 rounded-control p-1.5 text-[15px] text-foreground no-underline transition-colors hover:bg-highlight"
+            @click="handleRowClick($event, item)"
+          >
+            <span class="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-item bg-muted">
+              <img
+                v-if="isImage(item.fileName)"
+                :src="assetURL(item.fileName ?? '')"
+                :alt="item.name"
+                loading="lazy"
+                class="size-full object-cover"
+              >
+              <MdiIcon
+                v-else
+                :path="getIconDefinition(item.icon).icon"
+                class="size-6 text-muted-foreground"
+              />
+            </span>
+            <span class="min-w-0 flex-1 truncate font-medium">{{ item.name }}</span>
+          </a>
+        </li>
+      </ul>
+    </section>
     <RecipeImageLightbox
       v-if="lightbox.open"
       v-model="lightbox.open"
@@ -156,6 +198,7 @@
 </template>
 
 <script setup lang="ts">
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { useStaticRoutes, useUserApi } from "~/composables/api";
 import { alert } from "~/composables/use-toast";
 import type { RecipeAsset } from "~/lib/api/types/recipe";

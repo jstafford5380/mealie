@@ -20,6 +20,9 @@ vi.mock("./RecipePageParts/RecipeParseDialog/RecipePageParseDialog.vue", () => (
 vi.mock("./RecipePageParts/RecipePageScale.vue", () => ({ default: { render: () => null } }));
 vi.mock("./RecipePageParts/RecipePageInfoEditor.vue", () => ({ default: { render: () => null } }));
 vi.mock("./RecipePageParts/RecipePageComments.vue", () => ({ default: { render: () => null } }));
+vi.mock("./RecipePageParts/RecipeReaderHeader.vue", () => ({ default: { render: () => null } }));
+vi.mock("./RecipePageParts/RecipeMethod.vue", () => ({ default: { render: () => null } }));
+vi.mock("./RecipePageParts/RecipeCookMode.vue", () => ({ default: { render: () => null } }));
 vi.mock("~/components/Domain/Recipe/RecipePrintContainer.vue", () => ({ default: { render: () => null } }));
 vi.mock("~/components/Domain/Recipe/RecipeDialogBulkAdd.vue", () => ({ default: { render: () => null } }));
 vi.mock("~/components/Domain/Recipe/RecipeNotes.vue", () => ({ default: { render: () => null } }));

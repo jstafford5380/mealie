@@ -1,59 +1,59 @@
 <template>
-  <div v-if="value && value.length > 0">
+  <section
+    v-if="value && value.length > 0"
+    class="flex flex-col font-sans"
+    :aria-label="$t('recipe.ingredients')"
+  >
     <div
       v-if="!isCookMode"
-      class="d-flex justify-start"
+      class="mb-2 flex items-center gap-2"
     >
-      <h2 class="mt-1 text-h5 font-weight-medium opacity-80">
+      <h2 class="m-0 text-xl font-bold tracking-tight">
         {{ $t("recipe.ingredients") }}
       </h2>
       <AppButtonCopy
-        btn-class="ml-auto"
+        btn-class="ms-auto"
         :copy-text="ingredientCopyText"
       />
     </div>
-    <div>
-      <div
+    <ul class="m-0 list-none p-0">
+      <li
         v-for="(ingredient, index) in value"
         :key="'ingredient' + index"
       >
         <h3
           v-if="showTitleEditor[index]"
-          class="mt-4 mb-0"
+          class="mb-1 mt-4 border-b pb-1.5 text-[15px] font-semibold text-muted-foreground"
         >
           {{ ingredient.title }}
         </h3>
-        <v-divider v-if="showTitleEditor[index]" class="my-2" />
-        <v-list-item
-          density="compact"
-          class="px-0 py-1 ingredient-list-item"
-          @click.stop="toggleChecked(index)"
+        <div
+          class="group/ing flex cursor-pointer items-start gap-3 rounded-item py-2 transition-colors"
+          @click="toggleChecked(index)"
         >
-          <template #prepend>
-            <v-checkbox
-              :model-value="isChecked(index)"
-              hide-details
-              class="pt-0 mt-0"
-              color="secondary"
-              density="comfortable"
-              @click.stop
-              @update:model-value="setChecked(index, !!$event)"
-            />
-          </template>
-          <v-list-item-title>
-            <RecipeIngredientListItem
-              :ingredient="ingredient"
-              :scale="scale"
-              show-substitutions
-            />
-          </v-list-item-title>
-        </v-list-item>
-      </div>
-    </div>
-  </div>
+          <Checkbox
+            :model-value="isChecked(index)"
+            class="mt-0.5 size-5 shrink-0"
+            :aria-labelledby="`${uid}-ing-${index}`"
+            @click.stop
+            @update:model-value="setChecked(index, !!$event)"
+          />
+          <RecipeIngredientListItem
+            :id="`${uid}-ing-${index}`"
+            :ingredient="ingredient"
+            :scale="scale"
+            show-substitutions
+            class="min-w-0 flex-1 transition-opacity"
+            :class="isChecked(index) && 'opacity-45 [&_.ing-inline]:line-through'"
+          />
+        </div>
+      </li>
+    </ul>
+  </section>
 </template>
 
 <script setup lang="ts">
+import { Checkbox } from "~/components/ui/checkbox";
 import RecipeIngredientListItem from "./RecipeIngredientListItem.vue";
 import { useSessionStorage } from "@vueuse/core";
 import { useIngredientTextParser } from "~/composables/recipes";
@@ -73,6 +73,7 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const { parseIngredientText } = useIngredientTextParser();
+const uid = useId();
 
 function validateTitle(title?: string | null) {
   return !(title === undefined || title === "" || title === null);
@@ -130,30 +131,3 @@ function setChecked(index: number, value: boolean) {
   }
 }
 </script>
-
-<style>
-.dense-markdown p {
-  margin: auto !important;
-}
-
-/* vuetify clips both of these, which would swallow the substitution button's tap target
-   where it reaches past the line of text */
-.ingredient-list-item .v-list-item__content,
-.ingredient-list-item .v-list-item-title {
-  overflow: visible;
-}
-
-.ingredient-list-item {
-  align-items: flex-start;
-}
-
-.ingredient-list-item .v-list-item__prepend,
-.ingredient-list-item .v-list-item__content {
-  align-self: flex-start;
-}
-
-.ingredient-list-item .v-selection-control {
-  align-self: flex-start;
-  margin-top: -9px;
-}
-</style>

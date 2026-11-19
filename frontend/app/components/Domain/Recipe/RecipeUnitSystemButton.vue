@@ -1,48 +1,54 @@
 <template>
-  <v-menu
-    :disabled="!hasConvertibleIngredients"
-    offset-y
-    top
-    nudge-top="6"
-  >
-    <template #activator="{ props: activatorProps }">
-      <v-tooltip
-        size="small"
-        location="top"
-        color="secondary-darken-1"
+  <DropdownMenu :modal="false">
+    <DropdownMenuTrigger
+      as-child
+      :disabled="!hasConvertibleIngredients"
+    >
+      <Button
+        variant="outline"
+        class="font-sans"
+        :title="$t('general.units')"
+        :disabled="!hasConvertibleIngredients"
       >
-        <template #activator="{ props: tooltipProps }">
-          <v-card
-            class="pa-1 px-2"
-            dark
-            color="secondary-darken-1"
-            size="small"
-            :disabled="!hasConvertibleIngredients"
-            v-bind="{ ...activatorProps, ...tooltipProps }"
-          >
-            <v-icon size="small" class="mr-2">
-              {{ $globals.icons.units }}
-            </v-icon>
-            <span>{{ activeLabel }}</span>
-          </v-card>
-        </template>
-        <span>{{ $t("general.units") }}</span>
-      </v-tooltip>
-    </template>
-    <v-list density="compact">
-      <v-list-item
+        <MdiIcon
+          :path="$globals.icons.units"
+          class="size-[18px]"
+        />
+        {{ activeLabel }}
+        <ChevronDownIcon class="size-4 opacity-60" />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent
+      align="start"
+      class="min-w-56"
+    >
+      <DropdownMenuLabel class="text-xs text-muted-foreground">
+        {{ $t("general.units") }}
+      </DropdownMenuLabel>
+      <DropdownMenuItem
         v-for="option in options"
         :key="option.key"
-        :active="option.value === unitSystem"
-        @click="unitSystem = option.value"
+        :class="option.value === unitSystem && 'bg-highlight/60 font-semibold text-highlight-foreground'"
+        :aria-current="option.value === unitSystem ? 'true' : undefined"
+        @select="unitSystem = option.value"
       >
-        <v-list-item-title>{{ option.text }}</v-list-item-title>
-      </v-list-item>
-    </v-list>
-  </v-menu>
+        {{ option.text }}
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
 </template>
 
 <script setup lang="ts">
+import { ChevronDownIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { canConvertIngredient, useUnitSystem } from "~/composables/recipes";
 import type { UnitSystem } from "~/composables/recipes/unit-systems";
 import type { RecipeOut } from "~/lib/api/types/recipe";

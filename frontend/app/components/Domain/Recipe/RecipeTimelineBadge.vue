@@ -1,45 +1,39 @@
 <template>
-  <v-tooltip
-    location="bottom"
-    nudge-right="50"
-    :color="buttonStyle ? 'info' : 'secondary'"
-  >
-    <template #activator="{ props: activatorProps }">
-      <v-btn
-        icon
-        :variant="buttonStyle ? 'flat' : undefined"
-        :rounded="buttonStyle ? 'circle' : undefined"
-        size="small"
-        :color="buttonStyle ? 'info' : 'secondary'"
-        :fab="buttonStyle"
-        v-bind="{ ...activatorProps, ...$attrs }"
-        @click.prevent="toggleTimeline"
-      >
-        <v-icon
-          :size="!buttonStyle ? undefined : 'x-large'"
-          :color="buttonStyle ? 'white' : 'secondary'"
-        >
-          {{ $globals.icons.timelineText }}
-        </v-icon>
-      </v-btn>
-      <BaseDialog
+  <div class="inline-flex">
+    <button
+      type="button"
+      v-bind="$attrs"
+      :aria-label="$t('recipe.open-timeline')"
+      :title="$t('recipe.open-timeline')"
+      :class="buttonStyle
+        ? 'inline-flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-sm ring-1 ring-border transition-colors hover:bg-highlight'
+        : 'inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-highlight hover:text-foreground'"
+      @click.prevent="toggleTimeline"
+    >
+      <MdiIcon
+        :path="$globals.icons.timelineText"
+        :class="buttonStyle ? 'size-6' : 'size-5'"
+      />
+    </button>
+    <BaseDialog
+      v-model="showTimeline"
+      :title="$t('recipe.timeline')"
+      :icon="$globals.icons.timelineText"
+      width="70%"
+    >
+      <RecipeTimeline
         v-model="showTimeline"
-        :title="$t('recipe.timeline')"
-        :icon="$globals.icons.timelineText"
-        width="70%"
-      >
-        <RecipeTimeline
-          v-model="showTimeline"
-          :query-filter="timelineAttrs.queryFilter"
-        />
-      </BaseDialog>
-    </template>
-    <span>{{ $t('recipe.open-timeline') }}</span>
-  </v-tooltip>
+        :query-filter="timelineAttrs.queryFilter"
+      />
+    </BaseDialog>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import RecipeTimeline from "./RecipeTimeline.vue";
+
+defineOptions({ inheritAttrs: false });
 
 interface Props {
   buttonStyle?: boolean;

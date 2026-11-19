@@ -1087,6 +1087,7 @@
       "components": [
         "AppButtonUpload",
         "BaseDialog",
+        "MdiIcon",
         "RecipeAsset",
         "RecipeImageLightbox"
       ],
@@ -1305,9 +1306,7 @@
         "Props"
       ],
       "dependencies": [],
-      "vuetify": [
-        "v-chip"
-      ],
+      "vuetify": [],
       "events": [
         "click.prevent: () => $emit('item-selected', category, urlPrefix)"
       ],
@@ -2117,6 +2116,10 @@
       "source": "frontend/app/components/Domain/Recipe/RecipeIngredientSubstitutions.vue",
       "name": "RecipeIngredientSubstitutions",
       "components": [
+        "MdiIcon",
+        "Popover",
+        "PopoverContent",
+        "PopoverTrigger",
         "Props",
         "SafeMarkdown",
         "SubstitutionSection"
@@ -2124,13 +2127,7 @@
       "dependencies": [
         "frontend/app/components/global/SafeMarkdown.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-card-text",
-        "v-icon",
-        "v-menu"
-      ],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
@@ -2146,6 +2143,7 @@
       "name": "RecipeIngredients",
       "components": [
         "AppButtonCopy",
+        "Checkbox",
         "Props",
         "RecipeIngredientListItem",
         "Record"
@@ -2154,14 +2152,9 @@
         "frontend/app/components/Domain/Recipe/RecipeIngredientListItem.vue",
         "frontend/app/components/global/AppButtonCopy.vue"
       ],
-      "vuetify": [
-        "v-checkbox",
-        "v-divider",
-        "v-list-item",
-        "v-list-item-title"
-      ],
+      "vuetify": [],
       "events": [
-        "click.stop: toggleChecked(index)",
+        "click: toggleChecked(index)",
         "update:model-value: setChecked(index, !!$event)"
       ],
       "models": [],
@@ -2182,6 +2175,7 @@
         "Blob",
         "Date",
         "ImageCropper",
+        "MdiIcon",
         "RecipeTimelineEventIn",
         "VForm"
       ],
@@ -2205,8 +2199,7 @@
         "v-row",
         "v-spacer",
         "v-text-field",
-        "v-textarea",
-        "v-tooltip"
+        "v-textarea"
       ],
       "events": [
         "click: childRecipe.checked = !childRecipe.checked",
@@ -2231,9 +2224,7 @@
         "newTimelineEventImage && newTimelineEventImagePreviewUrl"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "v-tooltip"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/Recipe/RecipeList.vue",
@@ -2279,7 +2270,6 @@
         "v-btn",
         "v-card",
         "v-card-text",
-        "v-card-title",
         "v-icon",
         "v-text-field",
         "v-textarea"
@@ -2294,7 +2284,8 @@
       ],
       "conditions": [
         "edit",
-        "model.length > 0 || edit"
+        "model.length > 0 || edit",
+        "note.title"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": []
@@ -2313,9 +2304,6 @@
         "v-card-text",
         "v-card-title",
         "v-divider",
-        "v-list",
-        "v-list-item",
-        "v-list-item-title",
         "v-number-input"
       ],
       "events": [
@@ -2324,8 +2312,7 @@
       "models": [],
       "conditions": [
         "edit",
-        "showViewer",
-        "valueNotNull || edit"
+        "showViewer"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": []
@@ -2462,10 +2449,12 @@
         "BaseDialog",
         "BooleanString",
         "ComponentPublicInstance",
+        "MdiIcon",
+        "RecipeCookMode",
         "RecipeDialogBulkAdd",
         "RecipeIngredient",
-        "RecipeIngredients",
         "RecipeJsonEditor",
+        "RecipeMethod",
         "RecipeNotes",
         "RecipeOut",
         "RecipePageComments",
@@ -2480,14 +2469,16 @@
         "RecipePageParseDialog",
         "RecipePageScale",
         "RecipePrintContainer",
+        "RecipeReaderHeader",
         "RouteLocationNormalized",
         "VForm",
         "WakelockSwitch"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipeDialogBulkAdd.vue",
-        "frontend/app/components/Domain/Recipe/RecipeIngredients.vue",
         "frontend/app/components/Domain/Recipe/RecipeNotes.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeCookMode.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeMethod.vue",
         "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageComments.vue",
         "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageEditorToolbar.vue",
         "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageFooter.vue",
@@ -2499,6 +2490,7 @@
         "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageOrganizers.vue",
         "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageScale.vue",
         "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeParseDialog/RecipePageParseDialog.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeReaderHeader.vue",
         "frontend/app/components/Domain/Recipe/RecipePrintContainer.vue",
         "frontend/app/components/global/BaseButton.vue",
         "frontend/app/components/global/BaseDialog.vue",
@@ -2506,27 +2498,20 @@
         "frontend/app/components/global/WakelockSwitch.vue"
       ],
       "vuetify": [
-        "v-btn",
         "v-card",
         "v-card-text",
-        "v-card-title",
         "v-col",
         "v-container",
-        "v-divider",
-        "v-fab",
         "v-form",
-        "v-icon",
-        "v-row",
-        "v-sheet",
-        "v-tooltip"
+        "v-row"
       ],
       "events": [
         "bulk-data: addStep",
         "cancel: cancelDiscard",
         "click: addStep()",
         "click: saveRecipe",
-        "click: toggleCookMode()",
         "close: closeEditor",
+        "close: toggleCookMode()",
         "confirm: confirmDiscard",
         "delete: deleteRecipe",
         "item-selected: chipClicked",
@@ -2544,22 +2529,20 @@
       ],
       "conditions": [
         "!$vuetify.display.mdAndUp",
-        "!disableComments && !isEditForm && !isCookMode",
-        "!isCookMode || isEditForm",
-        "!isEditForm",
+        "!disableComments",
+        "!isDesktop",
+        "!isEditMode && !isCookMode",
         "$vuetify.display.mdAndUp",
         "isCookMode",
-        "isEditForm",
+        "isDesktop",
         "isEditJSON",
         "isEditMode",
-        "isEditMode && !toolbarVisible",
-        "notLinkedIngredients.length > 0"
+        "isEditMode && !toolbarVisible"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": [
         "$vuetify",
-        "useDisplay",
-        "v-tooltip"
+        "useDisplay"
       ]
     },
     {
@@ -2583,37 +2566,124 @@
       "vuetifyAPIs": []
     },
     {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeCookMode.vue",
+      "name": "RecipeCookMode",
+      "components": [
+        "ArrowLeftIcon",
+        "ArrowRightIcon",
+        "Button",
+        "CheckIcon",
+        "ClockIcon",
+        "HTMLElement",
+        "RecipeIngredients",
+        "RecipePageIngredientToolsView",
+        "RecipePageScale",
+        "SafeMarkdown",
+        "WakelockSwitch",
+        "XIcon"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeIngredients.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageIngredientToolsView.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageScale.vue",
+        "frontend/app/components/global/SafeMarkdown.vue",
+        "frontend/app/components/global/WakelockSwitch.vue"
+      ],
+      "vuetify": [],
+      "events": [
+        "click: emit('close')",
+        "click: goTo(i)",
+        "click: next",
+        "click: panel = option",
+        "click: previous"
+      ],
+      "models": [
+        "scale"
+      ],
+      "conditions": [
+        "hasAnyLinks && stepIngredients.length",
+        "isLast",
+        "panel === 'step' && stepIngredients.length",
+        "sectionTitle",
+        "step",
+        "step.durationSeconds",
+        "step.summary",
+        "stepNotes.length",
+        "total",
+        "total > 1",
+        "unlinkedIngredients.length"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeMethod.vue",
+      "name": "RecipeMethod",
+      "components": [
+        "CheckIcon",
+        "ChevronDownIcon",
+        "ClockIcon",
+        "MdiIcon",
+        "RecipeNote",
+        "SafeMarkdown",
+        "Sheet",
+        "SheetContent",
+        "SheetDescription",
+        "SheetHeader",
+        "SheetTitle"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/SafeMarkdown.vue"
+      ],
+      "vuetify": [],
+      "events": [
+        "click.stop: openNotes(index)",
+        "click: toggleDone(index)",
+        "click: toggleSection(section)"
+      ],
+      "models": [
+        "notesOpen"
+      ],
+      "conditions": [
+        "!isDone(index)",
+        "isDone(index)",
+        "linkedNotes(steps[index]!).length",
+        "section.title",
+        "steps.length",
+        "steps[index]!.durationSeconds",
+        "steps[index]!.summary",
+        "steps[index]!.summary || steps[index]!.durationSeconds || linkedNotes(steps[index]!).length"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
       "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageComments.vue",
       "name": "RecipePageComments",
       "components": [
-        "BaseButton",
+        "Avatar",
+        "AvatarFallback",
+        "AvatarImage",
+        "Button",
         "RecipeOut",
-        "SafeMarkdown",
-        "UserAvatar"
+        "SafeMarkdown"
       ],
       "dependencies": [
-        "frontend/app/components/Domain/User/UserAvatar.vue",
-        "frontend/app/components/global/BaseButton.vue",
         "frontend/app/components/global/SafeMarkdown.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-divider",
-        "v-icon",
-        "v-textarea"
-      ],
+      "vuetify": [],
       "events": [
         "click: deleteComment(recipeComment.id)",
-        "click: submitComment"
+        "keydown.ctrl.enter: submitComment",
+        "keydown.meta.enter: submitComment",
+        "submit.prevent: submitComment"
       ],
       "models": [
         "comment"
       ],
       "conditions": [
+        "comment.trim()",
+        "recipe.comments.length",
         "user.id",
         "user.id == recipeComment.user.id || user.admin"
       ],
@@ -2885,6 +2955,7 @@
       "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageIngredientToolsView.vue",
       "name": "RecipePageIngredientToolsView",
       "components": [
+        "Checkbox",
         "Props",
         "RecipeIngredients",
         "RecipeToolWithOnHand"
@@ -2892,17 +2963,12 @@
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipeIngredients.vue"
       ],
-      "vuetify": [
-        "v-checkbox",
-        "v-list",
-        "v-list-item",
-        "v-list-item-title"
-      ],
+      "vuetify": [],
       "events": [
-        "change: updateTool(index)"
+        "update:model-value: updateTool(index)"
       ],
       "models": [
-        "recipeTools[index].onHand"
+        "recipeTools[index]!.onHand"
       ],
       "conditions": [
         "!isEditMode && recipe.tools && recipe.tools.length > 0"
@@ -3066,11 +3132,11 @@
         "recipe.tools"
       ],
       "conditions": [
-        "isEditForm",
-        "recipe.recipeCategory.length > 0 || isEditForm",
+        "!isEditForm",
+        "recipe.recipeCategory.length > 0",
         "recipe.settings.showAssets",
         "recipe.settings.showNutrition",
-        "recipe.tags.length > 0 || isEditForm"
+        "recipe.tags.length > 0"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": []
@@ -3284,6 +3350,61 @@
       "vuetifyAPIs": []
     },
     {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeReaderHeader.vue",
+      "name": "RecipeReaderHeader",
+      "components": [
+        "Avatar",
+        "AvatarFallback",
+        "AvatarImage",
+        "Button",
+        "ExternalLinkIcon",
+        "HouseholdSummary",
+        "MdiIcon",
+        "PlayIcon",
+        "RecipeContextMenu",
+        "RecipeFavoriteBadge",
+        "RecipeImageLightbox",
+        "RecipeLastMade",
+        "RecipeRating",
+        "RecipeTimelineBadge",
+        "SafeMarkdown",
+        "UserSummary"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenu.vue",
+        "frontend/app/components/Domain/Recipe/RecipeFavoriteBadge.vue",
+        "frontend/app/components/Domain/Recipe/RecipeImageLightbox.vue",
+        "frontend/app/components/Domain/Recipe/RecipeLastMade.vue",
+        "frontend/app/components/Domain/Recipe/RecipeRating.vue",
+        "frontend/app/components/Domain/Recipe/RecipeTimelineBadge.vue",
+        "frontend/app/components/global/SafeMarkdown.vue"
+      ],
+      "vuetify": [],
+      "events": [
+        "click: openLightbox",
+        "click: setMode(PageMode.EDIT)",
+        "click: toggleCookMode()",
+        "error: imageFailed = true",
+        "print: printRecipe"
+      ],
+      "models": [
+        "lightboxIndex",
+        "lightboxOpen"
+      ],
+      "conditions": [
+        "facts.length",
+        "isOwnGroup",
+        "isOwnGroup && canEditRecipe",
+        "isOwnGroup && owner",
+        "lightboxOpen",
+        "recipe.description",
+        "showImage",
+        "sourceHost"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
       "source": "frontend/app/components/Domain/Recipe/RecipePrintContainer.vue",
       "name": "RecipePrintContainer",
       "components": [
@@ -3351,14 +3472,16 @@
         "Props"
       ],
       "dependencies": [],
-      "vuetify": [
-        "v-rating"
-      ],
+      "vuetify": [],
       "events": [
-        "update:model-value: updateRating(+$event)"
+        "click: updateRating(n)",
+        "mouseenter: canHover && (hover = n)",
+        "mouseleave: hover = 0"
       ],
       "models": [],
-      "conditions": [],
+      "conditions": [
+        "isReadonly"
+      ],
       "dynamicComponents": [],
       "vuetifyAPIs": []
     },
@@ -3402,29 +3525,25 @@
       "source": "frontend/app/components/Domain/Recipe/RecipeScaleEditButton.vue",
       "name": "RecipeScaleEditButton",
       "components": [
-        "BaseButtonGroup",
+        "Button",
+        "MinusIcon",
+        "PlusIcon",
+        "Popover",
+        "PopoverContent",
+        "PopoverTrigger",
         "Props",
+        "RotateCcwIcon",
         "SafeInlineHtml"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseButtonGroup.vue",
         "frontend/app/components/global/SafeInlineHtml.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-card-text",
-        "v-card-title",
-        "v-icon",
-        "v-menu",
-        "v-number-input",
-        "v-tooltip"
-      ],
+      "vuetify": [],
       "events": [
-        "click: scale = 1",
-        "decrement: recalculateScale(yieldQuantity - 1)",
-        "increment: recalculateScale(yieldQuantity + 1)",
-        "update:model-value: recalculateScale($event || 0)"
+        "change: recalculateScale(Number(($event.target as HTMLInputElement).value) || 0)",
+        "click: recalculateScale(yieldQuantity + 1)",
+        "click: recalculateScale(yieldQuantity - 1)",
+        "click: scale = 1"
       ],
       "models": [
         "menu"
@@ -3434,9 +3553,7 @@
         "yieldDisplay"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "v-tooltip"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/Recipe/RecipeSelector.vue",
@@ -3700,6 +3817,7 @@
       "name": "RecipeTimelineBadge",
       "components": [
         "BaseDialog",
+        "MdiIcon",
         "Props",
         "RecipeTimeline"
       ],
@@ -3707,11 +3825,7 @@
         "frontend/app/components/Domain/Recipe/RecipeTimeline.vue",
         "frontend/app/components/global/BaseDialog.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-icon",
-        "v-tooltip"
-      ],
+      "vuetify": [],
       "events": [
         "click.prevent: toggleTimeline"
       ],
@@ -3720,9 +3834,7 @@
       ],
       "conditions": [],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "v-tooltip"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/Recipe/RecipeTimelineContextMenu.vue",
@@ -3829,26 +3941,25 @@
     {
       "source": "frontend/app/components/Domain/Recipe/RecipeUnitSystemButton.vue",
       "name": "RecipeUnitSystemButton",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-card",
-        "v-icon",
-        "v-list",
-        "v-list-item",
-        "v-list-item-title",
-        "v-menu",
-        "v-tooltip"
+      "components": [
+        "Button",
+        "ChevronDownIcon",
+        "DropdownMenu",
+        "DropdownMenuContent",
+        "DropdownMenuItem",
+        "DropdownMenuLabel",
+        "DropdownMenuTrigger",
+        "MdiIcon"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [
-        "click: unitSystem = option.value"
+        "select: unitSystem = option.value"
       ],
       "models": [],
       "conditions": [],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "v-tooltip"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/Recipe/RecipeYield.vue",

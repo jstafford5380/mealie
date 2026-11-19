@@ -1,16 +1,25 @@
 <template>
   <div
     v-if="model.length > 0 || edit"
-    class="mt-8"
+    :class="edit ? 'mt-8' : 'flex flex-col gap-3 font-sans'"
   >
-    <h2 class="my-4 text-h5 font-weight-medium opacity-80">
+    <h2
+      v-if="edit"
+      class="my-4 text-h5 font-weight-medium opacity-80"
+    >
+      {{ $t("recipe.note") }}
+    </h2>
+    <h2
+      v-else
+      class="m-0 text-xl font-bold tracking-tight"
+    >
       {{ $t("recipe.note") }}
     </h2>
     <div
       v-for="(note, index) in model"
       :id="'note' + index"
       :key="'note' + index"
-      class="mt-1"
+      :class="edit && 'mt-1'"
     >
       <v-card v-if="edit">
         <v-card-text>
@@ -37,13 +46,20 @@
           />
         </v-card-text>
       </v-card>
-      <div v-else>
-        <v-card-title class="text-subtitle-1 font-weight-medium py-1">
+      <div
+        v-else
+        class="rounded-card border-s-4 border-brand bg-card px-4 py-3 font-sans"
+      >
+        <div
+          v-if="note.title"
+          class="mb-1 font-semibold"
+        >
           {{ note.title }}
-        </v-card-title>
-        <v-card-text>
-          <SafeMarkdown :source="note.text" />
-        </v-card-text>
+        </div>
+        <SafeMarkdown
+          class="text-[15.5px] leading-relaxed [&_p]:m-0 [&_p+p]:mt-2"
+          :source="note.text"
+        />
       </div>
     </div>
 

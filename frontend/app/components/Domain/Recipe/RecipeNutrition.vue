@@ -1,5 +1,29 @@
 <template>
-  <div v-if="valueNotNull || edit">
+  <section
+    v-if="showViewer"
+    class="font-sans"
+    :aria-label="$t('recipe.nutrition')"
+  >
+    <h2 class="m-0 text-sm font-semibold text-muted-foreground">
+      {{ $t("recipe.nutrition") }}
+      <span class="font-normal">· {{ $t("recipe.per-serving") }}</span>
+    </h2>
+    <dl class="m-0 mt-2 divide-y divide-border/70 rounded-card border bg-card px-4 text-[15px]">
+      <div
+        v-for="(item, key) in renderedList"
+        :key="key"
+        class="flex items-baseline justify-between gap-4 py-2"
+      >
+        <dt class="text-muted-foreground">
+          {{ item.label }}
+        </dt>
+        <dd class="m-0 font-semibold tabular-nums">
+          {{ item.value }}<span class="ms-0.5 font-normal text-muted-foreground">{{ item.suffix }}</span>
+        </dd>
+      </div>
+    </dl>
+  </section>
+  <div v-else-if="edit">
     <v-card class="mt-2">
       <v-card-title class="pt-2 pb-0">
         {{ $t("recipe.nutrition") }}
@@ -8,7 +32,7 @@
         {{ $t("recipe.per-serving") }}
       </v-card-subtitle>
       <v-divider class="mx-2 my-1" />
-      <v-card-text v-if="edit">
+      <v-card-text>
         <div
           v-for="(item, key, index) in modelValue"
           :key="index"
@@ -27,25 +51,6 @@
           />
         </div>
       </v-card-text>
-      <v-list
-        v-if="showViewer"
-        density="compact"
-        class="mt-0 pt-0"
-      >
-        <v-list-item
-          v-for="(item, key, index) in renderedList"
-          :key="index"
-          style="min-height: 25px"
-        >
-          <v-list-item-title class="pl-2 d-flex">
-            <div>{{ item.label }}</div>
-            <div class="ml-auto mr-1">
-              {{ item.value }}
-            </div>
-            <div>{{ item.suffix }}</div>
-          </v-list-item-title>
-        </v-list-item>
-      </v-list>
     </v-card>
   </div>
 </template>
