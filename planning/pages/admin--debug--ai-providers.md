@@ -16,6 +16,13 @@ Route: `/admin/debug/ai-providers`. Source: [ai-providers.vue](../../frontend/ap
 - Object URLs are created but not explicitly revoked by this component; preserve preview while cleaning resources safely during implementation.
 - All captured tests use the local closed-port fixture; no external AI service received data.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Outlined compact selects in a grid; Upload / Remove image buttons; results as card text. | Labelled group and provider selects side by side, an image picker that shows a thumbnail with Remove, Run Test in the footer; results in a monospace block. |
+
+
 ## Screenshots
 
 ### Initial group/provider prerequisites

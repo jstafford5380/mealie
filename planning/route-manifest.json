@@ -28,36 +28,28 @@
       "components": [
         "AllBackups",
         "AppButtonUpload",
-        "BaseButton",
-        "BaseCardSectionTitle",
         "BaseDialog",
-        "i18n-t",
-        "nuxt-link"
+        "Button",
+        "Checkbox",
+        "DownloadIcon",
+        "LoaderCircleIcon",
+        "MdiIcon",
+        "NuxtLink",
+        "PlusIcon",
+        "Trash2Icon",
+        "i18n-t"
       ],
       "dependencies": [
         "frontend/app/components/global/AppButtonUpload.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card-text",
-        "v-checkbox",
-        "v-container",
-        "v-data-table",
-        "v-divider",
-        "v-icon",
-        "v-progress-linear",
-        "v-toolbar"
-      ],
+      "vuetify": [],
       "events": [
-        "click.stop: \n                state.deleteDialog = true;\n                deleteTarget = item.name;\n              ",
-        "click.stop: () => { }",
-        "click.stop: setSelected(item); state.importDialog = true",
+        "click: api.utils.download(backupsFileNameDownload(item.name))",
         "click: createBackup",
         "click: restoreBackup(selected)",
-        "click:row: setSelected",
+        "click: setSelected(item); state.confirmImport = false; state.importDialog = true",
+        "click: state.deleteDialog = true; deleteTarget = item.name",
         "confirm: deleteBackup()",
         "uploaded: refreshBackups()"
       ],
@@ -67,6 +59,8 @@
         "state.importDialog"
       ],
       "conditions": [
+        "backups.imports && backups.imports.length",
+        "state.runningBackup",
         "state.runningRestore"
       ],
       "dynamicComponents": [],
@@ -74,7 +68,6 @@
       "componentClosure": [
         "frontend/app/components/global/AppButtonUpload.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue"
       ]
@@ -88,32 +81,19 @@
       "components": [
         "AIProviderSummary",
         "AppButtonUpload",
-        "BaseButton",
-        "BaseCardSectionTitle",
         "Blob",
-        "DocLink"
+        "Button",
+        "DocLink",
+        "LoaderCircleIcon",
+        "SelectField",
+        "XIcon"
       ],
       "dependencies": [
         "frontend/app/components/global/AppButtonUpload.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
-        "frontend/app/components/global/DocLink.vue"
+        "frontend/app/components/global/DocLink.vue",
+        "frontend/app/components/ui/field/SelectField.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-col",
-        "v-container",
-        "v-divider",
-        "v-form",
-        "v-icon",
-        "v-img",
-        "v-row",
-        "v-select",
-        "v-spacer"
-      ],
+      "vuetify": [],
       "events": [
         "click: clearImage",
         "submit.prevent: testOpenAI",
@@ -124,19 +104,18 @@
         "selectedProviderId"
       ],
       "conditions": [
-        "!!uploadedImage",
         "!uploadedImage",
         "groups",
+        "loading",
         "response",
-        "uploadedImage && uploadedImagePreviewUrl"
+        "uploadedImagePreviewUrl"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": [],
       "componentClosure": [
         "frontend/app/components/global/AppButtonUpload.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
-        "frontend/app/components/global/DocLink.vue"
+        "frontend/app/components/global/DocLink.vue",
+        "frontend/app/components/ui/field/SelectField.vue"
       ]
     },
     {
@@ -146,36 +125,23 @@
       "document": "pages/admin--debug--parser.md",
       "status": "reviewed",
       "components": [
-        "BaseButton",
-        "BaseCardSectionTitle",
-        "IngredientConfidence"
+        "Button",
+        "Checkbox",
+        "IngredientConfidence",
+        "TextField"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue"
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-btn-toggle",
-        "v-card",
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-checkbox",
-        "v-chip",
-        "v-container",
-        "v-spacer",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
-        "change: processIngredient",
-        "click: processIngredient",
-        "click: processTryText(text)"
+        "click: processTryText(text)",
+        "click: state.parser = parser.value; processIngredient()",
+        "submit.prevent: processIngredient"
       ],
       "models": [
         "showConfidence",
-        "state.ingredient",
-        "state.parser"
+        "state.ingredient"
       ],
       "conditions": [
         "prop.confidence && showConfidence",
@@ -186,8 +152,7 @@
       "dynamicComponents": [],
       "vuetifyAPIs": [],
       "componentClosure": [
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue"
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
@@ -197,28 +162,19 @@
       "document": "pages/admin--maintenance--index.md",
       "status": "reviewed",
       "components": [
-        "BaseButton",
-        "BaseCardSectionTitle",
         "BaseDialog",
-        "BasePageTitle",
+        "Button",
+        "LoaderCircleIcon",
         "MaintenanceStorageDetails",
         "MaintenanceSummary",
+        "MdiIcon",
+        "RefreshCwIcon",
         "i18n-t"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
-        "frontend/app/components/global/BaseDialog.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/global/BaseDialog.vue"
       ],
-      "vuetify": [
-        "v-card",
-        "v-container",
-        "v-divider",
-        "v-list-item",
-        "v-list-item-subtitle",
-        "v-list-item-title"
-      ],
+      "vuetify": [],
       "events": [
         "click: action.handler",
         "click: getSummary",
@@ -228,16 +184,14 @@
         "state.storageDetails"
       ],
       "conditions": [
-        "idx != 4"
+        "state.fetchingInfo"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": [],
       "componentClosure": [
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
-        "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/global/BaseDialogContent.vue"
       ]
     },
     {

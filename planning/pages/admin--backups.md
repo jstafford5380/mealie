@@ -22,6 +22,15 @@ Route: `/admin/backups`. Source: [backups.vue](../../frontend/app/pages/admin/ba
 - The table's generic row callback expects a record-shaped argument, while Vuetify row events may supply event plus item. The dedicated Restore button passes the item directly and was used for captures; verify row selection independently.
 - No restore or deletion was executed for catalog screenshots. Created backup contains only isolated synthetic catalog data.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Section title, Create and Upload in a toolbar, backups in a data table with delete, download and restore buttons per row. | Heading with Upload and "Create a backup"; backups as rows (file name, date and size) with download, delete and an outline Restore button; an empty state. |
+| Restore dialog as a bottom sheet with a red checkbox and a progress bar. | The standard dialog shows the file name, the warning and documentation link, and the acknowledgement in a red-bordered box; Restore is a red button and a spinner line shows while it runs. |
+| Delete confirmation without the file name. | Delete confirmation shows the file name. |
+
+
 ## Screenshots
 
 ### Empty state and created backup

@@ -19,6 +19,14 @@ Route: `/admin/maintenance`. Source: [index.vue](../../frontend/app/pages/admin/
 - The handlers do not automatically refetch Summary or Details and do not render a dedicated result panel. Preserve observable API error feedback; do not claim a nonexistent completion dialog.
 - Screenshots cover controls and read-only diagnostics. Destructive cleanup was not run merely to obtain a screenshot.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Section titles with wrench icons; Get Summary / Details as blue buttons; Vuetify lists. | Heading; the summary as a two-column list with Get Summary (refresh) and Details beside its title; actions as rows with an outline Run button, disabled while one is running. |
+| Storage details in a bottom sheet list. | Storage details in the standard dialog as a two-column list. |
+
+
 ## Screenshots
 
 ### Initial summary and available actions

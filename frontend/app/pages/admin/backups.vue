@@ -1,160 +1,192 @@
 <template>
-  <v-container fluid>
-    <section>
-      <!-- Delete Dialog -->
-      <BaseDialog
-        v-model="state.deleteDialog"
-        bottom-sheet
-        :title="$t('settings.backup.delete-backup')"
-        color="error"
-        :icon="$globals.icons.alertCircle"
-        can-confirm
-        @confirm="deleteBackup()"
-      >
-        <v-card-text>
+  <div class="mx-auto flex w-full max-w-[900px] flex-col px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8">
+    <!-- Delete Dialog -->
+    <BaseDialog
+      v-model="state.deleteDialog"
+      :title="$t('settings.backup.delete-backup')"
+      color="error"
+      :icon="$globals.icons.alertCircle"
+      can-confirm
+      @confirm="deleteBackup()"
+    >
+      <div class="flex flex-col gap-3 px-6 pb-2 text-[15px]">
+        <p class="m-0">
           {{ $t("general.confirm-delete-generic") }}
-        </v-card-text>
-      </BaseDialog>
+        </p>
+        <p class="m-0 rounded-control bg-muted px-3 py-2 font-mono text-sm">
+          {{ deleteTarget }}
+        </p>
+      </div>
+    </BaseDialog>
 
-      <!-- Import Dialog -->
-      <BaseDialog
-        v-model="state.importDialog"
-        bottom-sheet
-        color="error"
-        :title="$t('settings.backup.backup-restore')"
-        :icon="$globals.icons.database"
-      >
-        <v-divider />
-        <v-card-text>
-          <i18n-t keypath="settings.backup.back-restore-description">
-            <template #cannot-be-undone>
-              <b> {{ $t('settings.backup.cannot-be-undone') }} </b>
-            </template>
-          </i18n-t>
-
-          <p class="mt-3">
-            <i18n-t keypath="settings.backup.postgresql-note">
-              <template #backup-restore-process>
-                <a class="text-primary" href="https://nightly.mealie.io/documentation/getting-started/usage/backups-and-restoring/">{{
-                  $t('settings.backup.backup-restore-process-in-the-documentation') }}</a>
-              </template>
-            </i18n-t>
-          </p>
-
-          <v-checkbox
-            v-model="state.confirmImport"
-            class="checkbox-top"
-            color="error"
-            hide-details
-            :label="$t('settings.backup.irreversible-acknowledgment')"
-          />
-        </v-card-text>
-        <template #custom-card-action>
-          <BaseButton
-            delete
-            :disabled="!state.confirmImport || state.runningRestore"
-            @click="restoreBackup(selected)"
-          >
-            <template #icon>
-              {{ $globals.icons.database }}
-            </template>
-            {{ $t('settings.backup.restore-backup') }}
-          </BaseButton>
-        </template>
-        <p class="caption pb-0 mb-1 text-center">
+    <!-- Restore Dialog -->
+    <BaseDialog
+      v-model="state.importDialog"
+      color="error"
+      :title="$t('settings.backup.backup-restore')"
+      :icon="$globals.icons.database"
+    >
+      <div class="flex flex-col gap-3 px-6 pb-2 text-[15px]">
+        <p class="m-0 rounded-control bg-muted px-3 py-2 font-mono text-sm">
           {{ selected }}
         </p>
-        <v-progress-linear
-          v-if="state.runningRestore"
-          indeterminate
-        />
-      </BaseDialog>
-
-      <section>
-        <BaseCardSectionTitle :title="$t('settings.backup-and-exports')">
-          <v-card-text class="py-0 px-1">
-            <i18n-t keypath="settings.backup.experimental-description" />
-          </v-card-text>
-        </BaseCardSectionTitle>
-        <v-toolbar
-          color="transparent"
-          flat
-          class="justify-between"
-        >
-          <BaseButton
-            class="mr-2"
-            :loading="state.runningBackup"
-            @click="createBackup"
-          >
-            {{ $t("settings.backup.create-heading") }}
-          </BaseButton>
-          <AppButtonUpload
-            :text-btn="false"
-            url="/api/admin/backups/upload"
-            accept=".zip"
-            color="info"
-            @uploaded="refreshBackups()"
+        <p class="m-0">
+          <i18n-t keypath="settings.backup.back-restore-description">
+            <template #cannot-be-undone>
+              <b>{{ $t('settings.backup.cannot-be-undone') }}</b>
+            </template>
+          </i18n-t>
+        </p>
+        <p class="m-0 text-sm text-muted-foreground">
+          <i18n-t keypath="settings.backup.postgresql-note">
+            <template #backup-restore-process>
+              <a
+                class="font-semibold text-primary"
+                href="https://nightly.mealie.io/documentation/getting-started/usage/backups-and-restoring/"
+                target="_blank"
+                rel="noopener"
+              >{{ $t('settings.backup.backup-restore-process-in-the-documentation') }}</a>
+            </template>
+          </i18n-t>
+        </p>
+        <label class="flex cursor-pointer items-start gap-2 rounded-control border border-destructive/40 bg-destructive/5 p-3 text-sm">
+          <Checkbox
+            v-model="state.confirmImport"
+            class="mt-0.5"
           />
-        </v-toolbar>
-
-        <v-data-table
-          :headers="state.headers"
-          :items="backups.imports || []"
-          class="elevation-0"
-          :items-per-page="-1"
-          hide-default-footer
-          disable-pagination
-          :search="state.search"
-          @click:row="setSelected"
+          {{ $t('settings.backup.irreversible-acknowledgment') }}
+        </label>
+        <div
+          v-if="state.runningRestore"
+          class="flex items-center gap-2 text-sm text-muted-foreground"
+          role="status"
         >
-          <template #[`item.date`]="{ item }">
-            {{ $d(Date.parse(item.date)) }}
-          </template>
-          <template #[`item.actions`]="{ item }">
-            <v-btn
-              icon
-              class="mx-1"
-              color="error"
-              variant="text"
-              @click.stop="
-                state.deleteDialog = true;
-                deleteTarget = item.name;
-              "
-            >
-              <v-icon> {{ $globals.icons.delete }} </v-icon>
-            </v-btn>
-            <BaseButton
-              small
-              download
-              :download-url="backupsFileNameDownload(item.name)"
-              class="mx-1"
-              @click.stop="() => { }"
-            />
-            <BaseButton
-              small
-              @click.stop="setSelected(item); state.importDialog = true"
-            >
-              <template #icon>
-                {{ $globals.icons.backupRestore }}
-              </template>
-              {{ $t("settings.backup.backup-restore") }}
-            </BaseButton>
-          </template>
-        </v-data-table>
-        <v-divider />
-        <div class="d-flex justify-end mt-6">
-          <div />
+          <LoaderCircleIcon class="size-4 animate-spin" />
+          {{ $t('settings.backup.restoring') }}
         </div>
-      </section>
-    </section>
-    <v-container class="mt-4 d-flex justify-center text-center">
-      <nuxt-link class="text-primary" :to="`/group/migrations`"> {{ $t('recipe.looking-for-migrations') }} </nuxt-link>
-    </v-container>
-  </v-container>
+      </div>
+      <template #custom-card-action>
+        <Button
+          variant="destructive"
+          :disabled="!state.confirmImport || state.runningRestore"
+          @click="restoreBackup(selected)"
+        >
+          <MdiIcon
+            :path="$globals.icons.database"
+            class="size-4"
+          />
+          {{ $t('settings.backup.restore-backup') }}
+        </Button>
+      </template>
+    </BaseDialog>
+
+    <header class="mb-5 flex flex-wrap items-end gap-3">
+      <div class="min-w-0 flex-1">
+        <h1 class="m-0 text-[26px] font-bold tracking-tight sm:text-[32px]">
+          {{ $t('settings.backup-and-exports') }}
+        </h1>
+        <p class="m-0 mt-1 max-w-[65ch] text-[15px] text-muted-foreground">
+          <i18n-t keypath="settings.backup.experimental-description" />
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <AppButtonUpload
+          :text-btn="false"
+          url="/api/admin/backups/upload"
+          accept=".zip"
+          @uploaded="refreshBackups()"
+        />
+        <Button
+          :disabled="state.runningBackup"
+          @click="createBackup"
+        >
+          <LoaderCircleIcon
+            v-if="state.runningBackup"
+            class="size-4 animate-spin"
+          />
+          <PlusIcon
+            v-else
+            class="size-4"
+          />
+          {{ $t("settings.backup.create-heading") }}
+        </Button>
+      </div>
+    </header>
+
+    <ul
+      v-if="backups.imports && backups.imports.length"
+      class="m-0 flex list-none flex-col divide-y rounded-card border bg-card p-0"
+    >
+      <li
+        v-for="item in backups.imports"
+        :key="item.name"
+        class="flex flex-wrap items-center gap-x-3 gap-y-2 py-2.5 ps-4 pe-2"
+      >
+        <MdiIcon
+          :path="$globals.icons.database"
+          class="size-5 shrink-0 text-muted-foreground"
+        />
+        <span class="min-w-0 flex-1">
+          <span class="block truncate font-mono text-sm font-semibold">{{ item.name }}</span>
+          <span class="block text-sm text-muted-foreground">{{ $d(Date.parse(item.date)) }} · {{ item.size }}</span>
+        </span>
+        <span class="flex items-center gap-1">
+          <button
+            type="button"
+            class="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-highlight hover:text-foreground"
+            :aria-label="$t('general.download')"
+            :title="$t('general.download')"
+            @click="api.utils.download(backupsFileNameDownload(item.name))"
+          >
+            <DownloadIcon class="size-4" />
+          </button>
+          <button
+            type="button"
+            class="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            :aria-label="$t('settings.backup.delete-backup')"
+            :title="$t('settings.backup.delete-backup')"
+            @click="state.deleteDialog = true; deleteTarget = item.name"
+          >
+            <Trash2Icon class="size-4" />
+          </button>
+          <Button
+            size="sm"
+            variant="outline"
+            @click="setSelected(item); state.confirmImport = false; state.importDialog = true"
+          >
+            <MdiIcon
+              :path="$globals.icons.backupRestore"
+              class="size-4"
+            />
+            {{ $t("settings.backup.restore-backup") }}
+          </Button>
+        </span>
+      </li>
+    </ul>
+    <p
+      v-else
+      class="m-0 rounded-card border border-dashed px-4 py-8 text-center text-sm text-muted-foreground"
+    >
+      {{ $t('settings.backup.no-backups-yet') }}
+    </p>
+
+    <p class="m-0 mt-6 text-center text-sm">
+      <NuxtLink
+        class="font-semibold text-primary no-underline hover:underline"
+        to="/group/migrations"
+      >
+        {{ $t('recipe.looking-for-migrations') }}
+      </NuxtLink>
+    </p>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { useAdminApi } from "~/composables/api";
+import { DownloadIcon, LoaderCircleIcon, PlusIcon, Trash2Icon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+import { useAdminApi, useUserApi } from "~/composables/api";
 import type { AllBackups } from "~/lib/api/types/admin";
 import { alert } from "~/composables/use-toast";
 
@@ -229,13 +261,6 @@ const state = reactive({
   importDialog: false,
   runningBackup: false,
   runningRestore: false,
-  search: "",
-  headers: [
-    { title: i18n.t("general.name"), value: "name" },
-    { title: i18n.t("general.created"), value: "date" },
-    { title: i18n.t("export.size"), value: "size" },
-    { title: "", value: "actions", align: "right" },
-  ],
 });
 
 function setSelected(data: { name: string; date: string }) {
@@ -246,6 +271,7 @@ function setSelected(data: { name: string; date: string }) {
 }
 
 const backupsFileNameDownload = (fileName: string) => `api/admin/backups/${fileName}`;
+const api = useUserApi();
 
 useSeoMeta({
   title: i18n.t("sidebar.backups"),

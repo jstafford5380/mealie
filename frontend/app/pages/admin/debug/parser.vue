@@ -1,121 +1,131 @@
 <template>
-  <v-container class="pa-0">
-    <v-container>
-      <BaseCardSectionTitle :title="$t('admin.ingredients-natural-language-processor')">
+  <div class="mx-auto flex w-full max-w-[860px] flex-col gap-8 px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8">
+    <header>
+      <h1 class="m-0 text-[26px] font-bold tracking-tight sm:text-[32px]">
+        {{ $t('admin.ingredients-natural-language-processor') }}
+      </h1>
+      <p class="m-0 mt-1 max-w-[65ch] text-[15px] text-muted-foreground">
         {{ $t('admin.ingredients-natural-language-processor-explanation') }}
+      </p>
+      <p class="m-0 mt-2 max-w-[65ch] text-[15px] text-muted-foreground">
+        {{ $t('admin.ingredients-natural-language-processor-explanation-2') }}
+      </p>
+    </header>
 
-        <p class="pt-3">
-          {{ $t('admin.ingredients-natural-language-processor-explanation-2') }}
-        </p>
-      </BaseCardSectionTitle>
-
-      <div class="d-flex align-center justify-center justify-md-start flex-wrap">
-        <v-btn-toggle
-          v-model="state.parser"
-          density="compact"
-          mandatory="force"
-          @change="processIngredient"
+    <form
+      class="rounded-panel border bg-card p-5 sm:p-6"
+      @submit.prevent="processIngredient"
+    >
+      <div class="mb-3 flex flex-wrap items-center gap-3">
+        <div
+          role="radiogroup"
+          :aria-label="$t('admin.parser')"
+          class="inline-flex rounded-control border bg-muted/50 p-0.5"
         >
-          <v-btn value="nlp">
-            {{ $t('admin.nlp') }}
-          </v-btn>
-          <v-btn value="brute">
-            {{ $t('admin.brute') }}
-          </v-btn>
-          <v-btn value="ai-providers">
-            {{ $t('admin.ai-providers') }}
-          </v-btn>
-        </v-btn-toggle>
-        <v-spacer />
-        <v-checkbox
-          v-model="showConfidence"
-          class="ml-5"
-          :label="$t('admin.show-individual-confidence')"
-          hide-details
-        />
+          <button
+            v-for="parser in PARSERS"
+            :key="parser.value"
+            type="button"
+            role="radio"
+            :aria-checked="state.parser === parser.value"
+            class="h-8 rounded-item px-3 text-sm font-semibold transition-colors"
+            :class="state.parser === parser.value ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
+            @click="state.parser = parser.value; processIngredient()"
+          >
+            {{ $t(parser.label) }}
+          </button>
+        </div>
+        <label class="ms-auto flex cursor-pointer items-center gap-2 text-sm">
+          <Checkbox v-model="showConfidence" />
+          {{ $t('admin.show-individual-confidence') }}
+        </label>
       </div>
-
-      <v-card flat>
-        <v-card-text>
-          <v-text-field
+      <div class="flex flex-wrap items-end gap-3">
+        <div class="min-w-0 flex-1 basis-60">
+          <TextField
             v-model="state.ingredient"
             :label="$t('admin.ingredient-text')"
           />
-        </v-card-text>
-        <v-card-actions>
-          <BaseButton
-            class="ml-auto"
-            @click="processIngredient"
-          >
-            <template #icon>
-              {{ $globals.icons.check }}
-            </template>
-            {{ $t("general.submit") }}
-          </BaseButton>
-        </v-card-actions>
-      </v-card>
-    </v-container>
-    <v-container v-if="state.results">
-      <div
-        v-if="state.parser !== 'brute' && getConfidence('average')"
-        class="d-flex"
-      >
-        <v-chip
-          dark
-          :color="getColor('average')"
-          class="mx-auto mb-2"
+        </div>
+        <Button
+          type="submit"
+          class="mb-1.5"
         >
-          {{ $t('admin.average-confident', [getConfidence("average")]) }}
-        </v-chip>
+          {{ $t("admin.parse") }}
+        </Button>
       </div>
-      <div
-        class="d-flex justify-center flex-wrap"
-        style="gap: 1.5rem"
+    </form>
+
+    <section v-if="state.results">
+      <p
+        v-if="state.parser !== 'brute' && getConfidence('average')"
+        class="m-0 mb-3"
       >
-        <template v-for="(prop, index) in properties">
+        <span
+          class="rounded-full px-3 py-1 text-sm font-semibold"
+          :class="CONFIDENCE_CLASSES[getColor('average') || ''] || 'bg-muted'"
+        >{{ $t('admin.average-confident', [getConfidence("average")]) }}</span>
+      </p>
+      <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <template
+          v-for="(prop, index) in properties"
+          :key="index"
+        >
           <div
             v-if="prop.value"
-            :key="index"
-            class="flex-grow-1"
+            class="flex flex-col gap-1 rounded-card border bg-card px-4 py-3"
           >
-            <v-card min-width="200px">
-              <v-card-title> {{ prop.value }} </v-card-title>
-              <v-card-text>
-                {{ prop.subtitle }}
-              </v-card-text>
-            </v-card>
-            <v-chip
+            <span class="text-sm text-muted-foreground">{{ prop.subtitle }}</span>
+            <span class="text-lg font-semibold break-words">{{ prop.value }}</span>
+            <span
               v-if="prop.confidence && showConfidence"
-              dark
-              :color="prop.color!"
-              class="mt-2"
-            >
-              {{ $t('admin.average-confident', [prop.confidence]) }}
-            </v-chip>
+              class="w-fit rounded-full px-2 py-0.5 text-xs font-semibold"
+              :class="CONFIDENCE_CLASSES[prop.color || ''] || 'bg-muted'"
+            >{{ $t('admin.average-confident', [prop.confidence]) }}</span>
           </div>
         </template>
       </div>
-    </v-container>
-    <v-container class="narrow-container">
-      <v-card-title> {{ $t('admin.try-an-example') }} </v-card-title>
-      <v-card
-        v-for="(text, idx) in tryText"
-        :key="idx"
-        class="my-2"
-        hover
-        @click="processTryText(text)"
-      >
-        <v-card-text> {{ text }} </v-card-text>
-      </v-card>
-    </v-container>
-  </v-container>
+    </section>
+
+    <section>
+      <h2 class="m-0 mb-3 text-base font-semibold">
+        {{ $t('admin.try-an-example') }}
+      </h2>
+      <div class="flex flex-col gap-2">
+        <button
+          v-for="(text, idx) in tryText"
+          :key="idx"
+          type="button"
+          class="rounded-card border bg-card px-4 py-3 text-start text-[15px] transition-colors hover:border-primary/50 hover:bg-primary/5"
+          @click="processTryText(text)"
+        >
+          {{ text }}
+        </button>
+      </div>
+    </section>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
+import TextField from "~/components/ui/field/TextField.vue";
 import { alert } from "~/composables/use-toast";
 import { useUserApi } from "~/composables/api";
 import type { IngredientConfidence } from "~/lib/api/types/recipe";
 import type { Parser } from "~/lib/api/user/recipes/recipe";
+
+const PARSERS = [
+  { value: "nlp", label: "admin.nlp" },
+  { value: "brute", label: "admin.brute" },
+  { value: "ai-providers", label: "admin.ai-providers" },
+] as const;
+
+const CONFIDENCE_CLASSES: Record<string, string> = {
+  success: "bg-primary/15 text-primary",
+  warning: "bg-brand/20 text-brand-strong",
+  error: "bg-destructive/15 text-destructive",
+};
 
 type ConfidenceAttribute = "average" | "comment" | "name" | "unit" | "quantity" | "food";
 

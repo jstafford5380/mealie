@@ -16,6 +16,13 @@ Route: `/admin/debug/parser`. Source: [parser.vue](../../frontend/app/pages/admi
 - When new responses omit confidence or individual values, the source can retain previous confidence metadata. Treat that as a stale-state limitation to improve, rather than an intended requirement.
 - This playground parses text; it does not save a recipe. Preserve parser choice, examples, confidence detail toggle, and failure recovery when changing components.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Button toggle for the parser, a checkbox, a text field and Submit; results as Vuetify cards with coloured chips. | Segmented parser control and the confidence checkbox on one row, the ingredient field with Parse; results as a grid of tiles (label, value, optional confidence pill) under an average-confidence pill; examples as clickable rows. |
+
+
 ## Screenshots
 
 ### Initial form and all examples

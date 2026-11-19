@@ -1,103 +1,118 @@
 <template>
-  <v-container fluid class="narrow-container">
+  <div class="mx-auto flex w-full max-w-[860px] flex-col px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8">
     <BaseDialog
       v-model="state.storageDetails"
-      bottom-sheet
       :title="$t('admin.maintenance.storage-details')"
       :icon="$globals.icons.folderOutline"
     >
-      <div class="py-2">
-        <template v-for="(value, key, idx) in storageDetails" :key="`item-${key}`">
-          <v-list-item>
-            <v-list-item-title>
-              <div>{{ storageDetailsText(key) }}</div>
-            </v-list-item-title>
-            <v-list-item-subtitle class="text-end">
-              {{ value }}
-            </v-list-item-subtitle>
-          </v-list-item>
-          <v-divider v-if="idx != 4" :key="`divider-${key}`" class="mx-2" />
-        </template>
-      </div>
+      <dl class="m-0 mx-6 mb-2 divide-y rounded-card border">
+        <div
+          v-for="(value, key) in storageDetails"
+          :key="key"
+          class="flex flex-wrap items-baseline justify-between gap-x-4 px-4 py-2.5"
+        >
+          <dt class="text-sm text-muted-foreground">
+            {{ storageDetailsText(key) }}
+          </dt>
+          <dd class="m-0 font-mono text-sm font-semibold">
+            {{ value }}
+          </dd>
+        </div>
+      </dl>
     </BaseDialog>
 
-    <BasePageTitle divider>
-      <template #title>
-        {{ $t("admin.maintenance.page-title") }}
-      </template>
-    </BasePageTitle>
+    <h1 class="m-0 mb-8 text-[26px] font-bold tracking-tight sm:text-[32px]">
+      {{ $t("admin.maintenance.page-title") }}
+    </h1>
+
+    <section class="mb-8">
+      <div class="mb-3 flex flex-wrap items-center gap-2">
+        <h2 class="m-0 flex-1 text-base font-semibold">
+          {{ $t('admin.maintenance.summary-title') }}
+        </h2>
+        <Button
+          variant="outline"
+          :disabled="state.fetchingInfo"
+          @click="getSummary"
+        >
+          <LoaderCircleIcon
+            v-if="state.fetchingInfo"
+            class="size-4 animate-spin"
+          />
+          <RefreshCwIcon
+            v-else
+            class="size-4"
+          />
+          {{ $t("admin.maintenance.button-label-get-summary") }}
+        </Button>
+        <Button
+          variant="ghost"
+          @click="openDetails"
+        >
+          <MdiIcon
+            :path="$globals.icons.folderOutline"
+            class="size-4"
+          />
+          {{ $t("admin.maintenance.button-label-open-details") }}
+        </Button>
+      </div>
+      <dl class="m-0 divide-y rounded-card border bg-card">
+        <div
+          v-for="(value, idx) in info"
+          :key="idx"
+          class="flex flex-wrap items-baseline justify-between gap-x-4 px-4 py-3"
+        >
+          <dt class="text-[15px]">
+            {{ value.name }}
+          </dt>
+          <dd class="m-0 font-semibold tabular-nums">
+            {{ value.value }}
+          </dd>
+        </div>
+      </dl>
+    </section>
 
     <section>
-      <BaseCardSectionTitle class="pb-0" :icon="$globals.icons.wrench" :title="$t('admin.maintenance.summary-title')" />
-      <div class="mb-6 d-flex" style="gap: 0.3rem">
-        <BaseButton color="info" @click="getSummary">
-          <template #icon>
-            {{ $globals.icons.tools }}
-          </template>
-          {{ $t("admin.maintenance.button-label-get-summary") }}
-        </BaseButton>
-        <BaseButton color="info" @click="openDetails">
-          <template #icon>
-            {{ $globals.icons.folderOutline }}
-          </template>
-          {{ $t("admin.maintenance.button-label-open-details") }}
-        </BaseButton>
-      </div>
-      <v-card class="" :loading="state.fetchingInfo">
-        <template v-for="(value, idx) in info" :key="`item-${idx}`">
-          <v-list-item>
-            <v-list-item-title class="py-2">
-              <div>{{ value.name }}</div>
-              <v-list-item-subtitle class="text-end">
-                {{ value.value }}
-              </v-list-item-subtitle>
-            </v-list-item-title>
-          </v-list-item>
-          <v-divider class="mx-2" />
-        </template>
-      </v-card>
-    </section>
-    <section>
-      <BaseCardSectionTitle
-        class="pb-0 mt-8"
-        :icon="$globals.icons.wrench"
-        :title="$t('admin.mainentance.actions-title')"
-      >
+      <h2 class="m-0 text-base font-semibold">
+        {{ $t('admin.mainentance.actions-title') }}
+      </h2>
+      <p class="m-0 mt-1 mb-3 max-w-[65ch] text-sm text-muted-foreground">
         <i18n-t keypath="admin.maintenance.actions-description">
           <template #destructive_in_bold>
-            <b>{{ $t("admin.maintenance.actions-description-destructive") }}</b>
+            <b class="text-foreground">{{ $t("admin.maintenance.actions-description-destructive") }}</b>
           </template>
           <template #irreversible_in_bold>
-            <b>{{ $t("admin.maintenance.actions-description-irreversible") }}</b>
+            <b class="text-foreground">{{ $t("admin.maintenance.actions-description-irreversible") }}</b>
           </template>
         </i18n-t>
-      </BaseCardSectionTitle>
-      <v-card class="ma-0" flat :loading="state.actionLoading">
-        <template v-for="(action, idx) in actions" :key="`item-${idx}`">
-          <v-list-item class="py-2 px-0">
-            <v-list-item-title>
-              <div>{{ action.name }}</div>
-              <v-list-item-subtitle class="wrap-word">
-                {{ action.subtitle }}
-              </v-list-item-subtitle>
-            </v-list-item-title>
-            <template #append>
-              <BaseButton color="info" @click="action.handler">
-                <template #icon>
-                  {{ $globals.icons.robot }}
-                </template>
-                {{ $t("general.run") }}
-              </BaseButton>
-            </template>
-          </v-list-item>
-          <v-divider class="mx-2" />
-        </template>
-      </v-card>
+      </p>
+      <ul class="m-0 flex list-none flex-col divide-y rounded-card border bg-card p-0">
+        <li
+          v-for="(action, idx) in actions"
+          :key="idx"
+          class="flex flex-wrap items-center gap-3 px-4 py-3"
+        >
+          <span class="min-w-0 flex-1 basis-60">
+            <span class="block font-semibold">{{ action.name }}</span>
+            <span class="block text-sm break-words text-muted-foreground">{{ action.subtitle }}</span>
+          </span>
+          <Button
+            variant="outline"
+            :disabled="state.actionLoading"
+            @click="action.handler"
+          >
+            {{ $t("general.run") }}
+          </Button>
+        </li>
+      </ul>
     </section>
-  </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { LoaderCircleIcon, RefreshCwIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { useAdminApi } from "~/composables/api";
 import type { MaintenanceStorageDetails, MaintenanceSummary } from "~/lib/api/types/admin";
 

@@ -870,7 +870,9 @@
       "postgresql-note": "If you are using PostgreSQL, please review the {backup-restore-process} prior to restoring.",
       "backup-restore-process-in-the-documentation": "backup/restore process in the documentation",
       "irreversible-acknowledgment": "I understand that this action is irreversible, destructive and may cause data loss",
-      "restore-backup": "Restore Backup"
+      "restore-backup": "Restore Backup",
+      "no-backups-yet": "No backups yet. Create one, or upload a backup file to restore from.",
+      "restoring": "Restoring… this can take a while."
     },
     "backup-and-exports": "Backups",
     "change-password": "Change Password",
@@ -1404,7 +1406,8 @@
     "run-test": "Run Test",
     "test-results": "Test Results",
     "group-delete-note": "Groups with users or households cannot be deleted",
-    "household-delete-note": "Households with users cannot be deleted"
+    "household-delete-note": "Households with users cannot be deleted",
+    "parse": "Parse"
   },
   "profile": {
     "welcome-user": "👋 Welcome, {0}!",

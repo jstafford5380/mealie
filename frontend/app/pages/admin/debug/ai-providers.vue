@@ -1,120 +1,96 @@
 <template>
-  <v-container class="pa-0">
-    <v-container>
-      <BaseCardSectionTitle :title="$t('admin.debug-ai-providers')">
+  <div class="mx-auto flex w-full max-w-[760px] flex-col gap-6 px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8">
+    <header>
+      <h1 class="m-0 text-[26px] font-bold tracking-tight sm:text-[32px]">
+        {{ $t('admin.debug-ai-providers') }}
+      </h1>
+      <p class="m-0 mt-1 max-w-[65ch] text-[15px] text-muted-foreground">
         {{ $t('admin.debug-ai-providers-description') }}
-        <br>
-        <DocLink
-          class="mt-2"
-          link="/documentation/getting-started/installation/ai-providers"
-        />
-      </BaseCardSectionTitle>
-    </v-container>
-    <v-form
-      ref="uploadForm"
+      </p>
+      <DocLink
+        class="mt-2"
+        link="/documentation/getting-started/installation/ai-providers"
+      />
+    </header>
+
+    <form
+      class="rounded-panel border bg-card p-5 sm:p-6"
       @submit.prevent="testOpenAI"
     >
-      <div>
-        <v-card-text>
-          <v-container class="pa-0">
-            <v-row>
-              <v-col cols="12" md="6">
-                <v-select
-                  v-if="groups"
-                  v-model="selectedGroupId"
-                  :items="groups"
-                  item-title="name"
-                  item-value="id"
-                  :label="$t('group.group')"
-                  density="compact"
-                  variant="outlined"
-                  clearable
-                  hide-details
-                />
-              </v-col>
-              <v-col cols="12" md="6">
-                <v-select
-                  v-model="selectedProviderId"
-                  :items="groupProviders"
-                  item-title="name"
-                  item-value="id"
-                  :label="$t('group.ai-provider-settings.ai-provider')"
-                  density="compact"
-                  variant="outlined"
-                  clearable
-                  hide-details
-                  :disabled="!selectedGroupId"
-                />
-              </v-col>
-            </v-row>
-            <v-row>
-              <v-col
-                cols="auto"
-                align-self="center"
-              >
-                <AppButtonUpload
-                  v-if="!uploadedImage"
-                  class="ml-auto"
-                  url="none"
-                  file-name="image"
-                  accept="image/*"
-                  :text="$t('recipe.upload-image')"
-                  :text-btn="false"
-                  :post="false"
-                  @uploaded="uploadImage"
-                />
-                <v-btn
-                  v-if="!!uploadedImage"
-                  color="error"
-                  @click="clearImage"
-                >
-                  <v-icon start>
-                    {{ $globals.icons.close }}
-                  </v-icon>
-                  {{ $t("recipe.remove-image") }}
-                </v-btn>
-              </v-col>
-              <v-spacer />
-            </v-row>
-            <v-row
-              v-if="uploadedImage && uploadedImagePreviewUrl"
-              style="max-width: 25%;"
-            >
-              <v-spacer />
-              <v-col cols="12">
-                <v-img :src="uploadedImagePreviewUrl" />
-              </v-col>
-              <v-spacer />
-            </v-row>
-          </v-container>
-        </v-card-text>
-        <v-card-actions>
-          <BaseButton
-            type="submit"
-            :disabled="!selectedProviderId"
-            :text="$t('admin.run-test')"
-            :icon="$globals.icons.check"
-            :loading="loading"
-            class="ml-auto"
-          />
-        </v-card-actions>
+      <div class="grid gap-x-4 sm:grid-cols-2">
+        <SelectField
+          v-if="groups"
+          v-model="selectedGroupId"
+          :items="groups"
+          item-title="name"
+          item-value="id"
+          :label="$t('group.group')"
+        />
+        <SelectField
+          v-model="selectedProviderId"
+          :items="groupProviders"
+          item-title="name"
+          item-value="id"
+          :label="$t('group.ai-provider-settings.ai-provider')"
+          :disabled="!selectedGroupId"
+        />
       </div>
-    </v-form>
-    <v-divider
-      v-if="response"
-      class="mt-4"
-    />
-    <v-container
-      v-if="response"
-      class="ma-0 pa-0"
-    >
-      <v-card-title> {{ $t('admin.test-results') }} </v-card-title>
-      <v-card-text> {{ response }} </v-card-text>
-    </v-container>
-  </v-container>
+      <div class="mt-3 flex flex-wrap items-center gap-3">
+        <AppButtonUpload
+          v-if="!uploadedImage"
+          url="none"
+          file-name="image"
+          accept="image/*"
+          :text="$t('recipe.upload-image')"
+          :text-btn="false"
+          :post="false"
+          @uploaded="uploadImage"
+        />
+        <template v-else>
+          <img
+            v-if="uploadedImagePreviewUrl"
+            :src="uploadedImagePreviewUrl"
+            alt=""
+            class="size-20 rounded-control border object-cover"
+          >
+          <Button
+            type="button"
+            variant="ghost"
+            class="text-destructive hover:text-destructive"
+            @click="clearImage"
+          >
+            <XIcon class="size-4" />
+            {{ $t("recipe.remove-image") }}
+          </Button>
+        </template>
+      </div>
+      <div class="mt-5 flex justify-end border-t pt-4">
+        <Button
+          type="submit"
+          :disabled="!selectedProviderId || loading"
+        >
+          <LoaderCircleIcon
+            v-if="loading"
+            class="size-4 animate-spin"
+          />
+          {{ $t('admin.run-test') }}
+        </Button>
+      </div>
+    </form>
+
+    <section v-if="response">
+      <h2 class="m-0 mb-2 text-base font-semibold">
+        {{ $t('admin.test-results') }}
+      </h2>
+      <pre class="m-0 overflow-x-auto rounded-card border bg-muted p-4 text-sm whitespace-pre-wrap">{{ response }}</pre>
+    </section>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { LoaderCircleIcon, XIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import SelectField from "~/components/ui/field/SelectField.vue";
 import { useAdminApi } from "~/composables/api";
 import { useGroups } from "~/composables/use-groups";
 import { alert } from "~/composables/use-toast";
