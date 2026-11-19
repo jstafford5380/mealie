@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <div class="mx-auto w-full max-w-[1440px] px-4 pb-16 pt-4 font-sans sm:px-6 lg:px-8 lg:pt-8">
     <RecipeDialogAddToShoppingList
       v-if="shoppingLists"
       v-model="shoppingListDialog"
@@ -8,172 +8,183 @@
       @list-created="addShoppingList"
     />
     <GroupMealPlanCalendarDialog v-model="calendarDialog" />
-    <!-- range navigation and page actions share one toolbar, kept apart from the plan below -->
-    <div class="d-flex flex-wrap align-center ga-2">
-      <div class="range-nav d-flex align-center ga-2">
-        <v-btn :icon="$globals.icons.chevronLeft" flat rounded="md" density="comfortable" @click="() => changeWeek(-1)" />
-        <v-menu
-          v-model="state.picker"
-          :close-on-content-click="false"
-          transition="scale-transition"
-          offset-y
-          min-width="auto"
+
+    <div class="mb-6 flex flex-wrap items-center gap-x-4 gap-y-3">
+      <h1 class="m-0 text-[28px] font-bold tracking-tight sm:text-[32px]">
+        {{ $t("meal-plan.meal-planner") }}
+      </h1>
+      <div class="flex w-full min-w-0 items-center gap-1 sm:w-auto">
+        <Button
+          variant="outline"
+          size="icon"
+          class="shrink-0"
+          :aria-label="$t('meal-plan.previous-range')"
+          :title="$t('meal-plan.previous-range')"
+          @click="changeWeek(-1)"
         >
-          <template #activator="{ props }">
-            <v-btn
-              class="range-button"
-              color="primary"
-              v-bind="props"
+          <ChevronLeftIcon class="size-4" />
+        </Button>
+        <Popover v-model:open="state.picker">
+          <PopoverTrigger as-child>
+            <Button
+              variant="outline"
+              class="min-w-0 flex-1 sm:flex-none"
+              :aria-label="`${$t('meal-plan.choose-range')}: ${$d(visibleRange.start, 'short')} – ${$d(visibleRange.end, 'short')}`"
             >
-              <v-icon start>
-                {{ $globals.icons.calendar }}
-              </v-icon>
-              {{ $d(visibleRange.start, "short") }} - {{ $d(visibleRange.end, "short") }}
-            </v-btn>
-          </template>
-
-          <v-card>
+              <MdiIcon
+                :path="$globals.icons.calendar"
+                class="size-4"
+              />
+              <span class="truncate">{{ rangeLabel }}</span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent
+            align="start"
+            class="flex w-[min(22rem,calc(100vw-2rem))] flex-col gap-4"
+          >
             <MealPlanDatePicker
-              v-model="state.range"
-              hide-header
-              :multiple="'range'"
-              :first-day-of-week="firstDayOfWeek"
-              :local="$i18n.locale"
+              v-model="pickerRange"
+              multiple="range"
             />
-
-            <template v-if="isDaysMode">
-              <v-card-text>
-                <v-number-input
+            <div class="grid grid-cols-2 gap-3 border-t pt-3">
+              <template v-if="isDaysMode">
+                <NumberInputField
                   v-model="numberOfDaysPast"
                   :min="0"
-                  inset
                   :label="$t('meal-plan.numberOfDaysPast-label')"
                   :hint="$t('meal-plan.numberOfDaysPast-hint')"
-                  persistent-hint
                 />
-              </v-card-text>
-
-              <v-card-text>
-                <v-number-input
+                <NumberInputField
                   v-model="numberOfDays"
                   :min="1"
-                  inset
                   :label="$t('meal-plan.numberOfDays-label')"
                   :hint="$t('meal-plan.numberOfDays-hint')"
-                  persistent-hint
                 />
-              </v-card-text>
-            </template>
-            <template v-else>
-              <v-card-text>
-                <v-number-input
+              </template>
+              <template v-else>
+                <NumberInputField
                   v-model="numberOfWeeksPast"
                   :min="0"
-                  inset
                   :label="$t('meal-plan.numberOfWeeksPast-label')"
                   :hint="$t('meal-plan.numberOfWeeksPast-hint')"
-                  persistent-hint
                 />
-              </v-card-text>
-
-              <v-card-text>
-                <v-number-input
+                <NumberInputField
                   v-model="numberOfWeeks"
                   :min="1"
-                  inset
                   :label="$t('meal-plan.numberOfWeeks-label')"
                   :hint="$t('meal-plan.numberOfWeeks-hint')"
-                  persistent-hint
                 />
-              </v-card-text>
-            </template>
-          </v-card>
-        </v-menu>
-        <v-btn :icon="$globals.icons.chevronRight" flat rounded="md" density="comfortable" @click="() => changeWeek(1)" />
+              </template>
+            </div>
+          </PopoverContent>
+        </Popover>
+        <Button
+          variant="outline"
+          size="icon"
+          class="shrink-0"
+          :aria-label="$t('meal-plan.next-range')"
+          :title="$t('meal-plan.next-range')"
+          @click="changeWeek(1)"
+        >
+          <ChevronRightIcon class="size-4" />
+        </Button>
+        <Button
+          variant="ghost"
+          class="shrink-0 text-primary"
+          @click="goToToday"
+        >
+          {{ $t("meal-plan.today") }}
+        </Button>
       </div>
-      <v-btn-toggle
-        v-model="mealPlanPreferences.mode"
-        mandatory
-        divided
-        variant="outlined"
-        color="primary"
-        density="comfortable"
-      >
-        <v-btn value="weeks">
-          <v-badge
-            :model-value="hiddenWeekMealCount > 0"
-            :content="hiddenWeekMealCount"
-            color="primary"
-            inline
+
+      <div class="ms-auto flex flex-wrap items-center gap-2">
+        <div
+          role="radiogroup"
+          :aria-label="$t('meal-plan.range-mode')"
+          class="inline-flex rounded-control bg-muted p-1 text-sm"
+        >
+          <button
+            v-for="mode in modeOptions"
+            :key="mode.value"
+            type="button"
+            role="radio"
+            :aria-checked="mealPlanPreferences.mode === mode.value"
+            :title="mode.value === 'weeks' && hiddenWeekMealCount > 0 ? $t('meal-plan.week-meals-hidden', hiddenWeekMealCount) : undefined"
+            class="inline-flex h-8 items-center gap-1.5 rounded-item px-3 font-semibold transition-colors"
+            :class="mealPlanPreferences.mode === mode.value ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
+            @click="mealPlanPreferences.mode = mode.value"
           >
-            <span :class="{ 'me-1': hiddenWeekMealCount > 0 }">{{ $t("meal-plan.weeks") }}</span>
-          </v-badge>
-          <v-tooltip v-if="hiddenWeekMealCount > 0" activator="parent" location="bottom">
-            {{ $t("meal-plan.week-meals-hidden", hiddenWeekMealCount) }}
-          </v-tooltip>
-        </v-btn>
-        <v-btn value="days">
-          {{ $t("meal-plan.days") }}
-        </v-btn>
-      </v-btn-toggle>
-      <BaseButtonGroup
-        class="d-flex ms-auto"
-        :buttons="[
-          edit ? {
-            icon: $globals.icons.calendar,
-            text: $t('general.view'),
-            event: 'view',
-          } : {
-            icon: $globals.icons.edit,
-            text: $t('general.edit'),
-            event: 'edit',
-          },
-          {
-            icon: $globals.icons.dotsVertical,
-            text: '',
-            event: 'three-dot',
-            children: [
-              {
-                icon: $globals.icons.cartCheck,
-                text: $t('meal-plan.add-all-to-list'),
-                event: 'add-to-list',
-                disabled: !hasRecipes,
-              },
-              {
-                icon: $globals.icons.calendar,
-                text: $t('meal-plan.calendar-feed'),
-                event: 'calendar-feed',
-              },
-              {
-                icon: $globals.icons.cog,
-                text: $t('general.settings'),
-                event: 'settings',
-              },
-            ],
-          },
-        ]"
-        @add-to-list="addAllToList"
-        @edit="router.push({ name: TABS.edit, query: route.query })"
-        @view="router.push({ name: TABS.view, query: route.query })"
-        @settings="router.push('/household/mealplan/settings')"
-        @calendar-feed="calendarDialog = true"
-      />
-    </div>
-    <v-divider class="my-4" />
-    <div>
-      <NuxtPage
-        :mealplans="plans"
-        :actions="actions"
-      />
+            {{ mode.label }}
+            <span
+              v-if="mode.value === 'weeks' && hiddenWeekMealCount > 0"
+              class="inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-bold text-primary-foreground"
+            >{{ hiddenWeekMealCount }}<span class="sr-only">: {{ $t('meal-plan.week-meals-hidden', hiddenWeekMealCount) }}</span></span>
+          </button>
+        </div>
+        <Button
+          :disabled="!hasRecipes"
+          @click="addAllToList"
+        >
+          <MdiIcon
+            :path="$globals.icons.cartCheck"
+            class="size-4"
+          />
+          <span class="max-sm:sr-only">{{ $t("meal-plan.add-all-to-list") }}</span>
+        </Button>
+        <DropdownMenu :modal="false">
+          <DropdownMenuTrigger as-child>
+            <Button
+              variant="ghost"
+              size="icon"
+              :aria-label="$t('general.more')"
+            >
+              <EllipsisVerticalIcon class="size-5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            class="min-w-52"
+          >
+            <DropdownMenuItem @select="calendarDialog = true">
+              <MdiIcon
+                :path="$globals.icons.calendar"
+                class="size-4"
+              />
+              {{ $t("meal-plan.calendar-feed") }}
+            </DropdownMenuItem>
+            <DropdownMenuItem @select="router.push('/household/mealplan/settings')">
+              <MdiIcon
+                :path="$globals.icons.cog"
+                class="size-4"
+              />
+              {{ $t("general.settings") }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
 
-    <v-row />
-  </v-container>
+    <NuxtPage
+      :mealplans="plans"
+      :actions="actions"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
 import { addDays, addWeeks, differenceInCalendarDays, format, isSameDay, isValid, parseISO } from "date-fns";
+import { ChevronLeftIcon, ChevronRightIcon, EllipsisVerticalIcon } from "@lucide/vue";
 import GroupMealPlanCalendarDialog from "~/components/Domain/Household/GroupMealPlanCalendarDialog.vue";
+import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import NumberInputField from "~/components/ui/field/NumberInputField.vue";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import RecipeDialogAddToShoppingList from "~/components/Domain/Recipe/RecipeDialogAddToShoppingList.vue";
 import { useAddToShoppingListDialog } from "~/composables/shopping-list-page/use-add-to-shopping-list-dialog";
 import type { MealsByDate } from "~/composables/use-group-mealplan";
@@ -236,10 +247,6 @@ if (route.path === "/household/mealplan/planner") {
   });
 }
 
-const edit = computed(() => {
-  return route.path.startsWith("/household/mealplan/planner/edit");
-});
-
 function safeParseISO(date: string, fallback: Date | undefined = undefined) {
   try {
     const parsed = parseISO(date);
@@ -277,6 +284,40 @@ const state = ref({
 const firstDayOfWeek = computed(() => {
   return household.value?.preferences?.firstDayOfWeek || 0;
 });
+
+const modeOptions = computed(() => [
+  { value: "weeks" as const, label: i18n.t("meal-plan.weeks") },
+  { value: "days" as const, label: i18n.t("meal-plan.days") },
+]);
+
+/** The picker picks one day per click: the first click starts a range, the second finishes it. */
+const pickerRange = computed<Date | [Date, Date]>({
+  get: () => {
+    const [first, last] = state.value.range;
+    return state.value.range.length === 2 && first && last ? [first, last].sort((a, b) => a.getTime() - b.getTime()) as [Date, Date] : first!;
+  },
+  set: (value) => {
+    const day = Array.isArray(value) ? value[0] : value;
+    if (!day) {
+      return;
+    }
+    if (state.value.range.length === 1) {
+      state.value.range = [state.value.range[0]!, day].sort((a, b) => a.getTime() - b.getTime()) as [Date, Date];
+    }
+    else {
+      state.value.range = [day] as unknown as [Date, Date];
+    }
+  },
+});
+
+const rangeLabel = computed(() => {
+  const fmt = new Intl.DateTimeFormat(i18n.locale.value, { month: "short", day: "numeric" });
+  return `${fmt.format(visibleRange.value.start)} – ${fmt.format(visibleRange.value.end)}`;
+});
+
+function goToToday() {
+  state.value.range = [defaultStartDate(), defaultEndDate()];
+}
 
 function changeWeek(step: number) {
   const { start, end } = visibleRange.value;
@@ -416,22 +457,3 @@ const weekRecipesWithScales = computed(() => {
   return getScaledRecipes(allMeals.value);
 });
 </script>
-
-<style scoped>
-/* the arrows stay beside the range on narrow screens, and a long range wraps inside its button instead */
-.range-nav {
-  min-width: 0;
-}
-
-.range-button {
-  flex-shrink: 1;
-  min-width: 0;
-  height: auto;
-  min-height: var(--v-btn-height);
-  padding-block: 0.25em;
-}
-
-.range-button :deep(.v-btn__content) {
-  white-space: normal;
-}
-</style>

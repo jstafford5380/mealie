@@ -32,6 +32,10 @@ These additional cases remain for replacement validation. See the [handoff evide
 - [ ] Verify mouse, touch, and keyboard moves across day/week boundaries and failed updates during replacement.
 - [ ] Verify randomize creation and deletion failures without losing the original entry.
 
+## Redesign (implemented)
+
+See the redesign table in [the planner page](household--mealplan--planner.md#redesign-implemented): View and Edit are now the same board.
+
 ## Shadcn Vue replacement checklist
 
 - [ ] Use sortable semantic lists, accessible move controls, Cards, DropdownMenu, Badge, shared entry Dialog, and Buttons.

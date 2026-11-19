@@ -2852,62 +2852,59 @@
       "document": "pages/household--mealplan--planner.md",
       "status": "reviewed",
       "components": [
-        "BaseButtonGroup",
+        "Button",
+        "ChevronLeftIcon",
+        "ChevronRightIcon",
+        "Date",
+        "DropdownMenu",
+        "DropdownMenuContent",
+        "DropdownMenuItem",
+        "DropdownMenuTrigger",
+        "EllipsisVerticalIcon",
         "GroupMealPlanCalendarDialog",
+        "MdiIcon",
         "MealPlanDatePicker",
+        "NumberInputField",
         "NuxtPage",
+        "Popover",
+        "PopoverContent",
+        "PopoverTrigger",
         "RecipeDialogAddToShoppingList"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Household/GroupMealPlanCalendarDialog.vue",
         "frontend/app/components/Domain/Mealplan/MealPlanDatePicker.vue",
         "frontend/app/components/Domain/Recipe/RecipeDialogAddToShoppingList.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue"
+        "frontend/app/components/ui/field/NumberInputField.vue"
       ],
-      "vuetify": [
-        "v-badge",
-        "v-btn",
-        "v-btn-toggle",
-        "v-card",
-        "v-card-text",
-        "v-container",
-        "v-divider",
-        "v-icon",
-        "v-menu",
-        "v-number-input",
-        "v-row",
-        "v-tooltip"
-      ],
+      "vuetify": [],
       "events": [
-        "add-to-list: addAllToList",
-        "calendar-feed: calendarDialog = true",
-        "click: () => changeWeek(-1)",
-        "click: () => changeWeek(1)",
-        "edit: router.push({ name: TABS.edit, query: route.query })",
+        "click: addAllToList",
+        "click: changeWeek(-1)",
+        "click: changeWeek(1)",
+        "click: goToToday",
+        "click: mealPlanPreferences.mode = mode.value",
         "list-created: addShoppingList",
-        "settings: router.push('/household/mealplan/settings')",
-        "view: router.push({ name: TABS.view, query: route.query })"
+        "select: calendarDialog = true",
+        "select: router.push('/household/mealplan/settings')"
       ],
       "models": [
         "calendarDialog",
-        "mealPlanPreferences.mode",
         "numberOfDays",
         "numberOfDaysPast",
         "numberOfWeeks",
         "numberOfWeeksPast",
+        "pickerRange",
         "shoppingListDialog",
-        "state.picker",
-        "state.range"
+        "state.picker"
       ],
       "conditions": [
-        "hiddenWeekMealCount > 0",
         "isDaysMode",
+        "mode.value === 'weeks' && hiddenWeekMealCount > 0",
         "shoppingLists"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "v-tooltip"
-      ],
+      "vuetifyAPIs": [],
       "componentClosure": [
         "frontend/app/components/Domain/Household/GroupMealPlanCalendarDialog.vue",
         "frontend/app/components/Domain/Mealplan/MealPlanDatePicker.vue",
@@ -2916,13 +2913,11 @@
         "frontend/app/components/Domain/Recipe/RecipeIngredientSubstitutions.vue",
         "frontend/app/components/global/AppButtonCopy.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
         "frontend/app/components/global/DocLink.vue",
         "frontend/app/components/global/SafeMarkdown.vue",
+        "frontend/app/components/ui/field/NumberInputField.vue",
         "frontend/app/components/ui/field/TextField.vue"
       ]
     },
@@ -2933,80 +2928,47 @@
       "document": "pages/household--mealplan--planner--edit.md",
       "status": "reviewed",
       "components": [
-        "GroupMealPlanEntryDialog",
-        "MealPlanDay",
-        "MealPlanLayout",
-        "RecipeCardLineItem",
-        "SpinTransition",
-        "VueDraggable"
+        "MealPlanBoard"
       ],
       "dependencies": [
-        "frontend/app/components/Domain/Household/GroupMealPlanEntryDialog.vue",
-        "frontend/app/components/Domain/Mealplan/MealPlanDay.vue",
-        "frontend/app/components/Domain/Mealplan/MealPlanLayout.vue",
-        "frontend/app/components/Domain/Recipe/RecipeCardLineItem.vue",
-        "frontend/app/components/global/Transition/SpinTransition.vue"
+        "frontend/app/components/Domain/Mealplan/MealPlanBoard.vue"
       ],
-      "vuetify": [
-        "v-avatar",
-        "v-btn",
-        "v-card",
-        "v-chip",
-        "v-divider",
-        "v-icon",
-        "v-list",
-        "v-list-item",
-        "v-list-item-subtitle",
-        "v-list-item-title",
-        "v-menu"
-      ],
-      "events": [
-        "click: actions.deleteOne(mealplan.id)",
-        "click: actions.setType(mealplan, mealType.value)",
-        "click: editMeal(mealplan)",
-        "click: randomizeMeal(mealplan)",
-        "create: actions.createOne($event)",
-        "end: onMoveCallback",
-        "update: actions.updateOne($event)"
-      ],
-      "models": [
-        "dialog.open",
-        "mealplansByDate[planKey(plan)]!"
-      ],
-      "conditions": [
-        "mealplan.recipe",
-        "mealplan.recipe && (mealplan.recipeScale ?? 1) !== 1",
-        "mealplan.recipe && mealplan.entryType",
-        "mealplan.text"
-      ],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ],
+      "vuetifyAPIs": [],
       "componentClosure": [
         "frontend/app/components/Domain/Household/GroupMealPlanEntryDialog.vue",
+        "frontend/app/components/Domain/Mealplan/MealPlanAddRecipeDialog.vue",
+        "frontend/app/components/Domain/Mealplan/MealPlanBoard.vue",
         "frontend/app/components/Domain/Mealplan/MealPlanDatePicker.vue",
-        "frontend/app/components/Domain/Mealplan/MealPlanDay.vue",
-        "frontend/app/components/Domain/Mealplan/MealPlanDayHeader.vue",
-        "frontend/app/components/Domain/Mealplan/MealPlanLayout.vue",
-        "frontend/app/components/Domain/Recipe/RecipeCardImage.vue",
+        "frontend/app/components/Domain/Mealplan/MealPlanEntryCard.vue",
+        "frontend/app/components/Domain/Mealplan/MealPlanScaleControl.vue",
         "frontend/app/components/Domain/Recipe/RecipeCardLineItem.vue",
+        "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenu.vue",
+        "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenuContent.vue",
         "frontend/app/components/Domain/Recipe/RecipeDialogAddToShoppingList.vue",
+        "frontend/app/components/Domain/Recipe/RecipeDialogPrintPreferences.vue",
+        "frontend/app/components/Domain/Recipe/RecipeDialogShare.vue",
         "frontend/app/components/Domain/Recipe/RecipeIngredientListItem.vue",
         "frontend/app/components/Domain/Recipe/RecipeIngredientSubstitutions.vue",
+        "frontend/app/components/Domain/Recipe/RecipePrintView.vue",
         "frontend/app/components/Domain/Recipe/RecipeScaleEditButton.vue",
         "frontend/app/components/Domain/Recipe/RecipeSelector.vue",
+        "frontend/app/components/Domain/Recipe/RecipeThumb.vue",
+        "frontend/app/components/Domain/Recipe/RecipeTimeCard.vue",
         "frontend/app/components/Domain/SearchFilter.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
         "frontend/app/components/global/SafeInlineHtml.vue",
         "frontend/app/components/global/SafeMarkdown.vue",
-        "frontend/app/components/global/Transition/SpinTransition.vue",
-        "frontend/app/components/ui/field/TextField.vue"
+        "frontend/app/components/ui/field/DateField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ]
     },
     {
@@ -3016,86 +2978,47 @@
       "document": "pages/household--mealplan--planner--view.md",
       "status": "reviewed",
       "components": [
-        "GroupMealPlanEntryDialog",
-        "MealPlanDay",
-        "MealPlanLayout",
-        "MealPlanNoteMenu",
-        "MealPlanScaleControl",
-        "RecipeCardMobile",
-        "SpinTransition"
+        "MealPlanBoard"
       ],
       "dependencies": [
-        "frontend/app/components/Domain/Household/GroupMealPlanEntryDialog.vue",
-        "frontend/app/components/Domain/Mealplan/MealPlanDay.vue",
-        "frontend/app/components/Domain/Mealplan/MealPlanLayout.vue",
-        "frontend/app/components/Domain/Mealplan/MealPlanNoteMenu.vue",
-        "frontend/app/components/Domain/Mealplan/MealPlanScaleControl.vue",
-        "frontend/app/components/Domain/Recipe/RecipeCardMobile.vue",
-        "frontend/app/components/global/Transition/SpinTransition.vue"
+        "frontend/app/components/Domain/Mealplan/MealPlanBoard.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-container"
-      ],
-      "events": [
-        "click: cookToday(mealplan)",
-        "create: actions.createOne($event)",
-        "mealplan-edit: editMeal(mealplan)",
-        "mealplan-remove: actions.deleteOne(mealplan.id)",
-        "update: actions.updateOne($event)"
-      ],
-      "models": [
-        "dialog.open"
-      ],
-      "conditions": [
-        "!mealplan.recipe",
-        "day.sections.length",
-        "mealplan.endDate",
-        "mealplan.recipe",
-        "mealplan.recipe || mealplan.endDate"
-      ],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [],
       "dynamicComponents": [],
       "vuetifyAPIs": [],
       "componentClosure": [
         "frontend/app/components/Domain/Household/GroupMealPlanEntryDialog.vue",
         "frontend/app/components/Domain/Mealplan/MealPlanAddRecipeDialog.vue",
+        "frontend/app/components/Domain/Mealplan/MealPlanBoard.vue",
         "frontend/app/components/Domain/Mealplan/MealPlanDatePicker.vue",
-        "frontend/app/components/Domain/Mealplan/MealPlanDay.vue",
-        "frontend/app/components/Domain/Mealplan/MealPlanDayHeader.vue",
-        "frontend/app/components/Domain/Mealplan/MealPlanLayout.vue",
-        "frontend/app/components/Domain/Mealplan/MealPlanNoteMenu.vue",
+        "frontend/app/components/Domain/Mealplan/MealPlanEntryCard.vue",
         "frontend/app/components/Domain/Mealplan/MealPlanScaleControl.vue",
-        "frontend/app/components/Domain/Recipe/RecipeCardImage.vue",
         "frontend/app/components/Domain/Recipe/RecipeCardLineItem.vue",
-        "frontend/app/components/Domain/Recipe/RecipeCardMobile.vue",
-        "frontend/app/components/Domain/Recipe/RecipeCardRating.vue",
-        "frontend/app/components/Domain/Recipe/RecipeChips.vue",
         "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenu.vue",
         "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenuContent.vue",
         "frontend/app/components/Domain/Recipe/RecipeDialogAddToShoppingList.vue",
         "frontend/app/components/Domain/Recipe/RecipeDialogPrintPreferences.vue",
         "frontend/app/components/Domain/Recipe/RecipeDialogShare.vue",
-        "frontend/app/components/Domain/Recipe/RecipeFavoriteBadge.vue",
         "frontend/app/components/Domain/Recipe/RecipeIngredientListItem.vue",
         "frontend/app/components/Domain/Recipe/RecipeIngredientSubstitutions.vue",
         "frontend/app/components/Domain/Recipe/RecipePrintView.vue",
         "frontend/app/components/Domain/Recipe/RecipeScaleEditButton.vue",
         "frontend/app/components/Domain/Recipe/RecipeSelector.vue",
+        "frontend/app/components/Domain/Recipe/RecipeThumb.vue",
         "frontend/app/components/Domain/Recipe/RecipeTimeCard.vue",
         "frontend/app/components/Domain/SearchFilter.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
         "frontend/app/components/global/SafeInlineHtml.vue",
         "frontend/app/components/global/SafeMarkdown.vue",
-        "frontend/app/components/global/Transition/SpinTransition.vue",
         "frontend/app/components/ui/field/DateField.vue",
         "frontend/app/components/ui/field/SelectField.vue",
-        "frontend/app/components/ui/field/TextField.vue"
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ]
     },
     {
@@ -3647,11 +3570,11 @@
         "useDisplay"
       ],
       "componentClosure": [
-        "frontend/app/components/Domain/Recipe/RecipeCardImage.vue",
         "frontend/app/components/Domain/Recipe/RecipeCardLineItem.vue",
         "frontend/app/components/Domain/Recipe/RecipeIngredientListItem.vue",
         "frontend/app/components/Domain/Recipe/RecipeIngredientSubstitutions.vue",
         "frontend/app/components/Domain/Recipe/RecipeList.vue",
+        "frontend/app/components/Domain/Recipe/RecipeThumb.vue",
         "frontend/app/components/Domain/ShoppingList/MultiPurposeLabelSection.vue",
         "frontend/app/components/Domain/ShoppingList/ShoppingListAddItemForm.vue",
         "frontend/app/components/Domain/ShoppingList/ShoppingListItem.vue",

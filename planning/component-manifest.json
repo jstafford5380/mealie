@@ -627,40 +627,37 @@
       "name": "GroupMealPlanEntryDialog",
       "components": [
         "BaseDialog",
+        "Button",
         "InstanceType",
+        "MdiIcon",
         "MealPlanDatePicker",
         "PlanEntryType",
         "Props",
         "RecipeScaleEditButton",
         "RecipeSelector",
-        "RecipeSummary"
+        "RecipeSummary",
+        "SelectField",
+        "Switch",
+        "TextField",
+        "TextareaField"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Mealplan/MealPlanDatePicker.vue",
         "frontend/app/components/Domain/Recipe/RecipeScaleEditButton.vue",
         "frontend/app/components/Domain/Recipe/RecipeSelector.vue",
-        "frontend/app/components/global/BaseDialog.vue"
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ],
-      "vuetify": [
-        "v-alert",
-        "v-btn",
-        "v-btn-toggle",
-        "v-card-text",
-        "v-col",
-        "v-icon",
-        "v-row",
-        "v-select",
-        "v-switch",
-        "v-text-field",
-        "v-textarea"
-      ],
+      "vuetify": [],
       "events": [
+        "click: entryMode = mode.value",
         "click: ignoreRules = true",
         "submit: submit"
       ],
       "models": [
         "dialog",
-        "entryMode",
         "entryType",
         "ignoreRules",
         "isWeekEntry",
@@ -805,6 +802,68 @@
       "vuetifyAPIs": []
     },
     {
+      "source": "frontend/app/components/Domain/Mealplan/MealPlanBoard.vue",
+      "name": "MealPlanBoard",
+      "components": [
+        "Block",
+        "DropdownMenu",
+        "DropdownMenuContent",
+        "DropdownMenuItem",
+        "DropdownMenuLabel",
+        "DropdownMenuSeparator",
+        "DropdownMenuTrigger",
+        "EllipsisVerticalIcon",
+        "GroupMealPlanEntryDialog",
+        "MdiIcon",
+        "MealPlanEntryCard",
+        "PlusIcon",
+        "RecipeDialogAddToShoppingList",
+        "Record",
+        "ReturnType",
+        "VueDraggable"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Household/GroupMealPlanEntryDialog.vue",
+        "frontend/app/components/Domain/Mealplan/MealPlanEntryCard.vue",
+        "frontend/app/components/Domain/Recipe/RecipeDialogAddToShoppingList.vue"
+      ],
+      "vuetify": [],
+      "events": [
+        "click: addMeal(block.week.date, 'dinner', block.week.endDate!)",
+        "click: addMeal(day.date, 'dinner')",
+        "click: addMeal(day.date, row.value)",
+        "cook-today: cookToday",
+        "create: actions.createOne($event)",
+        "edit: editMeal",
+        "end: onDrop",
+        "list-created: addShoppingList",
+        "randomize: randomizeMeal",
+        "select: addToList(block.week!.meals)",
+        "select: addToList(day.meals)",
+        "select: randomMeal(block.week!.date, option.type, block.week!.endDate!)",
+        "select: randomMeal(day.date, option.type)",
+        "update: actions.updateOne($event)"
+      ],
+      "models": [
+        "cells[cellKey(day, option.value)]!",
+        "cells[cellKey(day, row.value)]!",
+        "cells[weekKey(block.week)]!",
+        "dialog.open",
+        "listDialog"
+      ],
+      "conditions": [
+        "!day.meals.length",
+        "block.days.length",
+        "block.week",
+        "cells[cellKey(day, option.value)]?.length",
+        "isWide",
+        "isWide && block.days.length",
+        "shoppingLists"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
       "source": "frontend/app/components/Domain/Mealplan/MealPlanDatePicker.vue",
       "name": "MealPlanDatePicker",
       "components": [
@@ -829,90 +888,45 @@
       "vuetifyAPIs": []
     },
     {
-      "source": "frontend/app/components/Domain/Mealplan/MealPlanDay.vue",
-      "name": "MealPlanDay",
+      "source": "frontend/app/components/Domain/Mealplan/MealPlanEntryCard.vue",
+      "name": "MealPlanEntryCard",
       "components": [
-        "BaseButtonGroup",
-        "GroupMealPlanEntryDialog",
-        "MealPlanDayHeader",
-        "Props",
-        "RecipeDialogAddToShoppingList"
+        "ContextMenuItem",
+        "DropdownMenu",
+        "DropdownMenuContent",
+        "DropdownMenuItem",
+        "DropdownMenuTrigger",
+        "EllipsisVerticalIcon",
+        "MdiIcon",
+        "MealPlanScaleControl",
+        "RecipeContextMenu",
+        "RecipeThumb"
       ],
       "dependencies": [
-        "frontend/app/components/Domain/Household/GroupMealPlanEntryDialog.vue",
-        "frontend/app/components/Domain/Mealplan/MealPlanDayHeader.vue",
-        "frontend/app/components/Domain/Recipe/RecipeDialogAddToShoppingList.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue"
+        "frontend/app/components/Domain/Mealplan/MealPlanScaleControl.vue",
+        "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenu.vue",
+        "frontend/app/components/Domain/Recipe/RecipeThumb.vue"
       ],
       "vuetify": [],
       "events": [
-        "create: actions.createOne($event)",
-        "list-created: addShoppingList",
-        "update: actions.updateOne($event)"
+        "click: !recipeLink && emit('edit', meal)",
+        "mealplan-cook-today: run('mealplanCookToday')",
+        "mealplan-edit: run('mealplanEdit')",
+        "mealplan-randomize: run('mealplanRandomize')",
+        "mealplan-remove: run('mealplanRemove')",
+        "select: run(item.event)"
       ],
-      "models": [
-        "dialog.open",
-        "shoppingListDialog"
-      ],
-      "conditions": [
-        "inlineActions"
-      ],
-      "dynamicComponents": [],
-      "vuetifyAPIs": []
-    },
-    {
-      "source": "frontend/app/components/Domain/Mealplan/MealPlanDayHeader.vue",
-      "name": "MealPlanDayHeader",
-      "components": [
-        "Props"
-      ],
-      "dependencies": [],
-      "vuetify": [
-        "v-card",
-        "v-container"
-      ],
-      "events": [],
       "models": [],
       "conditions": [
-        "endDate"
+        "!meal.recipe && meal.text",
+        "meal.recipe",
+        "meal.recipe && layout === 'row'",
+        "meal.recipe && scale !== 1 && layout === 'stacked'",
+        "showType && typeLabel"
       ],
-      "dynamicComponents": [],
-      "vuetifyAPIs": []
-    },
-    {
-      "source": "frontend/app/components/Domain/Mealplan/MealPlanLayout.vue",
-      "name": "MealPlanLayout",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-col",
-        "v-row"
+      "dynamicComponents": [
+        "recipeLink ? NuxtLink : 'button'"
       ],
-      "events": [],
-      "models": [],
-      "conditions": [],
-      "dynamicComponents": [],
-      "vuetifyAPIs": []
-    },
-    {
-      "source": "frontend/app/components/Domain/Mealplan/MealPlanNoteMenu.vue",
-      "name": "MealPlanNoteMenu",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-icon",
-        "v-list",
-        "v-list-item",
-        "v-list-item-title",
-        "v-menu"
-      ],
-      "events": [
-        "click: $emit(child.event as any)"
-      ],
-      "models": [],
-      "conditions": [],
-      "dynamicComponents": [],
       "vuetifyAPIs": []
     },
     {
@@ -1116,24 +1130,24 @@
       "name": "RecipeCardLineItem",
       "components": [
         "Props",
-        "RecipeCardImage"
+        "RecipeThumb"
       ],
       "dependencies": [
-        "frontend/app/components/Domain/Recipe/RecipeCardImage.vue"
+        "frontend/app/components/Domain/Recipe/RecipeThumb.vue"
       ],
-      "vuetify": [
-        "v-avatar",
-        "v-list-item",
-        "v-list-item-subtitle",
-        "v-list-item-title"
+      "vuetify": [],
+      "events": [
+        "keydown.enter.self: !recipeRoute && ($event.target as HTMLElement).click()",
+        "keydown.space.self.prevent: !recipeRoute && ($event.target as HTMLElement).click()"
       ],
-      "events": [],
       "models": [],
       "conditions": [
         "$slots.append",
         "$slots.subtitle"
       ],
-      "dynamicComponents": [],
+      "dynamicComponents": [
+        "recipeRoute ? NuxtLink : 'div'"
+      ],
       "vuetifyAPIs": []
     },
     {
@@ -1290,7 +1304,9 @@
       "events": [
         "deleted: $emit('deleted', $event)",
         "focus: load",
+        "mealplan-cook-today: $emit('mealplanCookToday')",
         "mealplan-edit: $emit('mealplanEdit')",
+        "mealplan-randomize: $emit('mealplanRandomize')",
         "mealplan-remove: $emit('mealplanRemove')",
         "pointerenter: load",
         "print: $emit('print')",
@@ -3221,28 +3237,24 @@
       "components": [
         "CategoryOut",
         "HTMLElement",
+        "HTMLInputElement",
         "Props",
         "RecipeCardLineItem",
         "RecipeSearchQuery",
         "RecipeSummary",
         "SearchFilter",
-        "TagOut"
+        "SearchIcon",
+        "TagOut",
+        "XIcon"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipeCardLineItem.vue",
         "frontend/app/components/Domain/SearchFilter.vue"
       ],
-      "vuetify": [
-        "v-alert",
-        "v-chip",
-        "v-icon",
-        "v-list",
-        "v-progress-circular",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
-        "click: select(recipe)",
-        "click:close: select(null)"
+        "click: select(null)",
+        "click: select(recipe)"
       ],
       "models": [
         "search",
@@ -3306,6 +3318,24 @@
       "conditions": [
         "organizer.show",
         "substitutedFoods?.length"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeThumb.vue",
+      "name": "RecipeThumb",
+      "components": [
+        "MdiIcon"
+      ],
+      "dependencies": [],
+      "vuetify": [],
+      "events": [
+        "error: failed = true"
+      ],
+      "models": [],
+      "conditions": [
+        "src"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": []

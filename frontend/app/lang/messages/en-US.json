@@ -420,7 +420,18 @@
     "calendar-feed-event-title": "Event Title",
     "calendar-feed-event-description": "Event Description",
     "calendar-feed-url": "Calendar Link",
-    "today": "Today"
+    "today": "Today",
+    "entry-kind": "Recipe or note",
+    "this-week": "This week",
+    "week-of": "Week of {date}",
+    "add-for-the-week": "Add for the week",
+    "add-meal-type-on-day": "Add {type} on {day}",
+    "nothing-planned": "Nothing planned yet.",
+    "board-hint": "Drag a meal to move it to another day or meal. Sides, snacks, drinks and desserts get their own row once you plan one.",
+    "previous-range": "Previous",
+    "next-range": "Next",
+    "choose-range": "Choose dates",
+    "range-mode": "Show"
   },
   "migration": {
     "new-migration": "New Migration",

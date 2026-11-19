@@ -36,6 +36,10 @@ Route: `/household/mealplan/planner/view`. Source: [view.vue](../../frontend/app
 
 - [ ] Verify Cooking It Today, removal, update failures, and scaled list ingredients during replacement.
 
+## Redesign (implemented)
+
+See the redesign table in [the planner page](household--mealplan--planner.md#redesign-implemented): View and Edit are now the same board.
+
 ## Shadcn Vue replacement checklist
 
 - [ ] Use semantic meal sections, Cards, DropdownMenu, shared entry Dialog, serving Popover, and Buttons.

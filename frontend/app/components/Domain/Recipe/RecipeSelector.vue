@@ -1,31 +1,26 @@
 <template>
   <div
-    class="recipe-selector d-flex flex-column"
+    class="flex flex-col font-sans"
     :style="{ height }"
   >
-    <!-- v-input defaults to flex-grow, which stretches the field when the results are short -->
-    <v-text-field
-      v-model="search"
-      class="flex-grow-0"
-      variant="outlined"
-      density="compact"
-      color="primary"
-      autofocus
-      hide-details
-      clearable
-      :placeholder="$t('search.search-placeholder')"
-      :prepend-inner-icon="$globals.icons.search"
-    />
+    <label class="flex h-11 items-center gap-2 rounded-control border border-input bg-card px-3 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/25">
+      <SearchIcon class="size-4 shrink-0 text-muted-foreground" />
+      <input
+        ref="searchInput"
+        v-model="search"
+        type="search"
+        :placeholder="$t('search.search-placeholder')"
+        :aria-label="$t('search.search')"
+        class="h-full min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-muted-foreground/80"
+      >
+    </label>
 
-    <div class="d-flex flex-wrap align-start ga-2 mt-3">
+    <div class="mt-3 flex flex-wrap items-center gap-2">
       <SearchFilter
         v-if="categories.length"
         v-model="selectedCategories"
         :items="categories"
       >
-        <v-icon start>
-          {{ $globals.icons.categories }}
-        </v-icon>
         {{ $t("category.categories") }}
       </SearchFilter>
       <SearchFilter
@@ -33,9 +28,6 @@
         v-model="selectedTags"
         :items="tags"
       >
-        <v-icon start>
-          {{ $globals.icons.tags }}
-        </v-icon>
         {{ $t("tag.tags") }}
       </SearchFilter>
       <slot name="filters" />
@@ -43,27 +35,29 @@
 
     <div
       v-if="modelValue"
-      class="d-flex align-center ga-2 mt-3"
+      class="mt-3 flex items-center gap-2"
     >
-      <span class="text-caption text-medium-emphasis">{{ $t("general.selected") }}</span>
-      <v-chip
-        label
-        color="primary"
-        closable
-        :prepend-icon="$globals.icons.silverwareForkKnife"
-        @click:close="select(null)"
-      >
-        {{ modelValue.name }}
-      </v-chip>
+      <span class="text-xs font-semibold text-muted-foreground">{{ $t("general.selected") }}</span>
+      <span class="inline-flex h-8 max-w-full items-center gap-1.5 rounded-full bg-primary ps-3 pe-1 text-sm font-semibold text-primary-foreground">
+        <span class="truncate">{{ modelValue.name }}</span>
+        <button
+          type="button"
+          class="inline-flex size-6 items-center justify-center rounded-full hover:bg-black/15"
+          :aria-label="`${$t('general.remove')}: ${modelValue.name}`"
+          @click="select(null)"
+        >
+          <XIcon class="size-3.5" />
+        </button>
+      </span>
     </div>
 
     <div
       ref="resultsContainer"
-      class="recipe-results mt-3"
+      class="mt-3 min-h-40 flex-1 overflow-y-auto"
     >
-      <v-list
+      <div
         v-if="recipes.length"
-        class="py-0"
+        class="flex flex-col gap-0.5"
       >
         <RecipeCardLineItem
           v-for="recipe in recipes"
@@ -73,35 +67,31 @@
           disable-link
           @click="select(recipe)"
         />
-      </v-list>
-
+      </div>
       <div
         v-else-if="!loading"
         class="py-2"
       >
         <slot name="no-results">
-          <v-alert
-            type="info"
-            variant="tonal"
-            :text="$t('search.no-results')"
-          />
+          <p class="m-0 rounded-card border border-dashed px-4 py-6 text-center text-sm text-muted-foreground">
+            {{ $t('search.no-results') }}
+          </p>
         </slot>
       </div>
-
       <div ref="sentinel" />
-
-      <v-progress-circular
+      <div
         v-if="loading"
-        indeterminate
-        color="primary"
-        class="d-block mx-auto my-3"
-      />
+        class="flex justify-center py-3"
+      >
+        <span class="size-6 animate-spin rounded-full border-2 border-muted border-t-primary" />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { useIntersectionObserver, watchDebounced } from "@vueuse/core";
+import { SearchIcon, XIcon } from "@lucide/vue";
 import RecipeCardLineItem from "./RecipeCardLineItem.vue";
 import SearchFilter from "~/components/Domain/SearchFilter.vue";
 import { useLazyRecipes } from "~/composables/recipes";
@@ -157,6 +147,10 @@ function reset() {
 }
 
 defineExpose({ reset });
+
+// the search box takes focus when the selector appears (in a dialog, after the dialog's own focus)
+const searchInput = ref<HTMLInputElement | null>(null);
+onMounted(() => requestAnimationFrame(() => searchInput.value?.focus()));
 
 async function fetchPage(pageNumber: number, perPage: number) {
   return await fetchMore(pageNumber, perPage, "name", "asc", null, query.value, props.queryFilter);
@@ -222,16 +216,3 @@ onMounted(async () => {
   await reload();
 });
 </script>
-
-<style scoped>
-/* lets the results shrink when this is stretched by a flex parent */
-.recipe-selector {
-  min-height: 0;
-}
-
-.recipe-results {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-}
-</style>

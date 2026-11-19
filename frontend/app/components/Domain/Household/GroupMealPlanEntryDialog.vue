@@ -5,156 +5,146 @@
     :submit-text="entry ? $t('general.update') : $t('general.create')"
     :icon="$globals.icons.foods"
     :submit-disabled="submitDisabled"
-    color="primary"
     width="1000"
     can-submit
     disable-submit-on-enter
     @submit="submit"
   >
-    <v-card-text>
-      <v-row>
-        <v-col
-          cols="12"
-          md="5"
+    <div class="grid gap-6 px-6 pb-2 font-sans md:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
+      <div class="flex flex-col gap-4">
+        <div
+          role="radiogroup"
+          :aria-label="$t('meal-plan.entry-kind')"
+          class="grid grid-cols-2 rounded-control bg-muted p-1"
         >
-          <v-btn-toggle
-            v-model="entryMode"
-            mandatory
-            divided
-            variant="outlined"
-            color="primary"
-            class="w-100 mb-4"
+          <button
+            v-for="mode in modes"
+            :key="mode.value"
+            type="button"
+            role="radio"
+            :aria-checked="entryMode === mode.value"
+            class="inline-flex h-9 items-center justify-center gap-2 rounded-item text-sm font-semibold transition-colors"
+            :class="entryMode === mode.value ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'"
+            @click="entryMode = mode.value"
           >
-            <v-btn
-              value="recipe"
-              class="flex-grow-1"
-            >
-              <v-icon start>
-                {{ $globals.icons.silverwareForkKnife }}
-              </v-icon>
-              {{ $t("general.recipe") }}
-            </v-btn>
-            <v-btn
-              value="note"
-              class="flex-grow-1"
-            >
-              <v-icon start>
-                {{ $globals.icons.textBox }}
-              </v-icon>
-              {{ $t("meal-plan.note") }}
-            </v-btn>
-          </v-btn-toggle>
+            <MdiIcon
+              :path="mode.icon"
+              class="size-4"
+            />
+            {{ mode.label }}
+          </button>
+        </div>
 
-          <MealPlanDatePicker v-model="pickerModel" :multiple="pickerMultiple" :entry-type="entryType" />
+        <MealPlanDatePicker
+          v-model="pickerModel"
+          :multiple="pickerMultiple"
+          :entry-type="entryType"
+        />
 
-          <!-- the dates are part of the label, so they stay with the switch instead of floating above the next field -->
-          <v-switch
-            v-if="showWeekOption"
-            v-model="isWeekEntry"
-            color="primary"
-            hide-details
-          >
-            <template #label>
-              <div>
-                <div>{{ $t("meal-plan.plan-for-the-whole-week") }}</div>
-                <div v-if="isWeekEntry" class="text-caption text-medium-emphasis">
-                  {{ $d(weekRange.start, "short") }} - {{ $d(weekRange.end, "short") }}
-                </div>
-              </div>
-            </template>
-          </v-switch>
+        <label
+          v-if="showWeekOption"
+          class="flex cursor-pointer items-center justify-between gap-3"
+        >
+          <span>
+            <span class="block text-[15px] font-medium">{{ $t("meal-plan.plan-for-the-whole-week") }}</span>
+            <span
+              v-if="isWeekEntry"
+              class="block text-sm text-muted-foreground"
+            >{{ $d(weekRange.start, "short") }} – {{ $d(weekRange.end, "short") }}</span>
+          </span>
+          <Switch v-model="isWeekEntry" />
+        </label>
 
-          <v-select
-            v-model="entryType"
-            class="mt-4"
-            :items="planTypeOptions"
-            :label="$t('recipe.entry-type')"
-            item-title="text"
-            item-value="value"
-            :return-object="false"
-            hide-details
-          />
+        <SelectField
+          v-model="entryType"
+          :items="planTypeOptions"
+          :label="$t('recipe.entry-type')"
+          item-title="text"
+          item-value="value"
+        />
 
+        <div
+          v-if="isRecipe && recipe"
+          class="flex items-center gap-3"
+        >
+          <span class="text-sm font-semibold">{{ $t("recipe.servings") }}</span>
           <RecipeScaleEditButton
-            v-if="isRecipe && recipe"
             v-model="recipeScale"
-            class="mt-4"
             :recipe-servings="recipeServings"
             edit-scale
           />
-        </v-col>
+        </div>
+      </div>
 
-        <!-- both modes fill the same pane, so the dialog doesn't resize when switching between them -->
-        <v-col
-          cols="12"
-          md="7"
-          class="entry-detail"
+      <!-- both modes fill the same pane, so the dialog doesn't resize when switching between them -->
+      <div class="flex min-h-[22rem] flex-col md:max-h-[60vh]">
+        <RecipeSelector
+          v-if="isRecipe"
+          ref="selector"
+          v-model="recipe"
+          height="100%"
+          :query-filter="ruleQueryFilter"
         >
-          <RecipeSelector
-            v-if="isRecipe"
-            ref="selector"
-            v-model="recipe"
-            height="auto"
-            :query-filter="ruleQueryFilter"
-          >
-            <template #filters>
-              <v-switch
+          <template #filters>
+            <label
+              class="ms-auto flex items-center gap-2 text-sm font-medium"
+              :class="!applicableRuleFilter && 'opacity-50'"
+            >
+              {{ $t('meal-plan.ignore-rules') }}
+              <Switch
                 v-model="ignoreRules"
-                class="ignore-rules-switch flex-grow-0 ms-auto"
-                color="primary"
-                density="compact"
-                hide-details
                 :disabled="!applicableRuleFilter"
-                :label="$t('meal-plan.ignore-rules')"
               />
-            </template>
-
-            <template #no-results>
-              <v-alert
-                v-if="ruleQueryFilter"
-                type="info"
-                variant="tonal"
-              >
-                <div>{{ $t("meal-plan.no-recipes-match-your-rules") }}</div>
-                <v-btn
-                  class="mt-2"
-                  size="small"
-                  color="info"
-                  variant="tonal"
+            </label>
+          </template>
+          <template #no-results>
+            <div class="flex flex-col items-start gap-2 rounded-card bg-highlight/50 px-4 py-4 text-sm">
+              <template v-if="ruleQueryFilter">
+                {{ $t("meal-plan.no-recipes-match-your-rules") }}
+                <Button
+                  variant="outline"
+                  size="sm"
                   @click="ignoreRules = true"
                 >
                   {{ $t("meal-plan.ignore-rules") }}
-                </v-btn>
-              </v-alert>
-              <v-alert
-                v-else
-                type="info"
-                variant="tonal"
-                :text="$t('search.no-results')"
-              />
-            </template>
-          </RecipeSelector>
+                </Button>
+              </template>
+              <template v-else>
+                {{ $t('search.no-results') }}
+              </template>
+            </div>
+          </template>
+        </RecipeSelector>
 
-          <div v-else>
-            <v-text-field
-              v-model="title"
-              :label="$t('meal-plan.meal-title')"
-              :rules="[validators.required]"
-            />
-            <v-textarea
-              v-model="text"
-              :label="$t('meal-plan.meal-note')"
-              rows="6"
-            />
-          </div>
-        </v-col>
-      </v-row>
-    </v-card-text>
+        <div
+          v-else
+          class="flex flex-col gap-3"
+        >
+          <TextField
+            v-model="title"
+            :label="$t('meal-plan.meal-title')"
+            :rules="[validators.required]"
+            autofocus
+          />
+          <TextareaField
+            v-model="text"
+            :label="$t('meal-plan.meal-note')"
+            :rows="6"
+          />
+        </div>
+      </div>
+    </div>
   </BaseDialog>
 </template>
 
 <script setup lang="ts">
 import RecipeScaleEditButton from "~/components/Domain/Recipe/RecipeScaleEditButton.vue";
+import { Button } from "~/components/ui/button";
+import SelectField from "~/components/ui/field/SelectField.vue";
+import TextareaField from "~/components/ui/field/TextareaField.vue";
+import TextField from "~/components/ui/field/TextField.vue";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+import { Switch } from "~/components/ui/switch";
 import RecipeSelector from "~/components/Domain/Recipe/RecipeSelector.vue";
 import { useMealPlanEntryDates, usePlanTypeOptions } from "~/composables/use-group-mealplan";
 import { buildRuleQueryFilter, useMealplanRules } from "~/composables/use-mealplan-rules";
@@ -168,11 +158,14 @@ interface Props {
   date?: Date | null;
   /** Set when creating an entry for a week rather than a specific day */
   endDate?: Date | null;
+  /** Meal type to start a new entry with (the board passes the row it was opened from). */
+  defaultEntryType?: PlanEntryType | null;
 }
 const props = withDefaults(defineProps<Props>(), {
   entry: null,
   date: null,
   endDate: null,
+  defaultEntryType: null,
 });
 
 const emit = defineEmits<{
@@ -198,6 +191,13 @@ const text = ref("");
 const ignoreRules = ref(false);
 
 const isRecipe = computed(() => entryMode.value === "recipe");
+
+const i18n = useI18n();
+const { $globals } = useNuxtApp();
+const modes = computed(() => [
+  { value: "recipe" as const, label: i18n.t("general.recipe"), icon: $globals.icons.silverwareForkKnife },
+  { value: "note" as const, label: i18n.t("meal-plan.note"), icon: $globals.icons.textBox },
+]);
 
 const mealPlanPreferences = useUserMealPlanPreferences();
 const showWeekOption = computed(() => mealPlanPreferences.value.mode === "weeks" || isWeekEntry.value);
@@ -228,7 +228,7 @@ function initialize() {
   entryMode.value = props.entry && !props.entry.recipeId ? "note" : "recipe";
   selectedDate.value = props.entry ? parseEntryDate(props.entry.date) : props.date ?? new Date();
   isWeekEntry.value = props.entry ? !!props.entry.endDate : !!props.endDate;
-  entryType.value = props.entry?.entryType ?? "dinner";
+  entryType.value = props.entry?.entryType ?? props.defaultEntryType ?? "dinner";
   recipe.value = props.entry?.recipe ?? null;
   recipeScale.value = props.entry?.recipeScale ?? 1;
   title.value = props.entry?.title ?? "";
@@ -266,27 +266,3 @@ watch(dialog, (isOpen) => {
   }
 });
 </script>
-
-<style scoped>
-.entry-detail {
-  position: relative;
-  min-height: clamp(320px, 45vh, 520px);
-}
-
-/*
-  Take the pane out of flow so a long result list scrolls inside it instead of growing the
-  dialog, while it still stretches to the height of the settings column beside it.
-  The inset matches the v-col gutter padding.
-*/
-.entry-detail > * {
-  position: absolute;
-  inset: 12px;
-  overflow-y: auto;
-}
-
-/* v-switch reserves a taller control than the filter buttons next to it */
-.ignore-rules-switch {
-  --v-input-control-height: 28px;
-  align-self: flex-start;
-}
-</style>

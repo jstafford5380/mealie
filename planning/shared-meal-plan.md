@@ -1,7 +1,7 @@
 # Shared meal-plan behavior
 
 Read this contract with all four meal-plan page documents.
-Sources: [meal-plan composable](../frontend/app/composables/use-group-mealplan.ts), [entry form](../frontend/app/components/Domain/Household/GroupMealPlanEntryDialog.vue), [day actions](../frontend/app/components/Domain/Mealplan/MealPlanDay.vue), [layout](../frontend/app/components/Domain/Mealplan/MealPlanLayout.vue), [rule matching](../frontend/app/composables/use-mealplan-rules.ts).
+Sources: [meal-plan composable](../frontend/app/composables/use-group-mealplan.ts), [entry form](../frontend/app/components/Domain/Household/GroupMealPlanEntryDialog.vue), [planner board](../frontend/app/components/Domain/Mealplan/MealPlanBoard.vue) (replacing the day and layout components), [meal card](../frontend/app/components/Domain/Mealplan/MealPlanEntryCard.vue), [rule matching](../frontend/app/composables/use-mealplan-rules.ts).
 
 ## Dates, layout, and API actions
 

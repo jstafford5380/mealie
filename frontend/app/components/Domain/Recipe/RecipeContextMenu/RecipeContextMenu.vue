@@ -71,6 +71,8 @@
       @deleted="$emit('deleted', $event)"
       @mealplan-edit="$emit('mealplanEdit')"
       @mealplan-remove="$emit('mealplanRemove')"
+      @mealplan-randomize="$emit('mealplanRandomize')"
+      @mealplan-cook-today="$emit('mealplanCookToday')"
     />
   </div>
 </template>
@@ -141,6 +143,8 @@ defineEmits<{
   deleted: [slug: string];
   mealplanRemove: [];
   mealplanEdit: [];
+  mealplanRandomize: [];
+  mealplanCookToday: [];
 }>();
 
 const { $globals } = useNuxtApp();
