@@ -187,7 +187,9 @@
     "grid-view": "Grid view",
     "list-view": "List view",
     "scroll-to-top": "Scroll to top",
-    "previous": "Previous"
+    "previous": "Previous",
+    "more": "More",
+    "remove": "Remove"
   },
   "group": {
     "create-group": "Create Group",
@@ -749,7 +751,25 @@
     "exit-cook-mode": "Exit cook mode",
     "for-this-step": "This step",
     "all-ingredients": "All ingredients",
-    "finish-cooking": "Finish"
+    "finish-cooking": "Finish",
+    "time-note": "Note",
+    "time-note-placeholder": "e.g. plus overnight",
+    "edit-recipe": "Edit recipe",
+    "untitled-recipe": "Untitled recipe",
+    "editor-form": "Form",
+    "editor-mode": "Editor",
+    "photo": "Photo",
+    "photo-from-url": "Use an image URL",
+    "remove-photo": "Remove photo",
+    "replace-photo": "Replace photo",
+    "add-photo": "Add photo",
+    "photo-hint": "JPG, PNG or WebP. Shown on the recipe and its card.",
+    "section-basics": "Basics",
+    "section-organize": "Organize",
+    "section-source": "Source",
+    "jump-to-section": "Sections",
+    "add-note": "Add note",
+    "add-extra": "Add extra"
   },
   "recipe-finder": {
     "recipe-finder": "Recipe Finder",

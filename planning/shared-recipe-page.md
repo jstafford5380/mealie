@@ -23,6 +23,21 @@ The reader (View) and Cook mode are rebuilt on the new design. RecipePage.vue st
 | Cook mode: two scrolling columns, or every step with its linked ingredients inline when links exist. Floating × in the corner. | Cook mode is a full-screen, one-step-at-a-time view: large step text, a progress bar (tap a segment to jump), Previous / Next (arrow keys too) and **Finish** on the last step. A side panel (below the step on phones) shows the step's linked ingredients, or all ingredients and tools; a "This step / All ingredients" switch appears when the recipe has links, and unlinked ingredients are listed under the step's. Linked notes appear as callouts under the step. Servings, units and Keep screen awake stay available. It reopens on the first unfinished step. |
 | Floating save button: only appeared if the page loaded in edit mode. | Appears whenever the editor toolbar scrolls out of view, however edit mode was opened. |
 
+## Redesign: editor frame (implemented)
+
+Edit mode opens in the same page frame as the reader. The ingredient, method, organizer and asset editors still use their earlier controls inside the new sections; they are redesigned next. Changes users will notice:
+
+| Before | Now |
+| --- | --- |
+| Edit kept the reader's header card on top, with Delete / JSON / Close / Save buttons floating over it and a floating Save button after scrolling. | A sticky editor bar: Cancel (×), the recipe name, a Form / JSON switch, a ⋮ menu (Parse ingredients, Delete recipe) and Save. Save is always in reach, so the floating Save button is gone. On phones the Form / JSON switch moves into the ⋮ menu. |
+| One long column of fields, cards and buttons. | Titled sections — Basics, Ingredients, Instructions, Organize, Note, Nutrition, Assets, Source, Recipe Settings — with a jump list beside them on desktop. Nutrition and Assets appear only when turned on in the recipe settings. |
+| "Image" button opening a menu (upload, URL, delete). | The photo sits in Basics: tap it to upload or replace, "Use an image URL" to fetch one, Remove (with confirmation) to delete it. |
+| "Settings" button opening a menu of switches. | Recipe Settings is a section with labelled switches; the public-visibility note shows under its switch instead of in a tooltip. |
+| Original URL and API extras at the very bottom. | A Source section: Original URL, plus API extras for advanced users. |
+| Name could be left empty and only failed on the server. Only the step fields were checked before saving. | Save checks every field (including the required name) and shows the error in place. |
+| Time inputs: hour and minute spinners plus an unlabelled text field. | Hour and minute boxes with units, and a "Note" box (for example "plus overnight"). |
+| Notes and nutrition editors in Vuetify cards. | Note cards with Title, Note and a remove button, plus "Add note". Nutrition as a grid of number boxes with units. |
+
 ## Page mode, draft, and save
 
 Source: [RecipePage](../frontend/app/components/Domain/Recipe/RecipePage/RecipePage.vue).
@@ -44,7 +59,7 @@ Source: [RecipePage](../frontend/app/components/Domain/Recipe/RecipePage/RecipeP
 
 ## Header, actions, image, and settings
 
-Sources: [header](../frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageHeader.vue), [info card](../frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageInfoCard.vue), [action menu](../frontend/app/components/Domain/Recipe/RecipeActionMenu.vue).
+Sources: [reader header](../frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeReaderHeader.vue), [editor bar](../frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeEditorBar.vue), [editor basics](../frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeEditorBasics.vue) (replacing the earlier header, info card and action menu).
 
 - Display name, user/group rating, current-group owner avatar/name, sanitized Markdown description, scaled yield, Last Made, and available prep/cook/total times.
 - Show recipe image above the header in landscape or beside it otherwise. Use small image URLs on small screens and full URLs on desktop.

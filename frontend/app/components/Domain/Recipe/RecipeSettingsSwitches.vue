@@ -1,35 +1,28 @@
 <template>
-  <div>
-    <div
+  <div class="flex flex-col font-sans">
+    <label
       v-for="(_, key) in model"
       :key="key"
-      class="d-flex align-center"
+      class="flex cursor-pointer items-center gap-4 py-2.5 has-[button:disabled]:cursor-not-allowed has-[button:disabled]:opacity-60"
     >
-      <v-switch
+      <span class="min-w-0 flex-1">
+        <span class="block text-[15px] font-medium">{{ labels[key] }}</span>
+        <span
+          v-if="descriptions[key]"
+          class="block text-sm text-muted-foreground"
+        >{{ descriptions[key] }}</span>
+      </span>
+      <Switch
         v-model="model[key]"
-        color="primary"
-        xs
-        density="compact"
         :disabled="key == 'locked' && !isOwner"
-        class="my-1"
-        :label="labels[key]"
-        hide-details
       />
-      <v-tooltip v-if="key === 'public'" location="bottom">
-        <template #activator="{ props: tooltipProps }">
-          <v-icon v-bind="tooltipProps" size="small" class="ms-1">
-            {{ $globals.icons.informationOutline }}
-          </v-icon>
-        </template>
-        <span>{{ $t('recipe.public-recipe-visibility-note') }}</span>
-      </v-tooltip>
-    </div>
+    </label>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { RecipeSettings } from "~/lib/api/types/recipe";
-import { useI18n } from "#imports";
+import { Switch } from "~/components/ui/switch";
 
 defineProps<{ isOwner?: boolean }>();
 
@@ -44,6 +37,7 @@ const labels: Record<keyof RecipeSettings, string> = {
   disableComments: i18n.t("recipe.disable-comments"),
   locked: i18n.t("recipe.locked"),
 };
+const descriptions: Partial<Record<keyof RecipeSettings, string>> = {
+  public: i18n.t("recipe.public-recipe-visibility-note"),
+};
 </script>
-
-<style lang="scss" scoped></style>

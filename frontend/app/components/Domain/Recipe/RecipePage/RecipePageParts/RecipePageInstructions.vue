@@ -134,7 +134,7 @@
 
     <div class="d-flex justify-space-between justify-start">
       <h2
-        v-if="!isCookMode"
+        v-if="!isCookMode && !isEditForm"
         class="mt-1 text-h5 font-weight-medium opacity-80"
       >
         {{ $t("recipe.instructions") }}

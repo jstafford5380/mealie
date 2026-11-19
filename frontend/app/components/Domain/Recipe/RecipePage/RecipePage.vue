@@ -80,142 +80,168 @@
       @close="toggleCookMode()"
     />
 
-    <!-- Editor (redesigned in its own pass) -->
-    <v-container
+    <!-- Editor -->
+    <div
       v-if="isEditMode"
       key="recipe-editor"
-      class="px-0"
-      :class="{ 'pa-0': $vuetify.display.smAndDown }"
+      class="mx-auto w-full max-w-[1180px] px-4 pb-24 font-sans sm:px-6 lg:px-8 print:hidden"
     >
-      <v-card
-        flat
-        class="d-print-none"
+      <RecipeEditorBar
+        :recipe="recipe"
+        @save="saveRecipe"
+        @delete="deleteRecipe"
+        @close="closeEditor"
+      />
+      <RecipeJsonEditor
+        v-if="isEditJSON"
+        v-model="recipe"
+        class="overflow-hidden rounded-panel border"
+        mode="text"
+        :main-menu-bar="false"
+      />
+      <!-- One form around every section, so Save validates the whole recipe. -->
+      <v-form
+        v-else
+        ref="instructionForm"
+        class="grid gap-8 lg:grid-cols-[170px_minmax(0,1fr)]"
+        @submit.prevent
       >
-        <RecipePageHeader
-          ref="recipeToolbar"
-          :recipe="recipe"
-          :recipe-scale="scale"
-          :landscape="landscape"
-          @save="saveRecipe"
-          @delete="deleteRecipe"
-          @close="closeEditor"
-        />
-        <RecipeJsonEditor
-          v-if="isEditJSON"
-          v-model="recipe"
-          class="mt-10"
-          mode="text"
-          :main-menu-bar="false"
-        />
-        <v-card-text v-else>
-          <!--
-            The recipe object is shared down the tree and mutated by the editor components.
-          -->
-          <RecipePageInfoEditor v-model="recipe" />
-          <RecipePageEditorToolbar v-model="recipe" />
-          <RecipePageIngredientEditor v-model="recipe" />
-          <v-row>
-            <v-col
-              cols="12"
-              sm="12"
-              md="4"
-              :class="$vuetify.display.mdAndUp ? 'border-e-thin' : null"
+        <nav
+          :aria-label="$t('recipe.jump-to-section')"
+          class="max-lg:display-none"
+        >
+          <ul class="sticky top-36 m-0 flex list-none flex-col gap-0.5 p-0">
+            <li
+              v-for="section in editorSections"
+              :key="section.id"
             >
-              <RecipePageOrganizers
-                v-if="$vuetify.display.mdAndUp"
-                v-model="recipe"
-                class="pr-2"
-                @item-selected="chipClicked"
-              />
-            </v-col>
-            <v-col
-              cols="12"
-              sm="12"
-              md="8"
-            >
-              <v-form
-                ref="instructionForm"
-                @submit.prevent
-              >
-                <RecipePageInstructions
-                  v-model="recipe.recipeInstructions"
-                  v-model:assets="recipe.assets"
-                  :recipe="displayedRecipe"
-                  :scale="scale"
-                  :ingredient-storage-key="ingredientStorageKey"
-                />
-              </v-form>
-              <div class="d-flex">
-                <RecipeDialogBulkAdd
-                  class="ml-auto my-2 mr-1"
-                  @bulk-data="addStep"
-                />
-                <BaseButton
-                  class="my-2"
-                  @click="addStep()"
-                >
-                  {{ $t("general.add") }}
-                </BaseButton>
-              </div>
-              <div v-if="!$vuetify.display.mdAndUp">
-                <RecipePageOrganizers v-model="recipe" />
-              </div>
-              <RecipeNotes
-                v-model="recipe.notes"
-                edit
-              />
-            </v-col>
-          </v-row>
-          <RecipePageFooter v-model="recipe" />
-        </v-card-text>
-      </v-card>
-    </v-container>
+              <a
+                :href="`#${section.id}`"
+                class="block rounded-item px-3 py-1.5 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-highlight hover:text-foreground"
+              >{{ section.title }}</a>
+            </li>
+          </ul>
+        </nav>
+        <div class="flex min-w-0 flex-col gap-6">
+          <RecipeEditorSection
+            id="editor-basics"
+            :title="$t('recipe.section-basics')"
+          >
+            <RecipeEditorBasics v-model="recipe" />
+          </RecipeEditorSection>
+          <RecipeEditorSection
+            id="editor-ingredients"
+            :title="$t('recipe.ingredients')"
+          >
+            <RecipePageIngredientEditor v-model="recipe" />
+          </RecipeEditorSection>
+          <RecipeEditorSection
+            id="editor-method"
+            :title="$t('recipe.instructions')"
+          >
+            <RecipePageInstructions
+              v-model="recipe.recipeInstructions"
+              v-model:assets="recipe.assets"
+              :recipe="displayedRecipe"
+              :scale="scale"
+              :ingredient-storage-key="ingredientStorageKey"
+            />
+            <div class="mt-4 flex flex-wrap justify-end gap-2">
+              <RecipeDialogBulkAdd @bulk-data="addStep" />
+              <BaseButton @click="addStep()">
+                {{ $t("general.add") }}
+              </BaseButton>
+            </div>
+          </RecipeEditorSection>
+          <RecipeEditorSection
+            id="editor-organize"
+            :title="$t('recipe.section-organize')"
+          >
+            <RecipePageOrganizers v-model="recipe" />
+          </RecipeEditorSection>
+          <RecipeEditorSection
+            id="editor-notes"
+            :title="$t('recipe.note')"
+          >
+            <RecipeNotes
+              v-model="recipe.notes"
+              edit
+            />
+          </RecipeEditorSection>
+          <RecipeEditorSection
+            v-if="recipe.settings.showNutrition"
+            id="editor-nutrition"
+            :title="$t('recipe.nutrition')"
+          >
+            <RecipeNutrition
+              v-model="recipe.nutrition"
+              edit
+            />
+          </RecipeEditorSection>
+          <RecipeEditorSection
+            v-if="recipe.settings.showAssets"
+            id="editor-assets"
+            :title="$t('asset.assets')"
+          >
+            <RecipeAssets
+              v-model="recipe.assets"
+              edit
+              :slug="recipe.slug"
+              :recipe-id="recipe.id"
+            />
+          </RecipeEditorSection>
+          <RecipeEditorSection
+            id="editor-source"
+            :title="$t('recipe.section-source')"
+          >
+            <RecipeEditorSource v-model="recipe" />
+          </RecipeEditorSection>
+          <RecipeEditorSection
+            id="editor-settings"
+            :title="$t('recipe.recipe-settings')"
+          >
+            <RecipeSettingsSwitches
+              v-model="recipe.settings"
+              :is-owner="recipe.userId == user.id"
+            />
+          </RecipeEditorSection>
+        </div>
+      </v-form>
+    </div>
     <RecipePrintContainer
       :recipe="displayedRecipe"
       :scale="scale"
     />
-    <!-- Floating save button when the editor toolbar scrolls out of view -->
-    <button
-      v-if="isEditMode && !toolbarVisible"
-      type="button"
-      class="fixed bottom-[calc(1.25rem+env(safe-area-inset-bottom))] right-5 z-[1000] inline-flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-105 print:hidden max-lg:bottom-[calc(5.5rem+env(safe-area-inset-bottom))]"
-      :aria-label="$t('general.save')"
-      :title="$t('general.save')"
-      @click="saveRecipe"
-    >
-      <MdiIcon
-        :path="$globals.icons.save"
-        class="size-6"
-      />
-    </button>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { ComponentPublicInstance } from "vue";
 import type { VForm } from "~/types/auto-forms";
 import { invoke, until, useMediaQuery } from "@vueuse/core";
 import type { RouteLocationNormalized } from "vue-router";
-import RecipePageEditorToolbar from "./RecipePageParts/RecipePageEditorToolbar.vue";
-import RecipePageFooter from "./RecipePageParts/RecipePageFooter.vue";
-import RecipePageHeader from "./RecipePageParts/RecipePageHeader.vue";
 import RecipePageIngredientEditor from "./RecipePageParts/RecipePageIngredientEditor.vue";
 import RecipePageIngredientToolsView from "./RecipePageParts/RecipePageIngredientToolsView.vue";
 import RecipePageInstructions from "./RecipePageParts/RecipePageInstructions.vue";
 import RecipePageOrganizers from "./RecipePageParts/RecipePageOrganizers.vue";
 import RecipePageParseDialog from "./RecipePageParts/RecipeParseDialog/RecipePageParseDialog.vue";
 import RecipePageScale from "./RecipePageParts/RecipePageScale.vue";
-import RecipePageInfoEditor from "./RecipePageParts/RecipePageInfoEditor.vue";
 import RecipePageComments from "./RecipePageParts/RecipePageComments.vue";
 import RecipeCookMode from "./RecipePageParts/RecipeCookMode.vue";
+import RecipeEditorBar from "./RecipePageParts/RecipeEditorBar.vue";
+import RecipeEditorBasics from "./RecipePageParts/RecipeEditorBasics.vue";
+import RecipeEditorSection from "./RecipePageParts/RecipeEditorSection.vue";
+import RecipeEditorSource from "./RecipePageParts/RecipeEditorSource.vue";
+import RecipeAssets from "~/components/Domain/Recipe/RecipeAssets.vue";
+import RecipeNutrition from "~/components/Domain/Recipe/RecipeNutrition.vue";
+import RecipeSettingsSwitches from "~/components/Domain/Recipe/RecipeSettingsSwitches.vue";
 import RecipeMethod from "./RecipePageParts/RecipeMethod.vue";
 import RecipeReaderHeader from "./RecipePageParts/RecipeReaderHeader.vue";
-import { MdiIcon } from "~/components/ui/mdi-icon";
 import RecipePrintContainer from "~/components/Domain/Recipe/RecipePrintContainer.vue";
 import {
   clearPageState,
   PageMode,
   usePageState,
+  usePageUser,
 } from "~/composables/recipe-page/shared-state";
 import { useCookModeQuery, type BooleanString } from "~/composables/recipe-page/use-cook-mode-query";
 import type { NoUndefinedField } from "~/lib/api/types/non-generated";
@@ -234,6 +260,21 @@ const recipe = defineModel<RecipeOut>({ required: true });
 
 const display = useDisplay();
 const isDesktop = useMediaQuery("(min-width: 1024px)");
+const { user } = usePageUser();
+const i18n = useI18n();
+
+/** Editor sections, in page order, for the jump list. */
+const editorSections = computed(() => [
+  { id: "editor-basics", title: i18n.t("recipe.section-basics") },
+  { id: "editor-ingredients", title: i18n.t("recipe.ingredients") },
+  { id: "editor-method", title: i18n.t("recipe.instructions") },
+  { id: "editor-organize", title: i18n.t("recipe.section-organize") },
+  { id: "editor-notes", title: i18n.t("recipe.note") },
+  ...(recipe.value.settings.showNutrition ? [{ id: "editor-nutrition", title: i18n.t("recipe.nutrition") }] : []),
+  ...(recipe.value.settings.showAssets ? [{ id: "editor-assets", title: i18n.t("asset.assets") }] : []),
+  { id: "editor-source", title: i18n.t("recipe.section-source") },
+  { id: "editor-settings", title: i18n.t("recipe.recipe-settings") },
+]);
 const auth = useMealieAuth();
 const route = useRoute();
 const { isOwnGroup } = useLoggedInState();
@@ -280,28 +321,6 @@ const displayedRecipe = computed<RecipeOut>(() => {
     ),
   };
 });
-
-/** =============================================================
- * Floating save button — track toolbar visibility
- */
-const recipeToolbar = ref<ComponentPublicInstance | null>(null);
-const toolbarVisible = ref(true);
-let toolbarObserver: IntersectionObserver | undefined;
-
-// The toolbar only exists in edit mode, so observe it whenever it (re)appears.
-watch(recipeToolbar, (toolbar) => {
-  toolbarObserver?.disconnect();
-  toolbarVisible.value = true;
-  const el = toolbar?.$el as HTMLElement | undefined;
-  if (!el || typeof IntersectionObserver === "undefined") return;
-  toolbarObserver = new IntersectionObserver(
-    ([entry]) => { toolbarVisible.value = !!entry?.isIntersecting; },
-    { threshold: 0 },
-  );
-  toolbarObserver.observe(el);
-}, { flush: "post" });
-
-onUnmounted(() => toolbarObserver?.disconnect());
 
 /** =============================================================
  * Recipe Snapshot on Mount

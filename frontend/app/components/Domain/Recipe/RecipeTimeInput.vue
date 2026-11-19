@@ -1,46 +1,41 @@
 <template>
-  <div>
-    <div
+  <fieldset class="m-0 min-w-0 border-0 p-0 font-sans">
+    <legend
       v-if="label"
-      class="text-caption opacity-80"
+      class="mb-1.5 p-0 text-sm font-semibold"
     >
       {{ label }}
-    </div>
-    <div
-      class="d-flex flex-wrap align-center"
-      style="gap: 0 1rem"
-    >
-      <v-number-input
-        v-model="hours"
-        :min="0"
-        :max="MAX_HOURS"
-        :precision="0"
-        :suffix="durationUnitLabel('hour')"
-        variant="underlined"
-        density="compact"
-        inset
-        class="time-input"
-      />
-      <v-number-input
-        v-model="minutes"
-        :min="0"
-        :precision="0"
-        :suffix="durationUnitLabel('minute')"
-        variant="underlined"
-        density="compact"
-        inset
-        class="time-input"
-      />
+    </legend>
+    <div class="flex flex-wrap items-center gap-2">
+      <label
+        v-for="part in parts"
+        :key="part.key"
+        class="flex h-10 w-[7.5rem] items-center rounded-control border border-input bg-card pe-3 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/25"
+      >
+        <input
+          type="number"
+          inputmode="numeric"
+          min="0"
+          :max="part.max"
+          step="1"
+          :value="part.value.value ?? ''"
+          :aria-label="label ? `${label}: ${part.suffix}` : part.suffix"
+          class="h-full w-0 min-w-0 flex-1 bg-transparent px-3 text-[15px] tabular-nums outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+          @input="part.value.value = toWhole(($event.target as HTMLInputElement).value, part.max)"
+        >
+        <span class="text-sm text-muted-foreground">{{ part.suffix }}</span>
+      </label>
       <!-- Shown after the structured time, e.g. "3 hours" + "plus overnight" -->
-      <v-text-field
+      <input
         v-if="!hideText"
         v-model="text"
-        density="compact"
-        variant="underlined"
-        class="time-text"
-      />
+        type="text"
+        :aria-label="label ? `${label}: ${$t('recipe.time-note')}` : $t('recipe.time-note')"
+        :placeholder="$t('recipe.time-note-placeholder')"
+        class="h-10 min-w-40 flex-1 rounded-control border border-input bg-card px-3 text-[15px] outline-none placeholder:text-muted-foreground/70 focus:border-ring focus:ring-3 focus:ring-ring/25"
+      >
     </div>
-  </div>
+  </fieldset>
 </template>
 
 <script setup lang="ts">
@@ -79,17 +74,23 @@ watch(
   { immediate: true },
 );
 
+function toWhole(raw: string, max?: number): number | null {
+  if (raw === "") {
+    return null;
+  }
+  const n = Math.max(0, Math.floor(Number(raw)));
+  if (!Number.isFinite(n)) {
+    return null;
+  }
+  return max !== undefined ? Math.min(n, max) : n;
+}
+
+const parts = computed(() => [
+  { key: "h", value: hours, suffix: durationUnitLabel("hour"), max: MAX_HOURS },
+  { key: "m", value: minutes, suffix: durationUnitLabel("minute"), max: undefined },
+]);
+
 watch([hours, minutes], () => {
   seconds.value = toSeconds();
 });
 </script>
-
-<style scoped>
-.time-input {
-  flex: 1 1 9em;
-  max-width: 12em;
-}
-.time-text {
-  flex: 3 1 12em;
-}
-</style>

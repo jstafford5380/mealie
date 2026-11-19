@@ -45,63 +45,42 @@
     />
   </div>
 
-  <!-- Editor (redesigned in its own pass) -->
-  <div v-else>
-    <v-card>
-      <v-card-title class="py-2">
+  <!-- Editor -->
+  <div
+    v-else
+    class="flex flex-col gap-5"
+  >
+    <div>
+      <div class="mb-1.5 text-sm font-semibold">
         {{ $t("recipe.categories") }}
-      </v-card-title>
-      <v-divider class="mx-2" />
-      <v-card-text>
-        <RecipeOrganizerSelector
-          v-model="recipe.recipeCategory"
-          :return-object="true"
-          :show-add="true"
-          selector-type="categories"
-        />
-      </v-card-text>
-    </v-card>
-    <v-card class="mt-4">
-      <v-card-title class="py-2">
+      </div>
+      <RecipeOrganizerSelector
+        v-model="recipe.recipeCategory"
+        :return-object="true"
+        :show-add="true"
+        selector-type="categories"
+      />
+    </div>
+    <div>
+      <div class="mb-1.5 text-sm font-semibold">
         {{ $t("tag.tags") }}
-      </v-card-title>
-      <v-divider class="mx-2" />
-      <v-card-text>
-        <RecipeOrganizerSelector
-          v-model="recipe.tags"
-          :return-object="true"
-          :show-add="true"
-          selector-type="tags"
-        />
-      </v-card-text>
-    </v-card>
-    <v-card class="mt-4">
-      <v-card-title class="py-2">
+      </div>
+      <RecipeOrganizerSelector
+        v-model="recipe.tags"
+        :return-object="true"
+        :show-add="true"
+        selector-type="tags"
+      />
+    </div>
+    <div>
+      <div class="mb-1.5 text-sm font-semibold">
         {{ $t('tool.required-tools') }}
-      </v-card-title>
-      <v-divider class="mx-2" />
-      <v-card-text>
-        <RecipeOrganizerSelector
-          v-model="recipe.tools"
-          selector-type="tools"
-        />
-      </v-card-text>
-    </v-card>
-    <RecipeNutrition
-      v-if="recipe.settings.showNutrition"
-      v-model="recipe.nutrition"
-      class="mt-4"
-      edit
-    />
-    <RecipeAssets
-      v-if="recipe.settings.showAssets"
-      v-model="recipe.assets"
-      edit
-      :slug="recipe.slug"
-      :recipe-id="recipe.id"
-      :hero-image-url="heroImageUrl"
-      :hero-image-alt="recipe.name"
-    />
+      </div>
+      <RecipeOrganizerSelector
+        v-model="recipe.tools"
+        selector-type="tools"
+      />
+    </div>
   </div>
 </template>
 

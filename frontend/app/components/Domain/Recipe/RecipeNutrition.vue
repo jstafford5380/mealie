@@ -23,35 +23,33 @@
       </div>
     </dl>
   </section>
-  <div v-else-if="edit">
-    <v-card class="mt-2">
-      <v-card-title class="pt-2 pb-0">
-        {{ $t("recipe.nutrition") }}
-      </v-card-title>
-      <v-card-subtitle class="pb-1">
-        {{ $t("recipe.per-serving") }}
-      </v-card-subtitle>
-      <v-divider class="mx-2 my-1" />
-      <v-card-text>
-        <div
-          v-for="(item, key, index) in modelValue"
-          :key="index"
+  <div
+    v-else-if="edit"
+    class="grid grid-cols-2 gap-4 font-sans sm:grid-cols-3"
+  >
+    <p class="col-span-full m-0 text-sm text-muted-foreground">
+      {{ $t("recipe.per-serving") }}
+    </p>
+    <label
+      v-for="(item, key) in modelValue"
+      :key="key"
+      class="flex flex-col gap-1.5"
+    >
+      <span class="text-sm font-semibold">{{ labels[key]?.label ?? key }}</span>
+      <span class="flex h-10 items-center rounded-control border border-input bg-card pe-3 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/25">
+        <input
+          type="number"
+          inputmode="decimal"
+          min="0"
+          step="any"
+          autocomplete="off"
+          :value="parseNutritionValue(modelValue[key]) ?? ''"
+          class="h-full w-0 min-w-0 flex-1 bg-transparent px-3 text-[15px] tabular-nums outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none"
+          @input="updateValue(key, ($event.target as HTMLInputElement).value === '' ? null : Math.max(0, Number(($event.target as HTMLInputElement).value)))"
         >
-          <v-number-input
-            :model-value="parseNutritionValue(modelValue[key])"
-            :label="labels[key].label"
-            :suffix="labels[key].suffix"
-            density="compact"
-            autocomplete="off"
-            variant="underlined"
-            inset
-            :precision="null"
-            :min="0"
-            @update:model-value="updateValue(key, $event)"
-          />
-        </div>
-      </v-card-text>
-    </v-card>
+        <span class="text-sm text-muted-foreground">{{ labels[key]?.suffix }}</span>
+      </span>
+    </label>
   </div>
 </template>
 
@@ -99,5 +97,3 @@ const renderedList = computed(() => {
   }, {});
 });
 </script>
-
-<style lang="scss" scoped></style>

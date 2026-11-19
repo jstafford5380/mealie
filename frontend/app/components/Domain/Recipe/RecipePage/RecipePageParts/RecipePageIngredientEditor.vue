@@ -1,9 +1,6 @@
 <template>
   <div>
     <div class="mb-4">
-      <h2 class="mb-4 text-h5 font-weight-medium opacity-80">
-        {{ $t("recipe.ingredients") }}
-      </h2>
       <v-alert
         v-if="recipe.recipeIngredient.length > 0 && !hasFoodOrUnit"
         border="start"
