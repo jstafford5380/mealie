@@ -236,19 +236,17 @@
       "name": "CookbookEditor",
       "components": [
         "CookBookOut",
-        "HelpIcon",
-        "QueryFilterBuilder"
+        "QueryFilterBuilder",
+        "Switch",
+        "TextField",
+        "TextareaField"
       ],
       "dependencies": [
         "frontend/app/components/Domain/QueryFilterBuilder.vue",
-        "frontend/app/components/global/HelpIcon.vue"
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ],
-      "vuetify": [
-        "v-card-text",
-        "v-switch",
-        "v-text-field",
-        "v-textarea"
-      ],
+      "vuetify": [],
       "events": [
         "input: handleInput"
       ],

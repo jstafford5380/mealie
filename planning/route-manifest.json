@@ -772,13 +772,13 @@
         "frontend/app/components/global/BaseDialogContent.vue",
         "frontend/app/components/global/BaseMenu.vue",
         "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/HelpIcon.vue",
         "frontend/app/components/global/SafeInlineHtml.vue",
         "frontend/app/components/global/SafeMarkdown.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
         "frontend/app/components/ui/field/DateField.vue",
         "frontend/app/components/ui/field/SelectField.vue",
-        "frontend/app/components/ui/field/TextField.vue"
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ]
     },
     {
@@ -788,42 +788,34 @@
       "document": "pages/g--groupSlug--cookbooks--index.md",
       "status": "reviewed",
       "components": [
-        "BaseButton",
-        "BaseButtonGroup",
+        "Accordion",
+        "AccordionContent",
+        "AccordionItem",
+        "AccordionTrigger",
         "BaseDialog",
-        "BasePageTitle",
+        "Button",
+        "CheckboxField",
         "CookBookOut",
         "CookbookEditor",
+        "GripVerticalIcon",
+        "MdiIcon",
+        "PlusIcon",
+        "Trash2Icon",
         "VueDraggable"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Cookbook/CookbookEditor.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
         "frontend/app/components/global/BaseDialog.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/ui/field/CheckboxField.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card-actions",
-        "v-card-text",
-        "v-checkbox",
-        "v-container",
-        "v-expansion-panel",
-        "v-expansion-panel-text",
-        "v-expansion-panel-title",
-        "v-expansion-panels",
-        "v-icon",
-        "v-img",
-        "v-spacer"
-      ],
+      "vuetify": [],
       "events": [
         "cancel: deleteCreateTarget()",
+        "click: actions.updateOne(myCookbooks[index]!)",
         "click: createCookbook",
+        "click: deleteEventHandler(myCookbooks[index]!)",
         "confirm: deleteCookbook()",
-        "delete: deleteEventHandler(myCookbooks[index])",
         "end: updateAll(myCookbooks)",
-        "save: actions.updateOne(myCookbooks[index])",
         "submit: actions.updateOne(createTarget)"
       ],
       "models": [
@@ -835,8 +827,10 @@
         "myCookbooks[index]"
       ],
       "conditions": [
+        "cookbook.public",
         "createTarget",
-        "deleteTarget"
+        "deleteTarget",
+        "myCookbooks.length"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": [],
@@ -847,15 +841,11 @@
         "frontend/app/components/Domain/Recipe/RecipeOrganizerSelector.vue",
         "frontend/app/components/Domain/Recipe/RecipeTimeInput.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
-        "frontend/app/components/global/HelpIcon.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
-        "frontend/app/components/ui/field/TextField.vue"
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ]
     },
     {

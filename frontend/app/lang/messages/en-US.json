@@ -1476,7 +1476,10 @@
     "cookbook-name": "Cookbook Name",
     "household-cookbook-name": "{0} Cookbook {1}",
     "create-a-cookbook": "Create a Cookbook",
-    "cookbook": "Cookbook"
+    "cookbook": "Cookbook",
+    "which-recipes": "Recipes in this cookbook",
+    "public": "Public",
+    "no-cookbooks-yet": "No cookbooks yet. A cookbook is a saved set of recipes, like \"Weeknight dinners\"."
   },
   "query-filter": {
     "logical-operators": {

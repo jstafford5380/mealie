@@ -17,6 +17,14 @@ Route: `/g/:groupSlug/cookbooks`. Sources: [page](../../frontend/app/pages/g/[gr
 - Existing rows have separate Delete and Save actions. Delete shows the cookbook name in a bottom-sheet confirmation. Cancel retains the record.
 - Confirm deletes the record and removes it from the store, local rows, and sidebar. No deletion was confirmed for these captures.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Illustration title; Create button below the hide-other-households checkbox; expansion panels with an edit icon and a large up/down drag icon. | Heading with "Create a cookbook" beside it; the hide option as a checkbox with its hint; cookbooks in an accordion with a grip handle on the left and a Public pill. |
+| Editor with underlined fields and a switch whose explanation was in a help tooltip. | Labelled name and description, a "Recipes in this cookbook" heading over the filter builder, and a Public switch with its explanation visible. Delete on the left, Save on the right. |
+| Delete confirmation as a bottom sheet. | The standard dialog with the cookbook name. |
+
 ## Screenshots
 
 ![Empty cookbook management](../screenshots/g--groupSlug--cookbooks--index/01-empty-page.jpg)

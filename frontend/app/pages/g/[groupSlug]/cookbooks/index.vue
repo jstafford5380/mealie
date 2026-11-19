@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="mx-auto w-full max-w-[1000px] px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8">
     <!-- Create Dialog -->
     <BaseDialog
       v-if="createTarget"
@@ -16,128 +16,141 @@
       @submit="actions.updateOne(createTarget)"
       @cancel="deleteCreateTarget()"
     >
-      <v-card-text>
-        <CookbookEditor :key="createTargetKey" v-model="createTarget" />
-      </v-card-text>
+      <div class="px-6 pb-2">
+        <CookbookEditor
+          :key="createTargetKey"
+          v-model="createTarget"
+        />
+      </div>
     </BaseDialog>
 
     <!-- Delete Dialog -->
     <BaseDialog
       v-model="dialogStates.delete"
-      bottom-sheet
       :title="$t('general.delete-with-name', { name: $t('cookbook.cookbook') })"
       :icon="$globals.icons.alertCircle"
       color="error"
       can-confirm
       @confirm="deleteCookbook()"
     >
-      <v-card-text>
-        <p>{{ $t("general.confirm-delete-generic-with-name", { name: $t("cookbook.cookbook") }) }}</p>
-        <p v-if="deleteTarget" class="mt-4 ml-4">
+      <div class="flex flex-col gap-3 px-6 pb-2 text-[15px]">
+        <p class="m-0">
+          {{ $t("general.confirm-delete-generic-with-name", { name: $t("cookbook.cookbook") }) }}
+        </p>
+        <p
+          v-if="deleteTarget"
+          class="m-0 rounded-control bg-muted px-3 py-2 font-semibold"
+        >
           {{ deleteTarget.name }}
         </p>
-      </v-card-text>
+      </div>
     </BaseDialog>
 
-    <!-- Cookbook Page -->
-    <!-- Page Title -->
-    <v-container class="lg-container">
-      <BasePageTitle divider>
-        <template #header>
-          <v-img width="100%" max-height="100" max-width="100" src="/svgs/manage-cookbooks.svg" />
-        </template>
-        <template #title>
+    <header class="mb-4 flex flex-wrap items-end gap-3">
+      <div class="min-w-0 flex-1">
+        <h1 class="m-0 text-[26px] font-bold tracking-tight sm:text-[32px]">
           {{ $t("cookbook.cookbooks") }}
-        </template>
-        {{ $t("cookbook.description") }}
-      </BasePageTitle>
-
-      <div class="my-6">
-        <v-checkbox
-          v-model="cookbookPreferences.hideOtherHouseholds"
-          :label="$t('cookbook.hide-cookbooks-from-other-households')"
-          hide-details
-          color="primary"
-        />
-        <div class="ml-10 mt-n3">
-          <p class="text-subtitle-2 my-0 py-0">
-            {{ $t("cookbook.hide-cookbooks-from-other-households-description") }}
-          </p>
-        </div>
+        </h1>
+        <p class="m-0 mt-1 max-w-[65ch] text-[15px] text-muted-foreground">
+          {{ $t("cookbook.description") }}
+        </p>
       </div>
+      <Button @click="createCookbook">
+        <PlusIcon class="size-4" />
+        {{ $t('cookbook.create-a-cookbook') }}
+      </Button>
+    </header>
 
-      <!-- Create New -->
-      <BaseButton create @click="createCookbook" />
+    <div class="mb-6">
+      <CheckboxField
+        v-model="cookbookPreferences.hideOtherHouseholds"
+        :label="$t('cookbook.hide-cookbooks-from-other-households')"
+        :hint="$t('cookbook.hide-cookbooks-from-other-households-description')"
+      />
+    </div>
 
-      <!-- Cookbook List -->
-      <v-expansion-panels class="mt-2">
-        <VueDraggable
-          v-model="myCookbooks"
-          handle=".handle"
-          :delay="250"
-          :delay-on-touch-only="true"
-          style="width: 100%"
-          @end="updateAll(myCookbooks)"
+    <Accordion
+      v-if="myCookbooks.length"
+      type="single"
+      collapsible
+      class="rounded-card border bg-card"
+    >
+      <VueDraggable
+        v-model="myCookbooks"
+        handle=".handle"
+        :delay="250"
+        :delay-on-touch-only="true"
+        @end="updateAll(myCookbooks)"
+      >
+        <AccordionItem
+          v-for="(cookbook, index) in myCookbooks"
+          :key="cookbook.id"
+          :value="cookbook.id"
+          class="last:border-b-0"
         >
-          <v-expansion-panel
-            v-for="(cookbook, index) in myCookbooks"
-            :key="cookbook.id"
-            class="my-2 left-border rounded"
-          >
-            <v-expansion-panel-title disable-icon-rotate class="text-h6 opacity-80">
-              <div class="d-flex align-center">
-                <v-icon size="large" start>
-                  {{ $globals.icons.pages }}
-                </v-icon>
-                {{ cookbook.name }}
-              </div>
-              <template #actions>
-                <div class="d-flex align-center">
-                  <v-btn icon variant="text" class="ml-2">
-                    <v-icon>
-                      {{ $globals.icons.edit }}
-                    </v-icon>
-                  </v-btn>
-                  <v-icon class="handle" :size="40">
-                    {{ $globals.icons.arrowUpDown }}
-                  </v-icon>
-                </div>
-              </template>
-            </v-expansion-panel-title>
-            <v-expansion-panel-text>
-              <CookbookEditor
-                v-model="myCookbooks[index]"
-                :collapsable="false"
-              />
-              <v-card-actions>
-                <v-spacer />
-                <BaseButtonGroup
-                  :buttons="[
-                    {
-                      icon: $globals.icons.delete,
-                      text: $t('general.delete'),
-                      event: 'delete',
-                    },
-                    {
-                      icon: $globals.icons.save,
-                      text: $t('general.save'),
-                      event: 'save',
-                      disabled: !cookbook.queryFilterString,
-                    },
-                  ]"
-                  @delete="deleteEventHandler(myCookbooks[index])"
-                  @save="actions.updateOne(myCookbooks[index])"
+          <div class="flex items-center">
+            <span
+              class="handle ms-1 inline-flex size-9 shrink-0 cursor-grab touch-none items-center justify-center rounded-full text-muted-foreground hover:bg-highlight active:cursor-grabbing"
+              :aria-label="$t('general.drag-to-reorder')"
+              :title="$t('general.drag-to-reorder')"
+            >
+              <GripVerticalIcon class="size-4" />
+            </span>
+            <AccordionTrigger class="min-w-0 flex-1 py-3.5 pe-4">
+              <span class="flex min-w-0 items-center gap-3">
+                <MdiIcon
+                  :path="$globals.icons.pages"
+                  class="size-5 shrink-0 text-muted-foreground"
                 />
-              </v-card-actions>
-            </v-expansion-panel-text>
-          </v-expansion-panel>
-        </VueDraggable>
-      </v-expansion-panels>
-    </v-container>
+                <span class="truncate">{{ cookbook.name }}</span>
+                <span
+                  v-if="cookbook.public"
+                  class="rounded-full bg-subtle px-2 py-0.5 text-xs font-semibold text-subtle-foreground"
+                >{{ $t('cookbook.public') }}</span>
+              </span>
+            </AccordionTrigger>
+          </div>
+          <AccordionContent class="px-4">
+            <CookbookEditor
+              v-model="myCookbooks[index]"
+              :collapsable="false"
+            />
+            <div class="mt-4 flex flex-wrap items-center gap-2 border-t pt-4">
+              <Button
+                variant="ghost"
+                class="text-destructive hover:text-destructive"
+                @click="deleteEventHandler(myCookbooks[index]!)"
+              >
+                <Trash2Icon class="size-4" />
+                {{ $t('general.delete') }}
+              </Button>
+              <Button
+                class="ms-auto"
+                :disabled="!cookbook.queryFilterString"
+                @click="actions.updateOne(myCookbooks[index]!)"
+              >
+                {{ $t('general.save') }}
+              </Button>
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </VueDraggable>
+    </Accordion>
+    <p
+      v-else
+      class="m-0 rounded-card border border-dashed px-4 py-8 text-center text-sm text-muted-foreground"
+    >
+      {{ $t('cookbook.no-cookbooks-yet') }}
+    </p>
   </div>
 </template>
 
 <script setup lang="ts">
+import { GripVerticalIcon, PlusIcon, Trash2Icon } from "@lucide/vue";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "~/components/ui/accordion";
+import { Button } from "~/components/ui/button";
+import CheckboxField from "~/components/ui/field/CheckboxField.vue";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { VueDraggable } from "vue-draggable-plus";
 import { useCookbookStore } from "~/composables/store/use-cookbook-store";
 import { useHouseholdSelf } from "@/composables/use-households";
