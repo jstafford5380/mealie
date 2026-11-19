@@ -1,74 +1,80 @@
 <template>
-  <v-dialog
-    v-model="model"
-    fullscreen
-    scrim="transparent"
-    transition="fade-transition"
-  >
-    <div
-      class="lightbox-content"
-      :style="{ backgroundColor: scrimColor }"
-      @click="onBackgroundClick"
-    >
-      <div ref="frameRef" class="lightbox-frame">
-        <img
-          v-if="imageUrl"
-          :key="imageUrl"
-          :src="imageUrl"
-          :alt="imageAlt"
-          :class="['lightbox-img', cursorClass]"
-          draggable="false"
-          :style="imgStyle"
-          @load="onImageLoad"
-          @click="onImageClick"
-          @pointerdown="onPointerDown"
-          @pointermove="onPointerMove"
-          @pointerup="onPointerUp"
-          @pointercancel="onPointerCancel"
+  <DialogRoot v-model:open="model">
+    <DialogPortal>
+      <DialogContent
+        class="fixed inset-0 z-[2050] outline-none"
+        :aria-describedby="undefined"
+      >
+        <DialogTitle class="sr-only">
+          {{ imageAlt || $t('general.image') }}
+        </DialogTitle>
+        <div
+          class="lightbox-content"
+          :style="{ backgroundColor: scrimColor }"
+          @click="onBackgroundClick"
         >
-      </div>
-      <v-btn
-        v-if="showNav && canPrev && !zoomed"
-        icon
-        variant="text"
-        class="lightbox-nav lightbox-prev"
-        :aria-label="$t('recipe.previous-image')"
-        @click.stop="goPrev"
-      >
-        <v-icon>{{ $globals.icons.chevronLeft }}</v-icon>
-      </v-btn>
-      <v-btn
-        v-if="showNav && canNext && !zoomed"
-        icon
-        variant="text"
-        class="lightbox-nav lightbox-next"
-        :aria-label="$t('recipe.next-image')"
-        @click.stop="goNext"
-      >
-        <v-icon>{{ $globals.icons.chevronRight }}</v-icon>
-      </v-btn>
-      <div
-        v-if="showNav"
-        class="lightbox-caption"
-        :style="{ backgroundColor: captionBg, color: captionColor }"
-      >
-        {{ captionText }}
-      </div>
-      <v-btn
-        icon
-        variant="text"
-        class="lightbox-close"
-        :aria-label="$t('general.close')"
-        @click.stop="model = false"
-      >
-        <v-icon>{{ $globals.icons.close }}</v-icon>
-      </v-btn>
-    </div>
-  </v-dialog>
+          <div
+            ref="frameRef"
+            class="lightbox-frame"
+          >
+            <img
+              v-if="imageUrl"
+              :key="imageUrl"
+              :src="imageUrl"
+              :alt="imageAlt"
+              :class="['lightbox-img', cursorClass]"
+              draggable="false"
+              :style="imgStyle"
+              @load="onImageLoad"
+              @click="onImageClick"
+              @pointerdown="onPointerDown"
+              @pointermove="onPointerMove"
+              @pointerup="onPointerUp"
+              @pointercancel="onPointerCancel"
+            >
+          </div>
+          <button
+            v-if="showNav && canPrev && !zoomed"
+            type="button"
+            class="lightbox-nav lightbox-prev inline-flex size-11 items-center justify-center rounded-full bg-background/70 text-foreground"
+            :aria-label="$t('recipe.previous-image')"
+            @click.stop="goPrev"
+          >
+            <ChevronLeftIcon class="size-6" />
+          </button>
+          <button
+            v-if="showNav && canNext && !zoomed"
+            type="button"
+            class="lightbox-nav lightbox-next inline-flex size-11 items-center justify-center rounded-full bg-background/70 text-foreground"
+            :aria-label="$t('recipe.next-image')"
+            @click.stop="goNext"
+          >
+            <ChevronRightIcon class="size-6" />
+          </button>
+          <div
+            v-if="showNav"
+            class="lightbox-caption"
+            :style="{ backgroundColor: captionBg, color: captionColor }"
+          >
+            {{ captionText }}
+          </div>
+          <button
+            type="button"
+            class="lightbox-close inline-flex size-11 items-center justify-center rounded-full bg-background/70 text-foreground"
+            :aria-label="$t('general.close')"
+            @click.stop="model = false"
+          >
+            <XIcon class="size-5" />
+          </button>
+        </div>
+      </DialogContent>
+    </DialogPortal>
+  </DialogRoot>
 </template>
 
 <script setup lang="ts">
-import { useTheme } from "vuetify";
+import { ChevronLeftIcon, ChevronRightIcon, XIcon } from "@lucide/vue";
+import { DialogContent, DialogPortal, DialogRoot, DialogTitle } from "reka-ui";
 import { canGoNext, canGoPrev } from "~/composables/recipe-page/use-recipe-lightbox-items";
 import type { LightboxItem } from "~/composables/recipe-page/use-recipe-lightbox-items";
 
@@ -80,8 +86,13 @@ const props = defineProps<Props>();
 const model = defineModel<boolean>({ required: true });
 const index = defineModel<number>("index", { default: 0 });
 
-const theme = useTheme();
-const isDark = computed(() => theme.global.current.value.dark);
+// read when it opens: the theme can't change while the lightbox covers the page
+const isDark = ref(false);
+watch(model, (open) => {
+  if (open) {
+    isDark.value = document.documentElement.classList.contains("dark");
+  }
+}, { immediate: true });
 
 const scrimColor = computed(() =>
   isDark.value ? "rgba(0, 0, 0, 0.75)" : "rgba(255, 255, 255, 0.75)",
@@ -385,9 +396,6 @@ const imgStyle = computed(() => ({
   display: flex;
   align-items: center;
   justify-content: center;
-  /* 100%, not 100vw/100vh: this is Vuetify's v-overlay__content, whose content box shrinks
-     by its scroll-lock scrollbar-offset padding. Viewport units ignore that padding and
-     overflow the parent by exactly the padding amount, producing a spurious h-scrollbar. */
   width: 100%;
   height: 100%;
   cursor: zoom-out;

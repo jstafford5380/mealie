@@ -2,7 +2,6 @@
   <div>
     <BaseDialog
       v-model="discardDialog"
-      bottom-sheet
       :title="$t('general.discard-changes')"
       color="warning"
       :icon="$globals.icons.alertCircle"
@@ -10,14 +9,14 @@
       @confirm="confirmDiscard"
       @cancel="cancelDiscard"
     >
-      <v-card-text>
+      <p class="m-0 px-6 pb-2 text-[15px]">
         {{ $t("general.discard-changes-description") }}
-      </v-card-text>
+      </p>
     </BaseDialog>
     <RecipePageParseDialog
       :model-value="isParsing"
       :ingredients="recipe.recipeIngredient"
-      :width="$vuetify.display.smAndDown ? '100%' : '80%'"
+      :width="isNarrow ? '100%' : '80%'"
       @update:model-value="toggleIsParsing"
       @save="saveParsedIngredients"
     />
@@ -101,106 +100,109 @@
         :main-menu-bar="false"
       />
       <!-- One form around every section, so Save validates the whole recipe. -->
-      <v-form
+      <FieldScope
         v-else
         ref="instructionForm"
-        class="grid gap-8 lg:grid-cols-[170px_minmax(0,1fr)]"
-        @submit.prevent
       >
-        <nav
-          :aria-label="$t('recipe.jump-to-section')"
-          class="max-lg:display-none"
+        <form
+          class="grid gap-8 lg:grid-cols-[170px_minmax(0,1fr)]"
+          @submit.prevent
         >
-          <ul class="sticky top-36 m-0 flex list-none flex-col gap-0.5 p-0">
-            <li
-              v-for="section in editorSections"
-              :key="section.id"
+          <nav
+            :aria-label="$t('recipe.jump-to-section')"
+            class="max-lg:display-none"
+          >
+            <ul class="sticky top-36 m-0 flex list-none flex-col gap-0.5 p-0">
+              <li
+                v-for="section in editorSections"
+                :key="section.id"
+              >
+                <a
+                  :href="`#${section.id}`"
+                  class="block rounded-item px-3 py-1.5 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-highlight hover:text-foreground"
+                >{{ section.title }}</a>
+              </li>
+            </ul>
+          </nav>
+          <div class="flex min-w-0 flex-col gap-6">
+            <RecipeEditorSection
+              id="editor-basics"
+              :title="$t('recipe.section-basics')"
             >
-              <a
-                :href="`#${section.id}`"
-                class="block rounded-item px-3 py-1.5 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-highlight hover:text-foreground"
-              >{{ section.title }}</a>
-            </li>
-          </ul>
-        </nav>
-        <div class="flex min-w-0 flex-col gap-6">
-          <RecipeEditorSection
-            id="editor-basics"
-            :title="$t('recipe.section-basics')"
-          >
-            <RecipeEditorBasics v-model="recipe" />
-          </RecipeEditorSection>
-          <RecipeEditorSection
-            id="editor-ingredients"
-            :title="$t('recipe.ingredients')"
-          >
-            <RecipePageIngredientEditor v-model="recipe" />
-          </RecipeEditorSection>
-          <RecipeEditorSection
-            id="editor-method"
-            :title="$t('recipe.instructions')"
-          >
-            <RecipeMethodEditor
-              v-model="recipe.recipeInstructions"
-              v-model:assets="recipe.assets"
-              :recipe="displayedRecipe"
-              :scale="scale"
-            />
-          </RecipeEditorSection>
-          <RecipeEditorSection
-            id="editor-organize"
-            :title="$t('recipe.section-organize')"
-          >
-            <RecipePageOrganizers v-model="recipe" />
-          </RecipeEditorSection>
-          <RecipeEditorSection
-            id="editor-notes"
-            :title="$t('recipe.note')"
-          >
-            <RecipeNotes
-              v-model="recipe.notes"
-              edit
-            />
-          </RecipeEditorSection>
-          <RecipeEditorSection
-            v-if="recipe.settings.showNutrition"
-            id="editor-nutrition"
-            :title="$t('recipe.nutrition')"
-          >
-            <RecipeNutrition
-              v-model="recipe.nutrition"
-              edit
-            />
-          </RecipeEditorSection>
-          <RecipeEditorSection
-            v-if="recipe.settings.showAssets"
-            id="editor-assets"
-            :title="$t('asset.assets')"
-          >
-            <RecipeAssets
-              v-model="recipe.assets"
-              edit
-              :slug="recipe.slug"
-              :recipe-id="recipe.id"
-            />
-          </RecipeEditorSection>
-          <RecipeEditorSection
-            id="editor-source"
-            :title="$t('recipe.section-source')"
-          >
-            <RecipeEditorSource v-model="recipe" />
-          </RecipeEditorSection>
-          <RecipeEditorSection
-            id="editor-settings"
-            :title="$t('recipe.recipe-settings')"
-          >
-            <RecipeSettingsSwitches
-              v-model="recipe.settings"
-              :is-owner="recipe.userId == user.id"
-            />
-          </RecipeEditorSection>
-        </div>
-      </v-form>
+              <RecipeEditorBasics v-model="recipe" />
+            </RecipeEditorSection>
+            <RecipeEditorSection
+              id="editor-ingredients"
+              :title="$t('recipe.ingredients')"
+            >
+              <RecipePageIngredientEditor v-model="recipe" />
+            </RecipeEditorSection>
+            <RecipeEditorSection
+              id="editor-method"
+              :title="$t('recipe.instructions')"
+            >
+              <RecipeMethodEditor
+                v-model="recipe.recipeInstructions"
+                v-model:assets="recipe.assets"
+                :recipe="displayedRecipe"
+                :scale="scale"
+              />
+            </RecipeEditorSection>
+            <RecipeEditorSection
+              id="editor-organize"
+              :title="$t('recipe.section-organize')"
+            >
+              <RecipePageOrganizers v-model="recipe" />
+            </RecipeEditorSection>
+            <RecipeEditorSection
+              id="editor-notes"
+              :title="$t('recipe.note')"
+            >
+              <RecipeNotes
+                v-model="recipe.notes"
+                edit
+              />
+            </RecipeEditorSection>
+            <RecipeEditorSection
+              v-if="recipe.settings.showNutrition"
+              id="editor-nutrition"
+              :title="$t('recipe.nutrition')"
+            >
+              <RecipeNutrition
+                v-model="recipe.nutrition"
+                edit
+              />
+            </RecipeEditorSection>
+            <RecipeEditorSection
+              v-if="recipe.settings.showAssets"
+              id="editor-assets"
+              :title="$t('asset.assets')"
+            >
+              <RecipeAssets
+                v-model="recipe.assets"
+                edit
+                :slug="recipe.slug"
+                :recipe-id="recipe.id"
+              />
+            </RecipeEditorSection>
+            <RecipeEditorSection
+              id="editor-source"
+              :title="$t('recipe.section-source')"
+            >
+              <RecipeEditorSource v-model="recipe" />
+            </RecipeEditorSection>
+            <RecipeEditorSection
+              id="editor-settings"
+              :title="$t('recipe.recipe-settings')"
+            >
+              <RecipeSettingsSwitches
+                v-model="recipe.settings"
+                :is-owner="recipe.userId == user.id"
+              />
+            </RecipeEditorSection>
+          </div>
+        </form>
+      </FieldScope>
     </div>
     <RecipePrintContainer
       :recipe="displayedRecipe"
@@ -210,7 +212,7 @@
 </template>
 
 <script setup lang="ts">
-import type { VForm } from "~/types/auto-forms";
+import FieldScope from "~/components/ui/field/FieldScope.vue";
 import { invoke, until, useMediaQuery } from "@vueuse/core";
 import type { RouteLocationNormalized } from "vue-router";
 import RecipePageIngredientEditor from "./RecipePageParts/RecipePageIngredientEditor.vue";
@@ -440,7 +442,8 @@ watch(isParsing, () => {
  * Recipe Save Delete
  */
 
-const instructionForm = ref<VForm | null>(null);
+const instructionForm = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
+const isNarrow = useMediaQuery("(max-width: 959.98px)");
 
 async function saveRecipe() {
   if (isEditForm.value) {

@@ -1535,6 +1535,7 @@
     "mark-all-as-read": "Mark All as Read",
     "show-announcements-from-mealie": "Show announcements from Mealie",
     "show-announcements-setting-description": "Whether or not you want to allow users to see announcements from Mealie. When enabled users can still opt-out from seeing them in their user settings",
-    "unread": "unread"
+    "unread": "unread",
+    "new": "New"
   }
 }

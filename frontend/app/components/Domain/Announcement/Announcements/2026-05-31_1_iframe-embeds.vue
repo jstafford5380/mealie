@@ -22,14 +22,9 @@
         environment variable (comma-separated). It extends the built-in defaults, and only
         <code>https</code> sources are permitted. See the configuration docs for details:
         <br>
-        <v-btn
-          class="mt-2"
-          color="primary"
-          href="https://docs.mealie.io/documentation/getting-started/installation/backend-config/"
-          target="_blank"
-        >
+        <a class="mt-2 inline-flex h-9 items-center rounded-control bg-primary px-4 text-sm font-semibold text-primary-foreground no-underline hover:bg-primary/90" href="https://docs.mealie.io/documentation/getting-started/installation/backend-config/" target="_blank" rel="noopener">
           Backend Configuration
-        </v-btn>
+        </a>
       </p>
     </div>
   </div>

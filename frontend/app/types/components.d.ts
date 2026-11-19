@@ -14,7 +14,6 @@ import type BaseCardSectionTitle from "@/components/global/BaseCardSectionTitle.
 import type BaseDialog from "@/components/global/BaseDialog.vue";
 import type BaseDialogContent from "@/components/global/BaseDialogContent.vue";
 import type BaseDivider from "@/components/global/BaseDivider.vue";
-import type BaseExpansionPanels from "@/components/global/BaseExpansionPanels.vue";
 import type BaseKeyValueEditor from "@/components/global/BaseKeyValueEditor.vue";
 import type BaseMenu from "@/components/global/BaseMenu.vue";
 import type BaseOverflowButton from "@/components/global/BaseOverflowButton.vue";
@@ -35,7 +34,6 @@ import type RecipeJsonEditor from "@/components/global/RecipeJsonEditor.vue";
 import type ReportTable from "@/components/global/ReportTable.vue";
 import type SafeInlineHtml from "@/components/global/SafeInlineHtml.vue";
 import type SafeMarkdown from "@/components/global/SafeMarkdown.vue";
-import type StatsCards from "@/components/global/StatsCards.vue";
 import type ToggleState from "@/components/global/ToggleState.vue";
 import type WakelockSwitch from "@/components/global/WakelockSwitch.vue";
 import type DefaultLayout from "@/components/layout/DefaultLayout.vue";
@@ -58,7 +56,6 @@ declare module "vue" {
     BaseDialog: typeof BaseDialog;
     BaseDialogContent: typeof BaseDialogContent;
     BaseDivider: typeof BaseDivider;
-    BaseExpansionPanels: typeof BaseExpansionPanels;
     BaseKeyValueEditor: typeof BaseKeyValueEditor;
     BaseMenu: typeof BaseMenu;
     BaseOverflowButton: typeof BaseOverflowButton;
@@ -79,7 +76,6 @@ declare module "vue" {
     ReportTable: typeof ReportTable;
     SafeInlineHtml: typeof SafeInlineHtml;
     SafeMarkdown: typeof SafeMarkdown;
-    StatsCards: typeof StatsCards;
     ToggleState: typeof ToggleState;
     WakelockSwitch: typeof WakelockSwitch;
     // Layout Components

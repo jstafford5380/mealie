@@ -21,9 +21,9 @@
       <span v-if="user?.canManage">
         You can manage them here:
         <br>
-        <v-btn class="mt-2" color="primary" to="/group">
+        <NuxtLink class="mt-2 inline-flex h-9 items-center rounded-control bg-primary px-4 text-sm font-semibold text-primary-foreground no-underline hover:bg-primary/90" to="/group">
           {{ $t("profile.group-settings") }}
-        </v-btn>
+        </NuxtLink>
       </span>
       <span v-else-if="!group?.aiProviderSettings?.aiEnabled">
         Contact a group manager or server admin to set up AI providers for your group.
@@ -34,9 +34,9 @@
       <p>
         As an admin, you can configure AI providers for any group. Unlike the old environment variable approach, providers are configured per-group:
         <br>
-        <v-btn class="mt-2" color="primary" to="/admin/manage/groups">
+        <NuxtLink class="mt-2 inline-flex h-9 items-center rounded-control bg-primary px-4 text-sm font-semibold text-primary-foreground no-underline hover:bg-primary/90" to="/admin/manage/groups">
           {{ $t("group.admin-group-management") }}
-        </v-btn>
+        </NuxtLink>
       </p>
     </div>
   </div>

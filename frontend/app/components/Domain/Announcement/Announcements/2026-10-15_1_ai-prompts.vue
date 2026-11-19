@@ -8,9 +8,9 @@
     <p v-if="user?.canManage">
       You can customize them in the AI section of your group settings:
       <br>
-      <v-btn class="mt-2" color="primary" to="/group">
+      <NuxtLink class="mt-2 inline-flex h-9 items-center rounded-control bg-primary px-4 text-sm font-semibold text-primary-foreground no-underline hover:bg-primary/90" to="/group">
         {{ $t("profile.group-settings") }}
-      </v-btn>
+      </NuxtLink>
     </p>
     <p v-else>
       Contact a group manager or server admin to customize the prompts for your group.
@@ -25,9 +25,9 @@
       <p>
         As an admin, you can also customize prompts for any group:
         <br>
-        <v-btn class="mt-2" color="primary" to="/admin/manage/groups">
+        <NuxtLink class="mt-2 inline-flex h-9 items-center rounded-control bg-primary px-4 text-sm font-semibold text-primary-foreground no-underline hover:bg-primary/90" to="/admin/manage/groups">
           {{ $t("group.admin-group-management") }}
-        </v-btn>
+        </NuxtLink>
       </p>
     </div>
   </div>

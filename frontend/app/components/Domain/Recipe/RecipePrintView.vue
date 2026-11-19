@@ -1,71 +1,50 @@
 <template>
-  <div :class="dense ? 'wrapper' : 'wrapper pa-3'">
-    <section>
-      <v-container class="ma-0 pa-0">
-        <v-row>
-          <v-col
-            v-if="recipe.image && preferences.imagePosition && preferences.imagePosition != ImagePosition.hidden"
-            :order="preferences.imagePosition == ImagePosition.left ? -1 : 1"
-            cols="4"
-            align-self="center"
-          >
-            <img
-              :key="imageKey"
-              :src="recipeImageUrl"
-              style="min-height: 50; max-width: 100%;"
-            >
-          </v-col>
-          <v-col order="0">
-            <v-card-title class="headline pl-0">
-              <v-icon
-                start
-                color="primary"
-              >
-                {{ $globals.icons.primary }}
-              </v-icon>
-              {{ recipe.name }}
-            </v-card-title>
-            <div
-              v-if="recipeYield"
-              class="d-flex justify-space-between align-center pb-6"
-            >
-              <div>
-                <v-icon start>
-                  {{ $globals.icons.potSteam }}
-                </v-icon>
-                <SafeInlineHtml :html="recipeYield" />
-              </div>
-            </div>
-            <v-row class="d-flex justify-start">
-              <RecipeTimeCard
-                :prep-time="recipe.prepTime"
-                :total-time="recipe.totalTime"
-                :perform-time="recipe.performTime"
-                :prep-time-seconds="recipe.prepTimeSeconds"
-                :total-time-seconds="recipe.totalTimeSeconds"
-                :perform-time-seconds="recipe.performTimeSeconds"
-                small
-                color="white"
-                class="ml-4"
-              />
-            </v-row>
-
-            <v-card-text
-              v-if="preferences.showDescription"
-              class="px-0"
-            >
-              <SafeMarkdown :source="recipe.description" />
-            </v-card-text>
-          </v-col>
-        </v-row>
-      </v-container>
+  <div :class="dense ? 'wrapper' : 'wrapper p-3'">
+    <section class="mb-4 grid items-center gap-6 font-sans" :class="showImage ? 'grid-cols-[1fr_2fr]' : 'grid-cols-1'">
+      <img
+        v-if="showImage"
+        :key="imageKey"
+        :src="recipeImageUrl"
+        alt=""
+        class="max-w-full rounded-control"
+        :class="preferences.imagePosition == ImagePosition.left ? 'order-first' : 'order-last'"
+      >
+      <div>
+        <h1 class="m-0 mb-3 font-serif text-[26px] leading-tight">
+          {{ recipe.name }}
+        </h1>
+        <p
+          v-if="recipeYield"
+          class="m-0 mb-3 flex items-center gap-2 text-sm"
+        >
+          <MdiIcon
+            :path="$globals.icons.potSteam"
+            class="size-4"
+          />
+          <SafeInlineHtml :html="recipeYield" />
+        </p>
+        <RecipeTimeCard
+          :prep-time="recipe.prepTime"
+          :total-time="recipe.totalTime"
+          :perform-time="recipe.performTime"
+          :prep-time-seconds="recipe.prepTimeSeconds"
+          :total-time-seconds="recipe.totalTimeSeconds"
+          :perform-time-seconds="recipe.performTimeSeconds"
+          small
+        />
+        <SafeMarkdown
+          v-if="preferences.showDescription"
+          :source="recipe.description"
+          class="mt-3 text-sm"
+        />
+      </div>
     </section>
 
     <!-- Ingredients -->
     <section>
-      <v-card-title class="headline pl-0">
+      <h2 class="print-heading">
         {{ $t("recipe.ingredients") }}
-      </v-card-title>
+      </h2>
       <div
         v-for="(ingredientSection, sectionIndex) in ingredientSections"
         :key="`ingredient-section-${sectionIndex}`"
@@ -107,12 +86,12 @@
         :key="`instruction-section-${sectionIndex}`"
         :class="{ 'print-section': instructionSection.sectionName }"
       >
-        <v-card-title
+        <h2
           v-if="!sectionIndex"
-          class="headline pl-0"
+          class="print-heading"
         >
           {{ $t("recipe.instructions") }}
-        </v-card-title>
+        </h2>
         <div
           v-for="(step, stepIndex) in instructionSection.instructions"
           :key="`instruction-${stepIndex}`"
@@ -167,10 +146,10 @@
 
     <!-- Notes -->
     <div v-if="preferences.showNotes">
-      <v-divider
+      <hr
         v-if="hasNotes"
-        class="grey my-4"
-      />
+        class="my-4 border-t border-black/30"
+      >
 
       <section>
         <div
@@ -190,10 +169,10 @@
 
     <!-- Nutrition -->
     <div v-if="preferences.showNutrition">
-      <v-card-title class="headline pl-0">
+      <h2 class="print-heading">
         {{ $t("recipe.nutrition") }}
         <span class="nutrition-per-serving">({{ $t("recipe.per-serving") }})</span>
-      </v-card-title>
+      </h2>
 
       <section>
         <div class="print-section">
@@ -217,6 +196,7 @@
 </template>
 
 <script setup lang="ts">
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import RecipeTimeCard from "~/components/Domain/Recipe/RecipeTimeCard.vue";
 import { useStaticRoutes } from "~/composables/api";
 import type { RecipeOut, RecipeIngredient, RecipeStep } from "~/lib/api/types/recipe";
@@ -418,6 +398,7 @@ const { shouldPluralizeFood } = useFoodPlurality();
 function substitutionSummary(ingredient: RecipeIngredient) {
   return ingredientSubstitutionSummary(ingredient, shouldPluralizeFood(ingredient, props.scale));
 }
+const showImage = computed(() => !!props.recipe.image && !!preferences.value.imagePosition && preferences.value.imagePosition !== ImagePosition.hidden);
 </script>
 
 <style scoped>
@@ -442,9 +423,10 @@ p {
   margin-bottom: 0 !important;
 }
 
-.v-card__text {
-  padding-bottom: 0;
-  margin-bottom: 0;
+.print-heading {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
 }
 
 .ingredient-grid {

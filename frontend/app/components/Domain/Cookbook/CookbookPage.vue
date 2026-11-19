@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="mx-auto w-full max-w-[1400px] px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8">
     <!-- Edit Dialog -->
     <BaseDialog
       v-if="editTarget"
@@ -15,56 +15,71 @@
       disable-submit-on-enter
       @submit="editCookbook"
     >
-      <v-card-text>
-        <CookbookEditor
-          v-model="editTarget"
-        />
-      </v-card-text>
+      <div class="px-6 pb-2">
+        <CookbookEditor v-model="editTarget" />
+      </div>
     </BaseDialog>
 
-    <v-container
-      v-if="book"
-      class="my-0"
-    >
-      <v-sheet
-        color="transparent"
-        class="d-flex flex-column w-100 pa-0 ma-0"
-        elevation="0"
-      >
-        <div class="d-flex align-center w-100 mb-2">
-          <v-toolbar-title class="headline mb-0">
-            <v-icon size="large" class="mr-3">
-              {{ $globals.icons.pages }}
-            </v-icon>
+    <template v-if="book">
+      <header class="mb-5 flex flex-wrap items-start gap-3">
+        <div class="min-w-0 flex-1">
+          <h1 class="m-0 text-[26px] font-bold tracking-tight sm:text-[32px]">
             {{ book.name }}
-          </v-toolbar-title>
-          <BaseButtonGroup
-            v-if="headerButtons.length"
-            class="d-flex flex-shrink-0"
-            :buttons="headerButtons"
-            @edit="handleEditCookbook"
-            @download-pdf="downloadPdf"
+          </h1>
+          <SafeMarkdown
+            v-if="book.description"
+            :source="book.description"
+            class="mt-1 max-w-[65ch] text-[15px] text-muted-foreground"
           />
         </div>
-        <SafeMarkdown v-if="book.description" :source="book.description" class="subtitle-1 text-grey-lighten-1 mb-2" />
-      </v-sheet>
+        <div class="flex flex-wrap gap-2">
+          <Button
+            v-if="isOwnGroup"
+            variant="outline"
+            :disabled="downloadingPdf"
+            @click="downloadPdf"
+          >
+            <LoaderCircleIcon
+              v-if="downloadingPdf"
+              class="size-4 animate-spin"
+            />
+            <MdiIcon
+              v-else
+              :path="$globals.icons.download"
+              class="size-4"
+            />
+            {{ downloadingPdf ? $t("recipe.preparing-pdf") : $t("recipe.download-pdf") }}
+          </Button>
+          <Button
+            v-if="canEdit"
+            variant="outline"
+            @click="handleEditCookbook"
+          >
+            <MdiIcon
+              :path="$globals.icons.edit"
+              class="size-4"
+            />
+            {{ $t("general.edit") }}
+          </Button>
+        </div>
+      </header>
 
-      <v-container class="pa-0">
-        <RecipeCardSection
-          class="mb-5 mx-1"
-          :recipes="recipes"
-          :query="{ cookbook: slug }"
-          @sort-recipes="assignSorted"
-          @replace-recipes="replaceRecipes"
-          @append-recipes="appendRecipes"
-          @delete="removeRecipe"
-        />
-      </v-container>
-    </v-container>
+      <RecipeCardSection
+        :recipes="recipes"
+        :query="{ cookbook: slug }"
+        @sort-recipes="assignSorted"
+        @replace-recipes="replaceRecipes"
+        @append-recipes="appendRecipes"
+        @delete="removeRecipe"
+      />
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
+import { LoaderCircleIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { useLazyRecipes } from "~/composables/recipes";
 import RecipeCardSection from "@/components/Domain/Recipe/RecipeCardSection.vue";
 import { useCookbookStore } from "~/composables/store/use-cookbook-store";
@@ -72,7 +87,6 @@ import { useCookbook } from "~/composables/use-group-cookbooks";
 import { useLoggedInState } from "~/composables/use-logged-in-state";
 import type { CookBookOut } from "~/lib/api/types/cookbook";
 import CookbookEditor from "~/components/Domain/Cookbook/CookbookEditor.vue";
-import type { ButtonOption } from "~/components/global/BaseMenu.vue";
 import { useDownloader } from "~/composables/api/use-downloader";
 import { loader } from "~/composables/use-toast";
 import { useUserApi } from "~/composables/api";
@@ -106,18 +120,6 @@ const i18n = useI18n();
 const { $globals } = useNuxtApp();
 
 const downloadingPdf = ref(false);
-
-const headerButtons = computed<ButtonOption[]>(() => [
-  ...(isOwnGroup.value
-    ? [{
-        icon: $globals.icons.download,
-        text: downloadingPdf.value ? i18n.t("recipe.preparing-pdf") : i18n.t("recipe.download-pdf"),
-        event: "download-pdf",
-        loading: downloadingPdf.value,
-      }]
-    : []),
-  ...(canEdit.value ? [{ icon: $globals.icons.edit, text: i18n.t("general.edit"), event: "edit" }] : []),
-]);
 
 async function downloadPdf() {
   if (!book.value || downloadingPdf.value) {

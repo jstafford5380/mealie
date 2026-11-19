@@ -26,14 +26,9 @@
         Most providers (Authentik, Authelia, Keycloak, Google, Entra ID, ...) send this claim already and are
         unaffected. See the OIDC docs for details:
         <br>
-        <v-btn
-          class="mt-2"
-          color="primary"
-          href="https://docs.mealie.io/documentation/getting-started/authentication/oidc-v2/#email-verification"
-          target="_blank"
-        >
+        <a class="mt-2 inline-flex h-9 items-center rounded-control bg-primary px-4 text-sm font-semibold text-primary-foreground no-underline hover:bg-primary/90" href="https://docs.mealie.io/documentation/getting-started/authentication/oidc-v2/#email-verification" target="_blank" rel="noopener">
           OpenID Connect (OIDC)
-        </v-btn>
+        </a>
       </p>
     </div>
     <div v-else>

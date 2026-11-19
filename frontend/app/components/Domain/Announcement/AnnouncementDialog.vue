@@ -8,94 +8,99 @@
     width="100%"
     max-width="1200"
   >
-    <div class="d-flex" :style="{ height: useMobile ? '100%' : '60vh', minHeight: '60vh' }">
-      <!-- Nav list -->
-      <v-list
+    <div class="flex min-h-[60vh] font-sans md:h-[60vh]">
+      <!-- every announcement, newest first -->
+      <nav
         v-show="!useMobile || navOpen"
-        nav
-        density="compact"
-        color="primary"
-        class="overflow-y-auto border-e flex-shrink-0"
-        style="width: 200px; max-height: 60vh"
+        class="w-full shrink-0 overflow-y-auto border-e px-2 md:w-56"
+        :aria-label="$t('announcements.all-announcements')"
       >
-        <v-list-item
-          v-for="announcement in allAnnouncements.toReversed()"
-          :key="announcement.key"
-          :active="currentAnnouncement.key === announcement.key"
-          rounded
-          @click="setCurrentAnnouncement(announcement); navOpen = false"
-        >
-          <v-list-item-title class="text-body-2">
-            {{ announcement.meta?.title }}
-          </v-list-item-title>
-          <v-list-item-subtitle v-if="announcement.date">
-            {{ $d(announcement.date) }}
-          </v-list-item-subtitle>
+        <ul class="m-0 flex list-none flex-col gap-0.5 p-0">
+          <li
+            v-for="announcement in allAnnouncements.toReversed()"
+            :key="announcement.key"
+          >
+            <button
+              type="button"
+              class="flex w-full items-start gap-2 rounded-item px-3 py-2 text-start transition-colors"
+              :class="currentAnnouncement.key === announcement.key ? 'bg-highlight text-highlight-foreground' : 'hover:bg-highlight/60'"
+              :aria-current="currentAnnouncement.key === announcement.key ? 'true' : undefined"
+              @click="setCurrentAnnouncement(announcement); navOpen = false"
+            >
+              <span class="min-w-0 flex-1">
+                <span class="block text-sm font-semibold">{{ announcement.meta?.title }}</span>
+                <span
+                  v-if="announcement.date"
+                  class="block text-xs text-muted-foreground"
+                >{{ $d(announcement.date) }}</span>
+              </span>
+              <span
+                v-if="newAnnouncements.some(a => a.key === announcement.key)"
+                class="mt-1.5 size-2 shrink-0 rounded-full bg-brand"
+                :aria-label="$t('announcements.new')"
+              />
+            </button>
+          </li>
+        </ul>
+      </nav>
 
-          <template v-if="newAnnouncements.some(a => a.key === announcement.key)" #append>
-            <v-icon size="x-small" color="info">
-              {{ $globals.icons.alertCircle }}
-            </v-icon>
-          </template>
-        </v-list-item>
-      </v-list>
-
-      <!-- Main content -->
       <div
-        class="flex-grow-1 overflow-y-auto"
+        v-show="!useMobile || !navOpen"
+        class="min-w-0 flex-1 overflow-y-auto px-6"
       >
-        <v-btn
+        <button
           v-if="useMobile"
-          :prepend-icon="navOpen ? $globals.icons.chevronLeft : $globals.icons.chevronRight"
-          density="compact"
-          variant="text"
-          class="mt-2 ms-2"
+          type="button"
+          class="mb-2 inline-flex items-center gap-1 text-sm font-semibold text-muted-foreground"
           @click="navOpen = !navOpen"
         >
+          <ChevronLeftIcon class="size-4 rtl:rotate-180" />
           {{ $t("announcements.all-announcements") }}
-        </v-btn>
-        <v-card-title>
-          <v-chip v-if="currentAnnouncement.date" label large class="me-1">
-            <v-icon class="me-1">
-              {{ $globals.icons.calendar }}
-            </v-icon>
-            {{ $d(currentAnnouncement.date) }}
-          </v-chip>
+        </button>
+        <p
+          v-if="currentAnnouncement.date"
+          class="m-0 text-sm text-muted-foreground"
+        >
+          {{ $d(currentAnnouncement.date) }}
+        </p>
+        <h3 class="m-0 mb-4 text-xl font-bold tracking-tight">
           {{ currentAnnouncement.meta?.title }}
-        </v-card-title>
-        <v-card-text>
+        </h3>
+        <div class="announcement-body text-[15px] leading-relaxed">
           <component :is="currentAnnouncement.component" />
-        </v-card-text>
+        </div>
       </div>
     </div>
     <template #custom-card-action>
-      <BaseButton
+      <Button
         v-if="newAnnouncements.length"
-        color="success"
-        :icon="$globals.icons.textBoxCheckOutline"
-        :text="$t('announcements.mark-all-as-read')"
+        variant="ghost"
         @click="markAllAsRead"
-      />
-      <BaseButton
+      >
+        {{ $t('announcements.mark-all-as-read') }}
+      </Button>
+      <Button
+        variant="outline"
         :disabled="isLastAnnouncement(currentAnnouncement.key)"
-        color="info"
-        :icon="$globals.icons.arrowRightBold"
-        icon-right
-        :text="$t('general.next')"
         @click="nextAnnouncement"
-      />
+      >
+        {{ $t('general.next') }}
+        <ChevronRightIcon class="size-4 rtl:rotate-180" />
+      </Button>
     </template>
   </BaseDialog>
 </template>
 
 <script setup lang="ts">
+import { useMediaQuery } from "@vueuse/core";
+import { ChevronLeftIcon, ChevronRightIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
 import { useAnnouncements } from "~/composables/use-announcements";
 import type { Announcement } from "~/composables/use-announcements";
 
 const dialog = defineModel<boolean>({ default: false });
 
-const display = useDisplay();
-const useMobile = computed(() => display.smAndDown.value);
+const useMobile = useMediaQuery("(max-width: 959.98px)");
 const navOpen = ref(false);
 
 const route = useRoute();

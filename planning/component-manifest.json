@@ -21,24 +21,15 @@
       "name": "AnnouncementDialog",
       "components": [
         "Announcement",
-        "BaseButton",
-        "BaseDialog"
+        "BaseDialog",
+        "Button",
+        "ChevronLeftIcon",
+        "ChevronRightIcon"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseButton.vue",
         "frontend/app/components/global/BaseDialog.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card-text",
-        "v-card-title",
-        "v-chip",
-        "v-icon",
-        "v-list",
-        "v-list-item",
-        "v-list-item-subtitle",
-        "v-list-item-title"
-      ],
+      "vuetify": [],
       "events": [
         "click: markAllAsRead",
         "click: navOpen = !navOpen",
@@ -59,18 +50,16 @@
       "dynamicComponents": [
         "currentAnnouncement.component"
       ],
-      "vuetifyAPIs": [
-        "useDisplay"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/Announcement/Announcements/2026-03-27_1_welcome.vue",
       "name": "2026-03-27_1_welcome",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-btn"
+      "components": [
+        "NuxtLink"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
@@ -83,11 +72,11 @@
     {
       "source": "frontend/app/components/Domain/Announcement/Announcements/2026-05-21_1_ai-providers.vue",
       "name": "2026-05-21_1_ai-providers",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-btn"
+      "components": [
+        "NuxtLink"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
@@ -104,9 +93,7 @@
       "name": "2026-05-31_1_iframe-embeds",
       "components": [],
       "dependencies": [],
-      "vuetify": [
-        "v-btn"
-      ],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
@@ -120,9 +107,7 @@
       "name": "2026-07-27_1_oidc-email-verification",
       "components": [],
       "dependencies": [],
-      "vuetify": [
-        "v-btn"
-      ],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
@@ -136,9 +121,7 @@
       "name": "2026-07-27_2_scraper-proxy-flaresolverr",
       "components": [],
       "dependencies": [],
-      "vuetify": [
-        "v-btn"
-      ],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
@@ -152,9 +135,7 @@
       "name": "2026-09-04_1_outbound-request-protection",
       "components": [],
       "dependencies": [],
-      "vuetify": [
-        "v-btn"
-      ],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
@@ -166,11 +147,11 @@
     {
       "source": "frontend/app/components/Domain/Announcement/Announcements/2026-10-15_1_ai-prompts.vue",
       "name": "2026-10-15_1_ai-prompts",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-btn"
+      "components": [
+        "NuxtLink"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
@@ -183,11 +164,11 @@
     {
       "source": "frontend/app/components/Domain/Announcement/Announcements/2026-10-18_1_organize-permission.vue",
       "name": "2026-10-18_1_organize-permission",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-btn"
+      "components": [
+        "NuxtLink"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
@@ -200,11 +181,11 @@
     {
       "source": "frontend/app/components/Domain/Announcement/Announcements/2026-10-26_1_household-integrations-permission.vue",
       "name": "2026-10-26_1_household-integrations-permission",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-btn"
+      "components": [
+        "NuxtLink"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
@@ -217,11 +198,11 @@
     {
       "source": "frontend/app/components/Domain/Announcement/Announcements/2026-11-15_1_enrich-non-ai-imports.vue",
       "name": "2026-11-15_1_enrich-non-ai-imports",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-btn"
+      "components": [
+        "NuxtLink"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
@@ -265,33 +246,27 @@
       "source": "frontend/app/components/Domain/Cookbook/CookbookPage.vue",
       "name": "CookbookPage",
       "components": [
-        "BaseButtonGroup",
         "BaseDialog",
-        "ButtonOption",
+        "Button",
         "CookBookOut",
         "CookbookEditor",
+        "LoaderCircleIcon",
+        "MdiIcon",
         "RecipeCardSection",
         "SafeMarkdown"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Cookbook/CookbookEditor.vue",
         "frontend/app/components/Domain/Recipe/RecipeCardSection.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/SafeMarkdown.vue"
       ],
-      "vuetify": [
-        "v-card-text",
-        "v-container",
-        "v-icon",
-        "v-sheet",
-        "v-toolbar-title"
-      ],
+      "vuetify": [],
       "events": [
         "append-recipes: appendRecipes",
+        "click: downloadPdf",
+        "click: handleEditCookbook",
         "delete: removeRecipe",
-        "download-pdf: downloadPdf",
-        "edit: handleEditCookbook",
         "replace-recipes: replaceRecipes",
         "sort-recipes: assignSorted",
         "submit: editCookbook"
@@ -303,8 +278,10 @@
       "conditions": [
         "book",
         "book.description",
+        "canEdit",
+        "downloadingPdf",
         "editTarget",
-        "headerButtons.length"
+        "isOwnGroup"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": []
@@ -1058,29 +1035,6 @@
       "vuetifyAPIs": []
     },
     {
-      "source": "frontend/app/components/Domain/Recipe/RecipeCardImage.vue",
-      "name": "RecipeCardImage",
-      "components": [
-        "Props"
-      ],
-      "dependencies": [],
-      "vuetify": [
-        "v-icon",
-        "v-img"
-      ],
-      "events": [
-        "click: $emit('click')",
-        "error: fallBackImage = true",
-        "load: fallBackImage = false"
-      ],
-      "models": [],
-      "conditions": [
-        "showImage"
-      ],
-      "dynamicComponents": [],
-      "vuetifyAPIs": []
-    },
-    {
       "source": "frontend/app/components/Domain/Recipe/RecipeCardLineItem.vue",
       "name": "RecipeCardLineItem",
       "components": [
@@ -1103,53 +1057,6 @@
       "dynamicComponents": [
         "recipeRoute ? NuxtLink : 'div'"
       ],
-      "vuetifyAPIs": []
-    },
-    {
-      "source": "frontend/app/components/Domain/Recipe/RecipeCardMobile.vue",
-      "name": "RecipeCardMobile",
-      "components": [
-        "Props",
-        "RecipeCardImage",
-        "RecipeCardRating",
-        "RecipeChips",
-        "RecipeContextMenu",
-        "RecipeFavoriteBadge",
-        "SafeMarkdown"
-      ],
-      "dependencies": [
-        "frontend/app/components/Domain/Recipe/RecipeCardImage.vue",
-        "frontend/app/components/Domain/Recipe/RecipeCardRating.vue",
-        "frontend/app/components/Domain/Recipe/RecipeChips.vue",
-        "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenu.vue",
-        "frontend/app/components/Domain/Recipe/RecipeFavoriteBadge.vue",
-        "frontend/app/components/global/SafeMarkdown.vue"
-      ],
-      "vuetify": [
-        "v-card",
-        "v-card-actions",
-        "v-expand-transition",
-        "v-img",
-        "v-list-item",
-        "v-list-item-subtitle",
-        "v-list-item-title"
-      ],
-      "events": [
-        "click: $emit('selected')",
-        "deleted: $emit('delete', slug)",
-        "item-selected: (item, urlPrefix) => $emit('itemSelected', item, urlPrefix)",
-        "mealplan-edit: $emit('mealplanEdit')",
-        "mealplan-remove: $emit('mealplanRemove')"
-      ],
-      "models": [],
-      "conditions": [
-        "!vertical",
-        "description",
-        "isOwnGroup && showRecipeContent",
-        "showRecipeContent",
-        "vertical"
-      ],
-      "dynamicComponents": [],
       "vuetifyAPIs": []
     },
     {
@@ -1709,16 +1616,19 @@
       "source": "frontend/app/components/Domain/Recipe/RecipeImageLightbox.vue",
       "name": "RecipeImageLightbox",
       "components": [
+        "ChevronLeftIcon",
+        "ChevronRightIcon",
+        "DialogContent",
+        "DialogPortal",
+        "DialogRoot",
+        "DialogTitle",
         "HTMLElement",
         "LightboxItem",
-        "Props"
+        "Props",
+        "XIcon"
       ],
       "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-dialog",
-        "v-icon"
-      ],
+      "vuetify": [],
       "events": [
         "click.stop: goNext",
         "click.stop: goPrev",
@@ -1743,9 +1653,7 @@
         "showNav && canPrev && !zoomed"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "useTheme"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/Recipe/RecipeImportImages.vue",
@@ -2221,6 +2129,7 @@
       "components": [
         "BaseDialog",
         "BooleanString",
+        "FieldScope",
         "RecipeAssets",
         "RecipeCookMode",
         "RecipeEditorBar",
@@ -2244,7 +2153,6 @@
         "RecipeReaderHeader",
         "RecipeSettingsSwitches",
         "RouteLocationNormalized",
-        "VForm",
         "WakelockSwitch"
       ],
       "dependencies": [
@@ -2269,12 +2177,10 @@
         "frontend/app/components/Domain/Recipe/RecipeSettingsSwitches.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/RecipeJsonEditor.vue",
-        "frontend/app/components/global/WakelockSwitch.vue"
+        "frontend/app/components/global/WakelockSwitch.vue",
+        "frontend/app/components/ui/field/FieldScope.vue"
       ],
-      "vuetify": [
-        "v-card-text",
-        "v-form"
-      ],
+      "vuetify": [],
       "events": [
         "cancel: cancelDiscard",
         "close: closeEditor",
@@ -2309,7 +2215,6 @@
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": [
-        "$vuetify",
         "useDisplay"
       ]
     },
@@ -3045,6 +2950,7 @@
       "components": [
         "IngredientSection",
         "InstructionSection",
+        "MdiIcon",
         "Props",
         "RecipeTimeCard",
         "SafeInlineHtml",
@@ -3055,15 +2961,7 @@
         "frontend/app/components/global/SafeInlineHtml.vue",
         "frontend/app/components/global/SafeMarkdown.vue"
       ],
-      "vuetify": [
-        "v-card-text",
-        "v-card-title",
-        "v-col",
-        "v-container",
-        "v-divider",
-        "v-icon",
-        "v-row"
-      ],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
@@ -3075,8 +2973,8 @@
         "preferences.showNotes",
         "preferences.showNutrition",
         "preferences.showSubstitutions && substitutionSummary(ingredient)",
-        "recipe.image && preferences.imagePosition && preferences.imagePosition != ImagePosition.hidden",
         "recipeYield",
+        "showImage",
         "step.title",
         "value"
       ],
@@ -3320,29 +3218,18 @@
       "source": "frontend/app/components/Domain/Recipe/RecipeTimeCard.vue",
       "name": "RecipeTimeCard",
       "components": [
+        "MdiIcon",
         "Props"
       ],
       "dependencies": [],
-      "vuetify": [
-        "v-divider",
-        "v-icon",
-        "v-row"
-      ],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
-        "_showCards",
-        "validatePerformTime",
-        "validatePrepTime",
-        "validatePrepTime && validatePerformTime && !$vuetify.display.smAndDown",
-        "validatePrepTime || validatePerformTime",
-        "validateTotalTime",
-        "validateTotalTime && (validatePrepTime || validatePerformTime)"
+        "_showCards"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/Recipe/RecipeTimeInput.vue",
@@ -3843,32 +3730,6 @@
       "conditions": [],
       "dynamicComponents": [],
       "vuetifyAPIs": []
-    },
-    {
-      "source": "frontend/app/components/Domain/User/UserProfileLinkCard.vue",
-      "name": "UserProfileLinkCard",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-divider",
-        "v-img",
-        "v-spacer"
-      ],
-      "events": [],
-      "models": [],
-      "conditions": [
-        "$vuetify.display.mdAndUp",
-        "$vuetify.display.smAndDown"
-      ],
-      "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ]
     },
     {
       "source": "frontend/app/components/Domain/User/UserRegistrationForm.vue",
@@ -4575,24 +4436,6 @@
       "vuetifyAPIs": []
     },
     {
-      "source": "frontend/app/components/global/BaseExpansionPanels.vue",
-      "name": "BaseExpansionPanels",
-      "components": [
-        "Props"
-      ],
-      "dependencies": [],
-      "vuetify": [
-        "v-expansion-panels"
-      ],
-      "events": [],
-      "models": [
-        "open"
-      ],
-      "conditions": [],
-      "dynamicComponents": [],
-      "vuetifyAPIs": []
-    },
-    {
       "source": "frontend/app/components/global/BaseKeyValueEditor.vue",
       "name": "BaseKeyValueEditor",
       "components": [
@@ -5074,22 +4917,6 @@
       "models": [],
       "conditions": [],
       "dynamicComponents": [],
-      "vuetifyAPIs": []
-    },
-    {
-      "source": "frontend/app/components/global/StatsCards.vue",
-      "name": "StatsCards",
-      "components": [
-        "MdiIcon"
-      ],
-      "dependencies": [],
-      "vuetify": [],
-      "events": [],
-      "models": [],
-      "conditions": [],
-      "dynamicComponents": [
-        "to ? NuxtLink : 'div'"
-      ],
       "vuetifyAPIs": []
     },
     {

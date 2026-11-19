@@ -7,9 +7,9 @@
     <p v-if="user?.canManage">
       You can turn this permission on for people in your household from the members page:
       <br>
-      <v-btn class="mt-2" color="primary" to="/household/members">
+      <NuxtLink class="mt-2 inline-flex h-9 items-center rounded-control bg-primary px-4 text-sm font-semibold text-primary-foreground no-underline hover:bg-primary/90" to="/household/members">
         {{ $t("profile.manage-members") }}
-      </v-btn>
+      </NuxtLink>
     </p>
     <p v-else-if="!user?.canManageHousehold">
       If you need it, ask a group manager or your server admin.

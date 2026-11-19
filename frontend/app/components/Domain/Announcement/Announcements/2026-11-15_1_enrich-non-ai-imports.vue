@@ -18,9 +18,9 @@
         in the AI section of your group settings:
       </span>
       <br>
-      <v-btn class="mt-2" color="primary" to="/group">
+      <NuxtLink class="mt-2 inline-flex h-9 items-center rounded-control bg-primary px-4 text-sm font-semibold text-primary-foreground no-underline hover:bg-primary/90" to="/group">
         {{ $t("profile.group-settings") }}
-      </v-btn>
+      </NuxtLink>
     </p>
     <p v-else>
       Contact a group manager or server admin to turn this on for your group.
