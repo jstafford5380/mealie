@@ -4,46 +4,46 @@
     :field-defs="fieldDefs"
     :query-filter="props.queryFilter"
   />
-  <div v-else>
-    <div
-      class="d-md-flex"
-      style="gap: 10px"
-    >
-      <v-select
+  <div
+    v-else
+    class="flex flex-col gap-4 font-sans"
+  >
+    <div class="grid gap-3 md:grid-cols-2">
+      <SelectField
         v-model="day"
         :items="MEAL_DAY_OPTIONS"
         :label="$t('meal-plan.rule-day')"
         :hint="day === 'unset' ? '' : $t('meal-plan.weekday-rules-skip-week-entries')"
-        persistent-hint
       />
-      <v-select
+      <SelectField
         v-model="entryType"
         :items="MEAL_TYPE_OPTIONS"
         :label="$t('meal-plan.meal-type')"
       />
     </div>
 
-    <div class="mb-5">
-      <QueryFilterBuilder
-        :field-defs="fieldDefs"
-        :initial-query-filter="props.queryFilter"
-        @input="handleQueryFilterInput"
-      />
-    </div>
+    <QueryFilterBuilder
+      :field-defs="fieldDefs"
+      :initial-query-filter="props.queryFilter"
+      @input="handleQueryFilterInput"
+    />
 
     <!-- TODO: proper pluralization of inputDay -->
-    {{ $t("meal-plan.this-rule-will-apply", {
-      dayCriteria: day === "unset"
-        ? $t("meal-plan.to-all-days")
-        : $t("meal-plan.on-days", [$t("general." + day)]),
-      mealTypeCriteria: entryType === "unset"
-        ? $t("meal-plan.for-all-meal-types")
-        : $t("meal-plan.for-type-meal-types", [$t("meal-plan." + entryType)]),
-    }) }}
+    <p class="m-0 rounded-control bg-muted px-3 py-2 text-sm text-muted-foreground">
+      {{ $t("meal-plan.this-rule-will-apply", {
+        dayCriteria: day === "unset"
+          ? $t("meal-plan.to-all-days")
+          : $t("meal-plan.on-days", [$t("general." + day)]),
+        mealTypeCriteria: entryType === "unset"
+          ? $t("meal-plan.for-all-meal-types")
+          : $t("meal-plan.for-type-meal-types", [$t("meal-plan." + entryType)]),
+      }) }}
+    </p>
   </div>
 </template>
 
 <script setup lang="ts">
+import SelectField from "~/components/ui/field/SelectField.vue";
 import QueryFilterBuilder from "~/components/Domain/QueryFilterBuilder.vue";
 import QueryFilterSummary from "~/components/Domain/QueryFilterSummary.vue";
 import { useRecipeFilterFields } from "~/composables/use-recipe-filter-fields";

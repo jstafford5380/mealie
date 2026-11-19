@@ -48,6 +48,7 @@ View and Edit are one planner board now; both routes still open it, so existing 
 | Recipe card menu (full recipe actions) with Remove/Edit at the top; notes had a separate small menu; Randomize lived only in Edit. | Every meal's ⋮ starts with Edit meal plan, Randomize recipe, Cooking it today (whole-week entries only) and Remove from meal plan; recipe meals then offer Add to list, Share and group recipe actions. |
 | Toolbar: range button with a Vuetify date picker, Weeks/Days toggle, View/Edit and a ⋮ (Add all to list, Calendar feed, Settings). | Title, ‹ range › with a Today button, the range popover (the new calendar plus the past/count settings), Weeks/Days (the hidden week-entry count stays as a badge), an "Add all to list" button and a ⋮ for Calendar feed and Settings. The range reads "Nov 15 – Nov 21". |
 | Range picker: Vuetify range calendar. | Click a first day and then a last day; Weeks mode still rounds to whole weeks. |
+| Calendar feed dialog with Vuetify chips, time fields and a URL field. | Meal-type toggle chips, Include notes, a time box per selected type, duration, event title/description, and the feed URL with Copy. Turn on / Reset / Turn off stay in the footer for managers. |
 | Entry dialog: Vuetify toggle, calendar, switch, select and recipe search list. | Recipe/Note switch, the new calendar, whole-week switch, meal type, servings for the chosen recipe; recipe search with category/tag filters and the Ignore rules switch on the right. |
 
 ## Shadcn Vue replacement checklist

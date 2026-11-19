@@ -6,119 +6,123 @@
     width="600"
     disable-submit-on-enter
   >
-    <v-card-text>
-      <p class="mb-4">
+    <div class="flex flex-col gap-4 px-6 pb-2 font-sans">
+      <p class="m-0 text-[15px] leading-relaxed">
         {{ $t("meal-plan.calendar-feed-description") }}
       </p>
 
-      <template v-if="loading">
-        <v-progress-linear indeterminate />
-      </template>
-      <template v-else-if="!token">
-        <p>
-          {{ $t("meal-plan.calendar-feed-off") }}
-          <span v-if="!canManage">{{ $t("meal-plan.calendar-feed-ask-manager") }}</span>
-        </p>
-      </template>
+      <div
+        v-if="loading"
+        class="h-1 overflow-hidden rounded-full bg-muted"
+      >
+        <div class="h-full w-1/3 animate-pulse rounded-full bg-primary" />
+      </div>
+      <p
+        v-else-if="!token"
+        class="m-0 rounded-control bg-muted px-3 py-2 text-sm"
+      >
+        {{ $t("meal-plan.calendar-feed-off") }}
+        <span v-if="!canManage">{{ $t("meal-plan.calendar-feed-ask-manager") }}</span>
+      </p>
       <template v-else>
-        <v-select
-          v-model="selectedTypes"
-          :items="planTypeOptions"
-          item-title="text"
-          item-value="value"
-          :label="$t('meal-plan.meal-type')"
-          multiple
-          chips
-          closable-chips
-        />
-        <v-checkbox
+        <fieldset class="m-0 border-0 p-0">
+          <legend class="mb-1.5 p-0 text-sm font-semibold">
+            {{ $t('meal-plan.meal-type') }}
+          </legend>
+          <div class="flex flex-wrap gap-1.5">
+            <button
+              v-for="option in planTypeOptions"
+              :key="option.value"
+              type="button"
+              :aria-pressed="selectedTypes.includes(option.value)"
+              class="inline-flex h-8 items-center gap-1 rounded-full border px-3 text-sm font-medium transition-colors"
+              :class="selectedTypes.includes(option.value) ? 'border-primary bg-primary text-primary-foreground' : 'border-input hover:bg-highlight'"
+              @click="selectedTypes = selectedTypes.includes(option.value) ? selectedTypes.filter(t => t !== option.value) : [...selectedTypes, option.value]"
+            >
+              {{ option.text }}
+            </button>
+          </div>
+        </fieldset>
+        <CheckboxField
           v-model="includeNotes"
           :label="$t('meal-plan.calendar-feed-include-notes')"
-          density="compact"
-          hide-details
-          class="mb-4"
         />
 
-        <p class="text-caption mb-2">
-          {{ $t("meal-plan.calendar-feed-times-hint") }}
-        </p>
-        <v-row dense>
-          <v-col
-            v-for="option in selectedOptions"
-            :key="option.value"
-            cols="6"
-            sm="4"
-          >
-            <v-text-field
-              v-model="times[option.value]"
-              :label="option.text"
-              type="time"
-              density="compact"
-              clearable
-              hide-details
-            />
-          </v-col>
-        </v-row>
-        <v-number-input
+        <div>
+          <p class="m-0 mb-2 text-sm text-muted-foreground">
+            {{ $t("meal-plan.calendar-feed-times-hint") }}
+          </p>
+          <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            <label
+              v-for="option in selectedOptions"
+              :key="option.value"
+              class="flex flex-col gap-1 text-sm font-semibold"
+            >
+              {{ option.text }}
+              <input
+                v-model="times[option.value]"
+                type="time"
+                class="h-10 rounded-control border border-input bg-card px-3 text-[15px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/25 font-normal [color-scheme:light] dark:[color-scheme:dark]"
+              >
+            </label>
+          </div>
+        </div>
+        <NumberInputField
           v-if="hasTimes"
           v-model="duration"
+          class="max-w-56"
           :label="$t('meal-plan.calendar-feed-duration')"
           :min="1"
           :max="24 * 60"
           control-variant="hidden"
-          class="mt-4"
         />
 
-        <v-divider class="my-6" />
-        <p class="text-subtitle-1 font-weight-bold">
-          {{ $t("meal-plan.calendar-feed-event-details") }}
-        </p>
-
-        <div class="my-1">
-          <p class="text-caption">
+        <div class="flex flex-col gap-2 border-t pt-4">
+          <h3 class="m-0 text-base font-semibold">
+            {{ $t("meal-plan.calendar-feed-event-details") }}
+          </h3>
+          <p class="m-0 text-sm text-muted-foreground">
             {{ $t("meal-plan.calendar-feed-event-details-description") }}
           </p>
-          <p class="pt-2">
+          <p class="m-0 text-sm">
             {{ $t("meal-plan.calendar-feed-event-details-change-warning") }}
           </p>
+          <DocLink link="/documentation/getting-started/features/#calendar-feed" />
+          <TextField
+            v-model="summary"
+            :label="$t('meal-plan.calendar-feed-event-title')"
+          />
+          <TextareaField
+            v-model="description"
+            :label="$t('meal-plan.calendar-feed-event-description')"
+            :rows="2"
+          />
         </div>
-        <DocLink
-          class="mt-2 mb-4"
-          link="/documentation/getting-started/features/#calendar-feed"
-        />
-        <v-text-field
-          v-model="summary"
-          :label="$t('meal-plan.calendar-feed-event-title')"
-        />
-        <v-textarea
-          v-model="description"
-          :label="$t('meal-plan.calendar-feed-event-description')"
-          rows="2"
-          auto-grow
-          hide-details
-        />
 
-        <v-divider class="my-6" />
-        <v-text-field
-          :model-value="feedUrl"
-          :label="$t('meal-plan.calendar-feed-url')"
-          readonly
-        >
-          <template #append>
+        <div class="flex flex-col gap-1.5 border-t pt-4">
+          <span class="text-sm font-semibold">{{ $t('meal-plan.calendar-feed-url') }}</span>
+          <div class="flex items-center gap-2">
+            <input
+              :value="feedUrl"
+              readonly
+              :aria-label="$t('meal-plan.calendar-feed-url')"
+              class="h-10 rounded-control border border-input bg-card px-3 text-[15px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/25 min-w-0 flex-1 font-mono text-sm"
+              @focus="($event.target as HTMLInputElement).select()"
+            >
             <AppButtonCopy
               :copy-text="feedUrl"
               icon
             />
-          </template>
-        </v-text-field>
-        <p
-          v-if="canManage"
-          class="text-caption"
-        >
-          {{ $t("meal-plan.calendar-feed-reset-hint") }}
-        </p>
+          </div>
+          <p
+            v-if="canManage"
+            class="m-0 text-xs text-muted-foreground"
+          >
+            {{ $t("meal-plan.calendar-feed-reset-hint") }}
+          </p>
+        </div>
       </template>
-    </v-card-text>
+    </div>
 
     <template
       v-if="canManage && !loading"
@@ -149,6 +153,10 @@
 </template>
 
 <script setup lang="ts">
+import CheckboxField from "~/components/ui/field/CheckboxField.vue";
+import NumberInputField from "~/components/ui/field/NumberInputField.vue";
+import TextareaField from "~/components/ui/field/TextareaField.vue";
+import TextField from "~/components/ui/field/TextField.vue";
 import { whenever } from "@vueuse/core";
 import { useUserApi } from "~/composables/api";
 import { useGlobalI18n } from "~/composables/use-global-i18n";

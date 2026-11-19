@@ -574,39 +574,37 @@
         "AppButtonCopy",
         "BaseButton",
         "BaseDialog",
+        "CheckboxField",
         "DocLink",
+        "NumberInputField",
         "Partial",
         "PlanEntryType",
-        "Record"
+        "Record",
+        "TextField",
+        "TextareaField"
       ],
       "dependencies": [
         "frontend/app/components/global/AppButtonCopy.vue",
         "frontend/app/components/global/BaseButton.vue",
         "frontend/app/components/global/BaseDialog.vue",
-        "frontend/app/components/global/DocLink.vue"
+        "frontend/app/components/global/DocLink.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/NumberInputField.vue",
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ],
-      "vuetify": [
-        "v-card-text",
-        "v-checkbox",
-        "v-col",
-        "v-divider",
-        "v-number-input",
-        "v-progress-linear",
-        "v-row",
-        "v-select",
-        "v-text-field",
-        "v-textarea"
-      ],
+      "vuetify": [],
       "events": [
         "click: createToken",
-        "click: disableFeed"
+        "click: disableFeed",
+        "click: selectedTypes = selectedTypes.includes(option.value) ? selectedTypes.filter(t => t !== option.value) : [...selectedTypes, option.value]",
+        "focus: ($event.target as HTMLInputElement).select()"
       ],
       "models": [
         "description",
         "dialog",
         "duration",
         "includeNotes",
-        "selectedTypes",
         "summary",
         "times[option.value]"
       ],
@@ -683,15 +681,15 @@
       "components": [
         "Props",
         "QueryFilterBuilder",
-        "QueryFilterSummary"
+        "QueryFilterSummary",
+        "SelectField"
       ],
       "dependencies": [
         "frontend/app/components/Domain/QueryFilterBuilder.vue",
-        "frontend/app/components/Domain/QueryFilterSummary.vue"
+        "frontend/app/components/Domain/QueryFilterSummary.vue",
+        "frontend/app/components/ui/field/SelectField.vue"
       ],
-      "vuetify": [
-        "v-select"
-      ],
+      "vuetify": [],
       "events": [
         "input: handleQueryFilterInput"
       ],
@@ -951,60 +949,50 @@
       "source": "frontend/app/components/Domain/QueryFilterBuilder.vue",
       "name": "QueryFilterBuilder",
       "components": [
-        "BaseButton",
-        "BaseButtonGroup",
+        "Button",
+        "Checkbox",
+        "ChevronDownIcon",
         "FieldWithId",
+        "GripVerticalIcon",
+        "PlusIcon",
+        "Popover",
+        "PopoverContent",
+        "PopoverTrigger",
         "RecipeOrganizerSelector",
         "RecipeTimeInput",
+        "Trash2Icon",
         "VueDraggable"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipeOrganizerSelector.vue",
-        "frontend/app/components/Domain/Recipe/RecipeTimeInput.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue"
+        "frontend/app/components/Domain/Recipe/RecipeTimeInput.vue"
       ],
-      "vuetify": [
-        "v-card",
-        "v-card-actions",
-        "v-card-text",
-        "v-checkbox",
-        "v-col",
-        "v-date-picker",
-        "v-icon",
-        "v-menu",
-        "v-number-input",
-        "v-row",
-        "v-select",
-        "v-spacer",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
+        "change: setField(index, ($event.target as HTMLSelectElement).value)",
+        "change: setFieldValue(field, index, ($event.target as HTMLInputElement).value)",
+        "change: setLeftParenthesisValue(field, index, ($event.target as HTMLSelectElement).value)",
+        "change: setLogicalOperatorValue(field, index, ($event.target as HTMLSelectElement).value as unknown as LogicalOperator)",
+        "change: setRightParenthesisValue(field, index, ($event.target as HTMLSelectElement).value)",
+        "change: updateRelationalOperator(field, ($event.target as HTMLSelectElement).value as unknown as RelationalKeyword | RelationalOperator)",
         "click: addField(fieldDefs[0]!)",
-        "delete: removeField(index)",
+        "click: removeField(index)",
         "end: onDragEnd",
+        "input: setFieldValue(field, index, ($event.target as HTMLInputElement).value)",
+        "input: setFieldValue(field, index, Math.max(0, Math.floor(Number(($event.target as HTMLInputElement).value) || 0)))",
+        "input: setFieldValue(field, index, Number(($event.target as HTMLInputElement).value) || 0)",
         "start: drag = true",
-        "update:model-value: setField(index, $event)",
-        "update:model-value: setFieldValue(field, index, $event!)",
-        "update:model-value: setFieldValue(field, index, $event)",
-        "update:model-value: setFieldValues(field, index, $event)",
-        "update:model-value: setLeftParenthesisValue(field, index, $event)",
-        "update:model-value: setLogicalOperatorValue(field, index, $event as unknown as LogicalOperator)",
-        "update:model-value: setRightParenthesisValue(field, index, $event)",
-        "update:model-value: updateRelationalOperator(field, $event as unknown as RelationalKeyword | RelationalOperator)",
+        "update:model-value: setFieldValue(field, index, !!$event)",
+        "update:model-value: toggleChoice(field, index, choice.value, !!$event)",
         "update:model-value: val => setFieldOrganizers(field, index, (val || []) as OrganizerBase[])",
-        "update:model-value: val => setFieldValue(field, index, val ? val.toISOString().slice(0, 10) : '')",
         "update:seconds: setFieldValue(field, index, $event ?? '')"
       ],
       "models": [
-        "datePickers[index]",
         "field.organizers",
         "fields",
         "showAdvanced"
       ],
       "conditions": [
-        "!$vuetify.display.smAndDown || index === fields.length - 1",
-        "!$vuetify.display.xs || index === fields.length - 1",
         "!isNullOperator(field.relationalOperatorValue)",
         "field.fieldChoices",
         "field.type !== 'boolean'",
@@ -1014,30 +1002,19 @@
         "field.type === 'number'",
         "field.type === 'relativeDate'",
         "field.type === 'string'",
-        "field.type === Organizer.Category",
-        "field.type === Organizer.Food",
-        "field.type === Organizer.Household",
-        "field.type === Organizer.Label",
-        "field.type === Organizer.Tag",
-        "field.type === Organizer.Tool",
-        "field.type === Organizer.User",
         "index",
-        "index != 0 || $vuetify.display.smAndUp",
+        "organizerTypes.includes(field.type as Organizer)",
         "showAdvanced"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/QueryFilterSummary.vue",
       "name": "QueryFilterSummary",
       "components": [],
       "dependencies": [],
-      "vuetify": [
-        "v-chip"
-      ],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [

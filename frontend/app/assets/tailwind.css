@@ -170,6 +170,13 @@
   body {
     color: var(--color-foreground);
   }
+  /* native controls (select menus, date and time pickers, scrollbars) follow the theme */
+  :root {
+    color-scheme: light;
+  }
+  :root.dark {
+    color-scheme: dark;
+  }
   :focus-visible {
     outline-color: var(--color-ring);
   }

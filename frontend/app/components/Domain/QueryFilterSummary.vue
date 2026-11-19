@@ -1,28 +1,34 @@
 <template>
-  <div>
+  <div class="flex flex-col gap-1 font-sans text-[15px]">
     <div
       v-for="(part, index) in parts"
       :key="index"
-      class="d-flex flex-wrap align-center py-1"
-      style="gap: 4px"
+      class="flex flex-wrap items-center gap-1.5"
     >
-      <span v-if="index && part.logicalOperator">{{ part.logicalOperator }}</span>
-      <span v-if="part.leftParenthesis">{{ part.leftParenthesis }}</span>
-      <strong>{{ part.label }}</strong>
-      <span>{{ part.relationalOperator }}</span>
+      <span
+        v-if="index && part.logicalOperator"
+        class="text-xs font-semibold uppercase text-muted-foreground"
+      >{{ part.logicalOperator }}</span>
+      <span
+        v-if="part.leftParenthesis"
+        class="font-mono text-muted-foreground"
+      >{{ part.leftParenthesis }}</span>
+      <strong class="font-semibold">{{ part.label }}</strong>
+      <span class="text-muted-foreground">{{ part.relationalOperator }}</span>
       <template v-if="part.organizers">
-        <v-chip
+        <span
           v-for="organizer in part.organizers"
           :key="organizer.id"
-          label
-          color="accent"
-          size="small"
+          class="inline-flex h-6 items-center rounded-full bg-highlight px-2.5 text-sm font-medium text-highlight-foreground"
         >
           {{ organizer.name }}
-        </v-chip>
+        </span>
       </template>
       <span v-else>{{ part.value }}</span>
-      <span v-if="part.rightParenthesis">{{ part.rightParenthesis }}</span>
+      <span
+        v-if="part.rightParenthesis"
+        class="font-mono text-muted-foreground"
+      >{{ part.rightParenthesis }}</span>
     </div>
   </div>
 </template>

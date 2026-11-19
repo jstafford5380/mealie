@@ -34,6 +34,15 @@ These additional cases remain for replacement validation. See the [handoff evide
 - [ ] Verify all typed summary values, multiple applicable rules, rule-store refresh, and API failures during replacement.
 - [ ] Capture a multi-row advanced rule if its layout differs from the shared query-builder reference.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Page title with an illustration; New Rule card; rules as cards with an Edit/Delete button group. | A back link to the planner, title and description; a New Rule section with a "Create rule" button; rules as cards with Edit (Cancel while editing) and Delete. An empty list says what rules do. |
+| Rule form: two Vuetify selects, the filter builder, and a plain sentence. | Day and meal type selects side by side, the redesigned filter builder, and the "This rule will apply…" sentence in a tinted box. |
+| Filter builder: rows of underlined Vuetify selects with an up/down drag icon; "Show Advanced" checkbox and "Add Field". | Each condition is a bordered row: grip, And/Or ("Where" on the first row), field, condition, value, Delete. Values use the right control: text, number, checkbox, the native date input, "N days ago", hours/minutes, organizer chip pickers, or a checklist popover for fixed choices. "Show advanced" adds the parenthesis selects. Shared by meal-plan rules, cookbooks and the recipe finder. |
+| Read-only rule summary with Vuetify chips. | The same sentence with organizer chips in the app style. |
+
 ## Shadcn Vue replacement checklist
 
 - [ ] Use Cards, Select, shared query editor/summary, Buttons, and status feedback.

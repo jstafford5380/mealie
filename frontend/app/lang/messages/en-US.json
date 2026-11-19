@@ -431,7 +431,9 @@
     "previous-range": "Previous",
     "next-range": "Next",
     "choose-range": "Choose dates",
-    "range-mode": "Show"
+    "range-mode": "Show",
+    "create-rule": "Create rule",
+    "no-rules-yet": "No rules yet. Rules decide which recipes random meals and the recipe picker suggest."
   },
   "migration": {
     "new-migration": "New Migration",
@@ -1426,7 +1428,15 @@
     },
     "dates": {
       "days-ago": "days ago|day ago|days ago"
-    }
+    },
+    "logical-operator": "And / or",
+    "where": "Where",
+    "open-parenthesis": "Opening parenthesis",
+    "close-parenthesis": "Closing parenthesis",
+    "field": "Field",
+    "operator": "Condition",
+    "value": "Value",
+    "choose-values": "Choose…"
   },
   "validators": {
     "required": "This Field is Required",

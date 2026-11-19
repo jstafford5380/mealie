@@ -1731,11 +1731,8 @@
         "frontend/app/components/Domain/SearchFilter.vue",
         "frontend/app/components/global/AppLoader.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
         "frontend/app/components/global/BasePageTitle.vue",
         "frontend/app/components/global/SafeInlineHtml.vue",
         "frontend/app/components/global/SafeMarkdown.vue",
@@ -2917,8 +2914,10 @@
         "frontend/app/components/global/BaseDialogContent.vue",
         "frontend/app/components/global/DocLink.vue",
         "frontend/app/components/global/SafeMarkdown.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
         "frontend/app/components/ui/field/NumberInputField.vue",
-        "frontend/app/components/ui/field/TextField.vue"
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ]
     },
     {
@@ -3028,45 +3027,36 @@
       "document": "pages/household--mealplan--settings.md",
       "status": "reviewed",
       "components": [
-        "BaseButton",
-        "BaseButtonGroup",
-        "BaseCardSectionTitle",
-        "BasePageTitle",
+        "Button",
+        "ChevronLeftIcon",
         "GroupMealPlanRuleForm",
+        "MdiIcon",
+        "NuxtLink",
         "PlanRulesCreate",
-        "PlanRulesOut"
+        "PlanRulesOut",
+        "PlusIcon",
+        "Trash2Icon"
       ],
       "dependencies": [
-        "frontend/app/components/Domain/Household/GroupMealPlanRuleForm.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/Domain/Household/GroupMealPlanRuleForm.vue"
       ],
-      "vuetify": [
-        "v-card",
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-container",
-        "v-divider",
-        "v-img"
-      ],
+      "vuetify": [],
       "events": [
         "click: createRule",
-        "click: updateRule(rule)",
-        "delete: deleteRule(rule.id)",
-        "edit: toggleEditState(rule.id)"
+        "click: deleteRule(rule.id)",
+        "click: toggleEditState(rule.id)",
+        "click: updateRule(rule)"
       ],
       "models": [
-        "allRules[idx].day",
-        "allRules[idx].entryType",
-        "allRules[idx].queryFilterString",
+        "allRules[idx]!.day",
+        "allRules[idx]!.entryType",
+        "allRules[idx]!.queryFilterString",
         "createData.day",
         "createData.entryType",
         "createData.queryFilterString"
       ],
       "conditions": [
+        "!allRules.length",
         "!editState[rule.id]"
       ],
       "dynamicComponents": [],
@@ -3079,14 +3069,10 @@
         "frontend/app/components/Domain/Recipe/RecipeOrganizerSelector.vue",
         "frontend/app/components/Domain/Recipe/RecipeTimeInput.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
         "frontend/app/components/ui/field/TextField.vue"
       ]
     },

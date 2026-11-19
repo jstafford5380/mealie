@@ -1,333 +1,260 @@
 <template>
-  <v-card class="ma-0" flat fluid>
-    <v-card-text class="ma-0 pa-0">
-      <VueDraggable
-        v-model="fields"
-        handle=".handle"
-        :delay="250"
-        :delay-on-touch-only="true"
-        v-bind="{
-          animation: 200,
-          group: 'recipe-instructions',
-          ghostClass: 'ghost',
-        }"
-        @start="drag = true"
-        @end="onDragEnd"
+  <div class="flex flex-col gap-3 font-sans">
+    <VueDraggable
+      v-model="fields"
+      handle=".handle"
+      :delay="250"
+      :delay-on-touch-only="true"
+      class="flex flex-col gap-2"
+      v-bind="{
+        animation: 200,
+        group: 'query-filter-fields',
+        ghostClass: 'opacity-50',
+      }"
+      @start="drag = true"
+      @end="onDragEnd"
+    >
+      <div
+        v-for="(field, index) in fields"
+        :key="field.id"
+        class="flex flex-wrap items-center gap-2 rounded-card border bg-background p-2"
       >
-        <v-row
-          v-for="(field, index) in fields"
-          :key="field.id"
-          class="d-flex flex-row flex-wrap mx-auto pb-2"
-          :class="$vuetify.display.xs ? (Math.floor(index / 1) % 2 === 0 ? 'bg-dark' : 'bg-light') : ''"
-          style="max-width: 100%;"
+        <button
+          type="button"
+          class="handle inline-flex h-10 w-6 shrink-0 cursor-grab touch-none items-center justify-center rounded-item text-muted-foreground hover:bg-highlight hover:text-foreground"
+          :aria-label="$t('general.drag-to-reorder')"
+          :title="$t('general.drag-to-reorder')"
         >
-          <!-- drag handle -->
-          <v-col
-            :cols="config.items.icon.cols(index)"
-            :sm="config.items.icon.sm(index)"
-            :class="$vuetify.display.smAndDown ? 'd-flex pa-0' : 'd-flex'"
-          >
-            <v-icon class="handle my-auto" :size="28" style="cursor: move;">
-              {{ $globals.icons.arrowUpDown }}
-            </v-icon>
-          </v-col>
+          <GripVerticalIcon class="size-4" />
+        </button>
 
-          <!-- and / or  -->
-          <v-col
-            v-if="index != 0 || $vuetify.display.smAndUp"
-            :cols="config.items.logicalOperator.cols(index)"
-            :sm="config.items.logicalOperator.sm(index)"
-            :class="config.col.class"
+        <!-- and / or -->
+        <select
+          v-if="index"
+          :value="field.logicalOperator?.value"
+          :aria-label="$t('query-filter.logical-operator')"
+          class="h-10 min-w-0 rounded-control border border-input bg-card px-2.5 text-[15px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/25 w-20"
+          @change="setLogicalOperatorValue(field, index, ($event.target as HTMLSelectElement).value as unknown as LogicalOperator)"
+        >
+          <option
+            v-for="op in [logOps.AND, logOps.OR]"
+            :key="op.value"
+            :value="op.value"
           >
-            <v-select
-              v-if="index"
-              :model-value="field.logicalOperator?.value"
-              :items="[logOps.AND, logOps.OR]"
-              item-title="label"
-              item-value="value"
-              variant="underlined"
-              class="text-center"
-              @update:model-value="setLogicalOperatorValue(field, index, $event as unknown as LogicalOperator)"
-            />
-          </v-col>
+            {{ op.label }}
+          </option>
+        </select>
+        <span
+          v-else
+          class="w-20 px-1 text-sm font-semibold text-muted-foreground"
+        >{{ $t('query-filter.where') }}</span>
 
-          <!-- left parenthesis -->
-          <v-col
-            v-if="showAdvanced"
-            :cols="config.items.leftParens.cols(index)"
-            :sm="config.items.leftParens.sm(index)"
-            :class="config.col.class"
+        <select
+          v-if="showAdvanced"
+          :value="field.leftParenthesis ?? ''"
+          :aria-label="$t('query-filter.open-parenthesis')"
+          class="h-10 min-w-0 rounded-control border border-input bg-card px-2.5 text-[15px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/25 w-16 font-mono"
+          @change="setLeftParenthesisValue(field, index, ($event.target as HTMLSelectElement).value)"
+        >
+          <option
+            v-for="p in ['', '(', '((', '(((']"
+            :key="p"
+            :value="p"
           >
-            <v-select
-              :model-value="field.leftParenthesis"
-              :items="['', '(', '((', '(((']"
-              variant="underlined"
-              class="text-center"
-              @update:model-value="setLeftParenthesisValue(field, index, $event)"
-            />
-          </v-col>
+            {{ p || '–' }}
+          </option>
+        </select>
 
-          <!-- field name -->
-          <v-col
-            :cols="config.items.fieldName.cols(index)"
-            :sm="config.items.fieldName.sm(index)"
-            :class="config.col.class"
+        <!-- field name -->
+        <select
+          :value="field.label"
+          :aria-label="$t('query-filter.field')"
+          class="h-10 min-w-0 rounded-control border border-input bg-card px-2.5 text-[15px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/25 w-44 grow sm:grow-0"
+          @change="setField(index, ($event.target as HTMLSelectElement).value)"
+        >
+          <option
+            v-for="def in fieldDefs"
+            :key="def.label"
+            :value="def.label"
           >
-            <v-select
-              :model-value="field.label"
-              :items="fieldDefs"
-              variant="underlined"
-              item-title="label"
-              item-value="label"
-              class="text-center"
-              @update:model-value="setField(index, $event)"
-            />
-          </v-col>
+            {{ def.label }}
+          </option>
+        </select>
 
-          <!-- relational operator -->
-          <v-col
-            :cols="config.items.relationalOperator.cols(index)"
-            :sm="config.items.relationalOperator.sm(index)"
-            :class="config.col.class"
+        <!-- relational operator -->
+        <select
+          v-if="field.type !== 'boolean'"
+          :value="field.relationalOperatorValue?.value"
+          :aria-label="$t('query-filter.operator')"
+          class="h-10 min-w-0 rounded-control border border-input bg-card px-2.5 text-[15px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/25 w-40 grow sm:grow-0"
+          @change="updateRelationalOperator(field, ($event.target as HTMLSelectElement).value as unknown as RelationalKeyword | RelationalOperator)"
+        >
+          <option
+            v-for="op in field.relationalOperatorChoices"
+            :key="op.value"
+            :value="op.value"
           >
-            <v-select
-              v-if="field.type !== 'boolean'"
-              :model-value="field.relationalOperatorValue?.value"
-              :items="field.relationalOperatorChoices"
-              item-title="label"
-              item-value="value"
-              variant="underlined"
-              class="text-center"
-              @update:model-value="updateRelationalOperator(field, $event as unknown as RelationalKeyword | RelationalOperator)"
-            />
-          </v-col>
+            {{ op.label }}
+          </option>
+        </select>
 
-          <!-- field value -->
-          <v-col
-            v-if="!isNullOperator(field.relationalOperatorValue)"
-            :cols="config.items.fieldValue.cols(index)"
-            :sm="config.items.fieldValue.sm(index)"
-            :class="config.col.class"
-          >
-            <v-select
-              v-if="field.fieldChoices"
-              :model-value="field.values"
-              :items="field.fieldChoices"
-              item-title="label"
-              item-value="value"
-              multiple
-              variant="underlined"
-              @update:model-value="setFieldValues(field, index, $event)"
-            />
-            <v-text-field
-              v-else-if="field.type === 'string'"
-              :model-value="field.value"
-              variant="underlined"
-              @update:model-value="setFieldValue(field, index, $event)"
-            />
-            <v-number-input
-              v-else-if="field.type === 'number'"
-              :model-value="field.value as number || 0"
-              variant="underlined"
-              inset
-              :min="0"
-              :max="5"
-              :precision="null"
-              @update:model-value="setFieldValue(field, index, $event)"
-            />
-            <v-checkbox
-              v-else-if="field.type === 'boolean'"
-              :model-value="field.value"
-              @update:model-value="setFieldValue(field, index, $event!)"
-            />
-            <v-menu
-              v-else-if="field.type === 'date'"
-              v-model="datePickers[index]"
-              :close-on-content-click="false"
-              transition="scale-transition"
-              offset-y
-              max-width="290px"
-              min-width="auto"
+        <!-- value -->
+        <div
+          v-if="!isNullOperator(field.relationalOperatorValue)"
+          class="min-w-48 flex-1"
+        >
+          <Popover v-if="field.fieldChoices">
+            <PopoverTrigger as-child>
+              <button
+                type="button"
+                class="h-10 min-w-0 rounded-control border border-input bg-card px-2.5 text-[15px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/25 flex w-full items-center justify-between gap-2 text-left"
+                :aria-label="$t('query-filter.value')"
+              >
+                <span class="truncate">{{ choiceSummary(field) || $t('query-filter.choose-values') }}</span>
+                <ChevronDownIcon class="size-4 shrink-0 opacity-60" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              align="start"
+              class="max-h-72 w-64 overflow-y-auto p-1"
             >
-              <template #activator="{ props: activatorProps }">
-                <v-text-field
-                  :model-value="$d(safeNewDate(field.value + 'T00:00:00'))"
-                  variant="underlined"
-                  color="primary"
-                  class="date-input"
-                  v-bind="activatorProps"
-                  readonly
+              <label
+                v-for="choice in field.fieldChoices"
+                :key="String(choice.value)"
+                class="flex cursor-pointer items-center gap-2.5 rounded-item px-2 py-1.5 text-[15px] hover:bg-highlight"
+              >
+                <Checkbox
+                  :model-value="(field.values || []).includes(choice.value)"
+                  @update:model-value="toggleChoice(field, index, choice.value, !!$event)"
                 />
-              </template>
-              <v-date-picker
-                :model-value="safeNewDate(field.value + 'T00:00:00')"
-                hide-header
-                :first-day-of-week="firstDayOfWeek"
-                :local="$i18n.locale"
-                @update:model-value="val => setFieldValue(field, index, val ? val.toISOString().slice(0, 10) : '')"
-              />
-            </v-menu>
-            <!--
-              Relative dates are assumed to be negative intervals with a unit of days.
-              The input is a *positive*, interpreted internally as a *negative* offset.
-            -->
-            <v-number-input
-              v-else-if="field.type === 'relativeDate'"
-              :model-value="parseRelativeDateOffset(field.value)"
-              :suffix="$t('query-filter.dates.days-ago', parseRelativeDateOffset(field.value))"
-              variant="underlined"
-              density="compact"
-              inset
-              :min="0"
-              :precision="0"
-              class="date-input"
-              @update:model-value="setFieldValue(field, index, $event)"
-            />
-            <RecipeTimeInput
-              v-else-if="field.type === 'duration'"
-              :seconds="field.value as number || null"
-              hide-text
-              class="w-100"
-              @update:seconds="setFieldValue(field, index, $event ?? '')"
-            />
-            <RecipeOrganizerSelector
-              v-else-if="field.type === Organizer.Category"
-              v-model="field.organizers"
-              :selector-type="Organizer.Category"
-              :show-add="false"
-              :show-label="false"
-              :show-icon="false"
-              variant="underlined"
-              @update:model-value="val => setFieldOrganizers(field, index, (val || []) as OrganizerBase[])"
-            />
-            <RecipeOrganizerSelector
-              v-else-if="field.type === Organizer.Tag"
-              v-model="field.organizers"
-              :selector-type="Organizer.Tag"
-              :show-add="false"
-              :show-label="false"
-              :show-icon="false"
-              variant="underlined"
-              @update:model-value="val => setFieldOrganizers(field, index, (val || []) as OrganizerBase[])"
-            />
-            <RecipeOrganizerSelector
-              v-else-if="field.type === Organizer.Tool"
-              v-model="field.organizers"
-              :selector-type="Organizer.Tool"
-              :show-add="false"
-              :show-label="false"
-              :show-icon="false"
-              variant="underlined"
-              @update:model-value="val => setFieldOrganizers(field, index, (val || []) as OrganizerBase[])"
-            />
-            <RecipeOrganizerSelector
-              v-else-if="field.type === Organizer.Food"
-              v-model="field.organizers"
-              :selector-type="Organizer.Food"
-              :show-add="false"
-              :show-label="false"
-              :show-icon="false"
-              variant="underlined"
-              @update:model-value="val => setFieldOrganizers(field, index, (val || []) as OrganizerBase[])"
-            />
-            <RecipeOrganizerSelector
-              v-else-if="field.type === Organizer.Household"
-              v-model="field.organizers"
-              :selector-type="Organizer.Household"
-              :show-add="false"
-              :show-label="false"
-              :show-icon="false"
-              variant="underlined"
-              @update:model-value="val => setFieldOrganizers(field, index, (val || []) as OrganizerBase[])"
-            />
-            <RecipeOrganizerSelector
-              v-else-if="field.type === Organizer.User"
-              v-model="field.organizers"
-              :selector-type="Organizer.User"
-              :show-add="false"
-              :show-label="false"
-              :show-icon="false"
-              variant="underlined"
-              @update:model-value="val => setFieldOrganizers(field, index, (val || []) as OrganizerBase[])"
-            />
-            <RecipeOrganizerSelector
-              v-else-if="field.type === Organizer.Label"
-              v-model="field.organizers"
-              :selector-type="Organizer.Label"
-              :show-add="false"
-              :show-label="false"
-              :show-icon="false"
-              variant="underlined"
-              @update:model-value="val => setFieldOrganizers(field, index, (val || []) as OrganizerBase[])"
-            />
-          </v-col>
-
-          <!-- right parenthesis -->
-          <v-col
-            v-if="showAdvanced"
-            :cols="config.items.rightParens.cols(index)"
-            :sm="config.items.rightParens.sm(index)"
-            :class="config.col.class"
+                {{ choice.label }}
+              </label>
+            </PopoverContent>
+          </Popover>
+          <input
+            v-else-if="field.type === 'string'"
+            :value="field.value"
+            type="text"
+            :aria-label="$t('query-filter.value')"
+            class="h-10 min-w-0 rounded-control border border-input bg-card px-2.5 text-[15px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/25 w-full"
+            @input="setFieldValue(field, index, ($event.target as HTMLInputElement).value)"
           >
-            <v-select
-              :model-value="field.rightParenthesis"
-              :items="['', ')', '))', ')))']"
-              variant="underlined"
-              class="text-center"
-              @update:model-value="setRightParenthesisValue(field, index, $event)"
-            />
-          </v-col>
-
-          <!-- field actions -->
-          <!-- kept on sm rows without a delete button so the columns line up -->
-          <v-col
-            v-if="!$vuetify.display.xs || index === fields.length - 1"
-            :cols="config.items.fieldActions.cols(index)"
-            :sm="config.items.fieldActions.sm(index)"
-            :class="config.col.class"
+          <input
+            v-else-if="field.type === 'number'"
+            :value="field.value as number || 0"
+            type="number"
+            min="0"
+            max="5"
+            step="any"
+            :aria-label="$t('query-filter.value')"
+            class="h-10 min-w-0 rounded-control border border-input bg-card px-2.5 text-[15px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/25 w-28"
+            @input="setFieldValue(field, index, Number(($event.target as HTMLInputElement).value) || 0)"
           >
-            <BaseButtonGroup
-              v-if="!$vuetify.display.smAndDown || index === fields.length - 1"
-              :buttons="[
-                {
-                  icon: $globals.icons.delete,
-                  text: $t('general.delete'),
-                  event: 'delete',
-                  disabled: fields.length === 1,
-                },
-              ]"
-              class="my-auto"
-              @delete="removeField(index)"
+          <label
+            v-else-if="field.type === 'boolean'"
+            class="flex h-10 items-center gap-2"
+          >
+            <Checkbox
+              :model-value="!!field.value"
+              @update:model-value="setFieldValue(field, index, !!$event)"
             />
-          </v-col>
-        </v-row>
-      </VueDraggable>
-    </v-card-text>
-    <v-card-actions>
-      <v-row fluid class="d-flex justify-end ma-2">
-        <v-spacer />
-        <v-checkbox
-          v-model="showAdvanced"
-          hide-details
-          :label="$t('general.show-advanced')"
-          class="my-auto mr-4"
-          color="primary"
-        />
-        <BaseButton
-          create
-          :text="$t('general.add-field')"
-          class="my-auto"
-          @click="addField(fieldDefs[0]!)"
-        />
-      </v-row>
-    </v-card-actions>
-  </v-card>
+          </label>
+          <input
+            v-else-if="field.type === 'date'"
+            :value="field.value"
+            type="date"
+            :aria-label="$t('query-filter.value')"
+            class="h-10 min-w-0 rounded-control border border-input bg-card px-2.5 text-[15px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/25 w-44 [color-scheme:light] dark:[color-scheme:dark]"
+            @change="setFieldValue(field, index, ($event.target as HTMLInputElement).value)"
+          >
+          <!--
+            Relative dates are assumed to be negative intervals with a unit of days.
+            The input is a *positive*, interpreted internally as a *negative* offset.
+          -->
+          <label
+            v-else-if="field.type === 'relativeDate'"
+            class="flex h-10 w-48 items-center gap-2 rounded-control border border-input bg-card pe-3 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/25"
+          >
+            <input
+              :value="parseRelativeDateOffset(field.value)"
+              type="number"
+              min="0"
+              step="1"
+              :aria-label="$t('query-filter.value')"
+              class="h-full w-0 min-w-0 flex-1 bg-transparent px-2.5 text-[15px] outline-none"
+              @input="setFieldValue(field, index, Math.max(0, Math.floor(Number(($event.target as HTMLInputElement).value) || 0)))"
+            >
+            <span class="text-sm text-muted-foreground">{{ $t('query-filter.dates.days-ago', parseRelativeDateOffset(field.value)) }}</span>
+          </label>
+          <RecipeTimeInput
+            v-else-if="field.type === 'duration'"
+            :seconds="field.value as number || null"
+            hide-text
+            @update:seconds="setFieldValue(field, index, $event ?? '')"
+          />
+          <RecipeOrganizerSelector
+            v-else-if="organizerTypes.includes(field.type as Organizer)"
+            v-model="field.organizers"
+            :selector-type="field.type as Organizer"
+            :show-add="false"
+            :show-label="false"
+            :show-icon="false"
+            @update:model-value="val => setFieldOrganizers(field, index, (val || []) as OrganizerBase[])"
+          />
+        </div>
+
+        <select
+          v-if="showAdvanced"
+          :value="field.rightParenthesis ?? ''"
+          :aria-label="$t('query-filter.close-parenthesis')"
+          class="h-10 min-w-0 rounded-control border border-input bg-card px-2.5 text-[15px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/25 w-16 font-mono"
+          @change="setRightParenthesisValue(field, index, ($event.target as HTMLSelectElement).value)"
+        >
+          <option
+            v-for="p in ['', ')', '))', ')))']"
+            :key="p"
+            :value="p"
+          >
+            {{ p || '–' }}
+          </option>
+        </select>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          class="ms-auto text-muted-foreground hover:text-destructive"
+          :disabled="fields.length === 1"
+          :aria-label="$t('general.delete')"
+          :title="$t('general.delete')"
+          @click="removeField(index)"
+        >
+          <Trash2Icon class="size-4" />
+        </Button>
+      </div>
+    </VueDraggable>
+    <div class="flex flex-wrap items-center justify-end gap-3">
+      <label class="flex cursor-pointer items-center gap-2 text-sm">
+        <Checkbox v-model="showAdvanced" />
+        {{ $t('general.show-advanced') }}
+      </label>
+      <Button
+        variant="outline"
+        @click="addField(fieldDefs[0]!)"
+      >
+        <PlusIcon class="size-4" />
+        {{ $t('general.add-field') }}
+      </Button>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { ChevronDownIcon, GripVerticalIcon, PlusIcon, Trash2Icon } from "@lucide/vue";
 import { VueDraggable } from "vue-draggable-plus";
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { useDebounceFn } from "@vueuse/core";
-import { useHouseholdSelf } from "~/composables/use-households";
 import RecipeOrganizerSelector from "~/components/Domain/Recipe/RecipeOrganizerSelector.vue";
 import RecipeTimeInput from "~/components/Domain/Recipe/RecipeTimeInput.vue";
 import { Organizer } from "~/lib/api/types/non-generated";
@@ -358,7 +285,6 @@ const emit = defineEmits<{
   (event: "inputJSON", value: QueryFilterJSON | undefined): void;
 }>();
 
-const { household } = useHouseholdSelf();
 const {
   logOps,
   placeholderKeywords,
@@ -370,17 +296,13 @@ const {
   updateRelationalOperator,
 } = useQueryFilterBuilder();
 
-const firstDayOfWeek = computed(() => {
-  return household.value?.preferences?.firstDayOfWeek || 0;
-});
-
 const state = reactive({
   showAdvanced: false,
   qfValid: false,
   datePickers: [] as boolean[],
   drag: false,
 });
-const { showAdvanced, datePickers, drag } = toRefs(state);
+const { showAdvanced, drag } = toRefs(state);
 
 const storeMap = {
   [Organizer.Category]: useCategoryStore(),
@@ -484,6 +406,18 @@ function setFieldValue(field: FieldWithId, index: number, value: FieldValue) {
 function setFieldValues(field: FieldWithId, index: number, values: FieldValue[]) {
   fields.value[index]!.values = values;
 }
+
+function toggleChoice(field: FieldWithId, index: number, value: FieldValue, on: boolean) {
+  const current = field.values || [];
+  setFieldValues(field, index, on ? [...current, value] : current.filter(v => v !== value));
+}
+
+function choiceSummary(field: FieldWithId) {
+  const chosen = (field.fieldChoices || []).filter(c => (field.values || []).includes(c.value)).map(c => c.label);
+  return chosen.join(", ");
+}
+
+const organizerTypes = [Organizer.Category, Organizer.Tag, Organizer.Tool, Organizer.Food, Organizer.Household, Organizer.User, Organizer.Label];
 
 function setFieldOrganizers(field: FieldWithId, index: number, organizers: OrganizerBase[]) {
   fields.value[index]!.organizers = organizers;
@@ -717,81 +651,4 @@ function parseRelativeDateOffset(value: string): number {
     return defaultVal;
   }
 }
-
-const config = computed(() => {
-  const adv = state.showAdvanced;
-
-  return {
-    col: {
-      class: "d-flex justify-center align-end py-0",
-    },
-    items: {
-      icon: {
-        cols: (_index: number) => 2,
-        sm: (_index: number) => "auto",
-        style: "width: fit-content;",
-      },
-      leftParens: {
-        cols: (index: number) => (adv ? (index === 0 ? 2 : 0) : 0),
-        sm: (_index: number) => (adv ? 1 : 0),
-      },
-      logicalOperator: {
-        cols: (_index: number) => 0,
-        // Fills the space left by the auto-width icon column
-        sm: (_index: number) => true,
-      },
-      fieldName: {
-        cols: (index: number) => {
-          if (adv) return index === 0 ? 8 : 12;
-          return index === 0 ? 10 : 12;
-        },
-        sm: (_index: number) => (adv ? 2 : 3),
-      },
-      relationalOperator: {
-        cols: (_index: number) => 12,
-        sm: (_index: number) => 2,
-      },
-      fieldValue: {
-        cols: (index: number) => {
-          const last = index === fields.value.length - 1;
-          if (adv) return last ? 8 : 10;
-          return last ? 10 : 12;
-        },
-        sm: (_index: number) => (adv ? 3 : 4),
-      },
-      rightParens: {
-        cols: (index: number) => (adv ? (index === fields.value.length - 1 ? 2 : 0) : 0),
-        sm: (_index: number) => (adv ? 1 : 0),
-      },
-      fieldActions: {
-        cols: (index: number) => (index === fields.value.length - 1 ? 2 : 0),
-        sm: (_index: number) => 1,
-      },
-    },
-  };
-});
 </script>
-
-<style scoped>
-* {
-  font-size: 1em;
-  --bg-opactity: calc(var(--v-hover-opacity) * var(--v-theme-overlay-multiplier));
-}
-
-.bg-dark {
-  background-color: rgba(0, 0, 0, var(--bg-opactity));
-}
-
-.bg-light {
-  background-color: rgba(255, 255, 255, var(--bg-opactity));
-}
-
-:deep(.date-input input) {
-  text-align: end;
-  padding-right: 6px;
-}
-
-:deep(.date-input .v-field__field) {
-  align-items: center;
-}
-</style>
