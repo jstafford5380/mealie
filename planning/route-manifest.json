@@ -668,7 +668,9 @@
         "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseOverflowButton.vue"
+        "frontend/app/components/global/BaseOverflowButton.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
@@ -3545,54 +3547,36 @@
       "status": "reviewed",
       "components": [
         "AppButtonCopy",
-        "BaseButton",
-        "BaseCardSectionTitle",
-        "BasePageTitle",
-        "VForm"
+        "Button",
+        "ChevronLeftIcon",
+        "MdiIcon",
+        "NuxtLink",
+        "TextField",
+        "Trash2Icon"
       ],
       "dependencies": [
         "frontend/app/components/global/AppButtonCopy.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-card",
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-container",
-        "v-divider",
-        "v-form",
-        "v-img",
-        "v-list",
-        "v-list-item",
-        "v-list-item-subtitle",
-        "v-list-item-title",
-        "v-spacer",
-        "v-text-field",
-        "v-textarea"
-      ],
+      "vuetify": [],
       "events": [
-        "click: createToken(name)",
         "click: deleteToken(token.id)",
-        "click: resetCreate()"
+        "click: resetCreate()",
+        "focus: ($event.target as HTMLTextAreaElement).select()",
+        "submit.prevent: name && createToken(name)"
       ],
       "models": [
-        "createdToken",
         "name"
       ],
       "conditions": [
-        "createdToken",
-        "createdToken != ''"
+        "!createdToken",
+        "user.tokens?.length"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": [],
       "componentClosure": [
         "frontend/app/components/global/AppButtonCopy.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
@@ -3603,44 +3587,30 @@
       "status": "reviewed",
       "components": [
         "AppButtonUpload",
-        "BaseButton",
-        "BaseCardSectionTitle",
-        "BasePageTitle",
-        "ToggleState",
+        "Button",
+        "CheckboxField",
+        "ChevronLeftIcon",
+        "FieldScope",
+        "NuxtLink",
+        "SelectField",
+        "TextField",
         "UserAvatar",
-        "UserPasswordStrength",
-        "VForm",
-        "nuxt-link"
+        "UserPasswordStrength"
       ],
       "dependencies": [
         "frontend/app/components/Domain/User/UserAvatar.vue",
         "frontend/app/components/Domain/User/UserPasswordStrength.vue",
         "frontend/app/components/global/AppButtonUpload.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
-        "frontend/app/components/global/ToggleState.vue"
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FieldScope.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-card-actions",
-        "v-card-text",
-        "v-checkbox",
-        "v-combobox",
-        "v-container",
-        "v-form",
-        "v-icon",
-        "v-slide-x-transition",
-        "v-spacer",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
-        "change: updateUser",
-        "click: toggle",
-        "click: updatePassword",
-        "click: updateUser",
-        "click:append: showPassword = !showPassword",
+        "submit.prevent: updatePassword",
+        "submit.prevent: updateUser",
+        "update:model-value: updateUser",
         "uploaded: auth.getSession()"
       ],
       "models": [
@@ -3655,8 +3625,6 @@
         "userCopy.username"
       ],
       "conditions": [
-        "!toggleState",
-        "!toggleState && $appInfo.allowPasswordLogin",
         "$appInfo.allowPasswordLogin"
       ],
       "dynamicComponents": [],
@@ -3665,10 +3633,10 @@
         "frontend/app/components/Domain/User/UserAvatar.vue",
         "frontend/app/components/Domain/User/UserPasswordStrength.vue",
         "frontend/app/components/global/AppButtonUpload.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
-        "frontend/app/components/global/ToggleState.vue"
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FieldScope.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
@@ -3678,31 +3646,19 @@
       "document": "pages/user--profile--index.md",
       "status": "reviewed",
       "components": [
-        "AdvancedOnly",
-        "StatsCards",
+        "Button",
+        "ChevronRightIcon",
+        "MdiIcon",
+        "NuxtLink",
         "UserAvatar",
         "UserInviteDialog",
-        "UserOut",
-        "UserProfileLinkCard"
+        "UserOut"
       ],
       "dependencies": [
         "frontend/app/components/Domain/User/UserAvatar.vue",
-        "frontend/app/components/Domain/User/UserInviteDialog.vue",
-        "frontend/app/components/Domain/User/UserProfileLinkCard.vue",
-        "frontend/app/components/global/AdvancedOnly.vue",
-        "frontend/app/components/global/StatsCards.vue"
+        "frontend/app/components/Domain/User/UserInviteDialog.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-col",
-        "v-container",
-        "v-divider",
-        "v-row"
-      ],
+      "vuetify": [],
       "events": [
         "click: inviteDialog = true"
       ],
@@ -3710,27 +3666,21 @@
         "inviteDialog"
       ],
       "conditions": [
+        "Object.keys(filteredStats).length",
         "user",
-        "user.canInvite",
-        "user.canManage",
-        "user.canManage || user.canOrganize || user.advanced",
-        "user.canManageHousehold",
-        "user.canOrganize"
+        "user.canInvite"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ],
+      "vuetifyAPIs": [],
       "componentClosure": [
         "frontend/app/components/Domain/User/UserAvatar.vue",
         "frontend/app/components/Domain/User/UserInviteDialog.vue",
-        "frontend/app/components/Domain/User/UserProfileLinkCard.vue",
-        "frontend/app/components/global/AdvancedOnly.vue",
         "frontend/app/components/global/AppButtonCopy.vue",
         "frontend/app/components/global/BaseButton.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/StatsCards.vue"
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     }
   ],

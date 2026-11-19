@@ -3815,30 +3815,27 @@
       "name": "UserInviteDialog",
       "components": [
         "AppButtonCopy",
-        "BaseButton",
         "BaseDialog",
+        "Button",
         "GroupOut",
-        "HouseholdOut"
+        "HouseholdOut",
+        "MdiIcon",
+        "SelectField",
+        "TextField"
       ],
       "dependencies": [
         "frontend/app/components/global/AppButtonCopy.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseDialog.vue"
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-col",
-        "v-container",
-        "v-form",
-        "v-row",
-        "v-select",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
         "click: sendInvite",
-        "keydown.enter: sendInvite"
+        "focus: ($event.target as HTMLInputElement).select()",
+        "keydown.enter.prevent: sendInvite"
       ],
       "models": [
-        "generatedSignupLink",
         "inviteDialog",
         "selectedGroup",
         "selectedHousehold",
@@ -4281,21 +4278,22 @@
       "source": "frontend/app/components/global/AppButtonUpload.vue",
       "name": "AppButtonUpload",
       "components": [
+        "Button",
         "File",
-        "HTMLInputElement"
+        "HTMLInputElement",
+        "LoaderCircleIcon",
+        "MdiIcon"
       ],
       "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-form",
-        "v-icon"
-      ],
+      "vuetify": [],
       "events": [
         "change: onFileChanged",
         "click: onButtonClick"
       ],
       "models": [],
-      "conditions": [],
+      "conditions": [
+        "isSelecting"
+      ],
       "dynamicComponents": [],
       "vuetifyAPIs": []
     },

@@ -28,6 +28,14 @@ Current-source audit notes:
 - The template's name gate checks an empty string, not a trimmed string.
 - Do not expose an existing token value in the active-token list during the rewrite.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Illustration title; a card with the name field, Generate button and a textarea for the new token. | Plain heading; a "Create an API token" panel with the name and Generate on one row. Once generated, a marigold note says it won't be shown again, the token sits in a read-only field, with Done and Copy. |
+| Tokens as a Vuetify list with dividers and Delete buttons. | A bordered list with the token name, created date and a trash button; an empty state when there are none. |
+
+
 ## Screenshots
 
 ### Empty token list and disabled Generate

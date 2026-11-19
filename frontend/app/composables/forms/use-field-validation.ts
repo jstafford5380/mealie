@@ -165,8 +165,13 @@ interface RegisteredField {
  * If there is an outer form (a legacy `<v-form>`), this group registers with it as one item,
  * so the outer form's validate() and validity include these fields too.
  */
-export function provideFieldGroup(options: { disabled?: MaybeRefOrGetter<boolean | undefined>; readonly?: MaybeRefOrGetter<boolean | undefined> } = {}) {
-  const parent = inject<FormContext | null>(FORM_CONTEXT_KEY, null);
+export function provideFieldGroup(options: {
+  disabled?: MaybeRefOrGetter<boolean | undefined>;
+  readonly?: MaybeRefOrGetter<boolean | undefined>;
+  /** Validate on its own, without joining an enclosing form or group. */
+  isolated?: boolean;
+} = {}) {
+  const parent = options.isolated ? null : inject<FormContext | null>(FORM_CONTEXT_KEY, null);
   const items = ref<RegisteredField[]>([]);
   const isValid = ref<boolean | null>(null);
 

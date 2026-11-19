@@ -885,7 +885,8 @@
       "create-an-api-token": "Create an API Token",
       "token-name": "Token Name",
       "generate": "Generate",
-      "you-have-token-count": "You have no active tokens.|You have one active token.|You have {count} active tokens."
+      "you-have-token-count": "You have no active tokens.|You have one active token.|You have {count} active tokens.",
+      "no-tokens-yet": "No API tokens yet."
     },
     "webhooks": {
       "webhook-url": "Webhook URL",
@@ -1430,7 +1431,9 @@
     "manage-members": "Manage Members",
     "manage-webhooks": "Manage Webhooks",
     "manage-notifiers": "Manage Notifiers",
-    "manage-data-migrations": "Manage Data Migrations"
+    "manage-data-migrations": "Manage Data Migrations",
+    "or-email-the-invite": "Or email the invite to",
+    "change-photo": "Change photo"
   },
   "cookbook": {
     "cookbooks": "Cookbooks",

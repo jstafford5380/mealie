@@ -5,78 +5,75 @@
     :icon="$globals.icons.accountPlusOutline"
     color="primary"
   >
-    <v-container>
-      <v-form class="mt-5">
-        <v-select
-          v-if="groups && groups.length"
-          v-model="selectedGroup"
-          :items="groups"
-          item-title="name"
-          item-value="id"
-          :return-object="false"
-          variant="filled"
-          :label="$t('group.user-group')"
-          :rules="[validators.required]"
+    <div class="flex flex-col gap-1 px-6 pb-2">
+      <SelectField
+        v-if="groups && groups.length"
+        v-model="selectedGroup"
+        :items="groups"
+        item-title="name"
+        item-value="id"
+        :label="$t('group.user-group')"
+        :rules="[validators.required]"
+      />
+      <SelectField
+        v-if="households && households.length"
+        v-model="selectedHousehold"
+        :items="filteredHouseholds"
+        item-title="name"
+        item-value="id"
+        :label="$t('household.user-household')"
+        :rules="[validators.required]"
+      />
+      <p class="m-0 mt-1 text-sm font-semibold">
+        {{ $t('profile.invite-link') }}
+      </p>
+      <div class="flex items-center gap-2">
+        <input
+          :value="generatedSignupLink"
+          readonly
+          :aria-label="$t('profile.invite-link')"
+          class="h-10 min-w-0 flex-1 rounded-control border border-input bg-muted px-3 font-mono text-[13px] outline-none"
+          @focus="($event.target as HTMLInputElement).select()"
+        >
+        <AppButtonCopy
+          :icon="false"
+          :copy-text="generatedSignupLink"
         />
-        <v-select
-          v-if="households && households.length"
-          v-model="selectedHousehold"
-          :items="filteredHouseholds"
-          item-title="name"
-          item-value="id"
-          :return-object="false"
-          variant="filled"
-          :label="$t('household.user-household')"
-          :rules="[validators.required]"
-        />
-        <v-row>
-          <v-col cols="9">
-            <v-text-field
-              v-model="generatedSignupLink"
-              :label="$t('profile.invite-link')"
-              type="text"
-              readonly
-              variant="filled"
-            />
-          </v-col>
-          <v-col
-            cols="3"
-            class="pl-1 mt-3"
-          >
-            <AppButtonCopy
-              :icon="false"
-              color="info"
-              :copy-text="generatedSignupLink"
-            />
-          </v-col>
-        </v-row>
-        <v-text-field
+      </div>
+      <div class="mt-3 border-t pt-3">
+        <TextField
           v-model="sendTo"
-          :label="$t('user.email')"
+          type="email"
+          :label="$t('profile.or-email-the-invite')"
           :rules="[validators.email]"
-          variant="outlined"
-          @keydown.enter="sendInvite"
+          @keydown.enter.prevent="sendInvite"
         />
-      </v-form>
-    </v-container>
+      </div>
+    </div>
     <template #custom-card-action>
-      <BaseButton
-        :disabled="!validEmail"
-        :loading="loading"
-        :icon="$globals.icons.email"
+      <Button
+        variant="outline"
+        :disabled="!validEmail || loading"
         @click="sendInvite"
       >
+        <MdiIcon
+          :path="$globals.icons.email"
+          class="size-4"
+        />
         {{ $t("group.invite") }}
-      </BaseButton>
+      </Button>
     </template>
   </BaseDialog>
 </template>
 
 <script setup lang="ts">
+import { Button } from "~/components/ui/button";
+import SelectField from "~/components/ui/field/SelectField.vue";
+import TextField from "~/components/ui/field/TextField.vue";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { useUserApi } from "@/composables/api";
 import BaseDialog from "~/components/global/BaseDialog.vue";
 import AppButtonCopy from "~/components/global/AppButtonCopy.vue";
-import BaseButton from "~/components/global/BaseButton.vue";
 import { validators } from "~/composables/use-validators";
 import { alert } from "~/composables/use-toast";
 import type { GroupOut } from "~/lib/api/types/user";

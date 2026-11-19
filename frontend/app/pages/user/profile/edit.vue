@@ -1,229 +1,155 @@
 <template>
-  <v-container class="narrow-container">
-    <BasePageTitle divider>
-      <template #header>
-        <div class="d-flex flex-column align-center justify-center">
-          <UserAvatar
-            :tooltip="false"
-            size="96"
-            :user-id="userCopy.id!"
-          />
-          <AppButtonUpload
-            class="my-1"
-            file-name="profile"
-            accept="image/*"
-            :url="`/api/users/${userCopy.id}/image`"
-            @uploaded="auth.getSession()"
-          />
-        </div>
-      </template>
-      <template #title>
-        {{ $t("profile.user-settings") }}
-      </template>
-    </BasePageTitle>
+  <div class="mx-auto flex w-full max-w-[760px] flex-col gap-8 px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8">
+    <NuxtLink
+      to="/user/profile"
+      class="-mb-4 inline-flex w-fit items-center gap-1 text-sm font-semibold text-muted-foreground no-underline hover:text-foreground"
+    >
+      <ChevronLeftIcon class="size-4 rtl:rotate-180" />
+      {{ $t('profile.back-to-profile') }}
+    </NuxtLink>
 
-    <section class="mt-5">
-      <ToggleState tag="article">
-        <template #activator="{ toggle, modelValue: toggleState }">
-          <v-btn
-            v-if="!toggleState && $appInfo.allowPasswordLogin"
-            color="info"
-            class="mt-2 mb-n3"
-            @click="toggle"
-          >
-            <v-icon start>
-              {{ $globals.icons.lock }}
-            </v-icon>
-            {{ $t("settings.change-password") }}
-          </v-btn>
-          <v-btn
-            v-else-if="$appInfo.allowPasswordLogin"
-            color="info"
-            class="mt-2 mb-n3"
-            @click="toggle"
-          >
-            <v-icon start>
-              {{ $globals.icons.user }}
-            </v-icon>
-            {{ $t("settings.profile") }}
-          </v-btn>
-        </template>
-        <template #default="{ modelValue: toggleState }">
-          <v-slide-x-transition
-            leave-absolute
-            hide-on-leave
-          >
-            <div
-              v-if="!toggleState"
-              key="personal-info"
-            >
-              <BaseCardSectionTitle
-                class="mt-10"
-                :title="$t('profile.personal-information')"
-              />
-              <v-card
-                tag="article"
-                variant="outlined"
-                style="border-color: lightgrey;"
-              >
-                <v-card-text class="pb-0">
-                  <v-form ref="userUpdate">
-                    <v-text-field
-                      v-model="userCopy.username"
-                      :label="$t('user.username')"
-                      required
-                      validate-on="blur"
-                      density="comfortable"
-                      variant="underlined"
-                    />
-                    <v-text-field
-                      v-model="userCopy.fullName"
-                      :label="$t('user.full-name')"
-                      required
-                      validate-on="blur"
-                      density="comfortable"
-                      variant="underlined"
-                    />
-                    <v-text-field
-                      v-model="userCopy.email"
-                      :label="$t('user.email')"
-                      :rules="[validators.required, validators.email]"
-                      validate-on="blur"
-                      required
-                      density="comfortable"
-                      variant="underlined"
-                    />
-                  </v-form>
-                </v-card-text>
-                <v-card-actions>
-                  <v-spacer />
-                  <BaseButton
-                    update
-                    @click="updateUser"
-                  />
-                </v-card-actions>
-              </v-card>
-            </div>
-            <div
-              v-else
-              key="change-password"
-            >
-              <BaseCardSectionTitle
-                class="mt-10"
-                :title="$t('settings.change-password')"
-              />
-              <v-card variant="outlined" style="border-color: lightgrey;">
-                <v-card-text class="pb-0">
-                  <v-form ref="passChange">
-                    <v-text-field
-                      v-model="password.current"
-                      :prepend-icon="$globals.icons.lock"
-                      :label="$t('user.current-password')"
-                      validate-on="blur"
-                      :type="showPassword ? 'text' : 'password'"
-                      :append-icon="showPassword ? $globals.icons.eye : $globals.icons.eyeOff"
-                      :rules="[validators.minLength(1)]"
-                      density="comfortable"
-                      variant="underlined"
-                      @click:append="showPassword = !showPassword"
-                    />
-                    <v-text-field
-                      v-model="password.newOne"
-                      :prepend-icon="$globals.icons.lock"
-                      :label="$t('user.new-password')"
-                      :type="showPassword ? 'text' : 'password'"
-                      :append-icon="showPassword ? $globals.icons.eye : $globals.icons.eyeOff"
-                      :rules="[validators.minLength(8)]"
-                      density="comfortable"
-                      variant="underlined"
-                      @click:append="showPassword = !showPassword"
-                    />
-                    <v-text-field
-                      v-model="password.newTwo"
-                      :prepend-icon="$globals.icons.lock"
-                      :label="$t('user.confirm-password')"
-                      :rules="[password.newOne === password.newTwo || $t('user.password-must-match')]"
-                      validate-on="blur"
-                      :type="showPassword ? 'text' : 'password'"
-                      :append-icon="showPassword ? $globals.icons.eye : $globals.icons.eyeOff"
-                      density="comfortable"
-                      variant="underlined"
-                      @click:append="showPassword = !showPassword"
-                    />
-                    <UserPasswordStrength v-model="password.newOne" />
-                  </v-form>
-                </v-card-text>
-                <v-card-actions>
-                  <v-spacer />
-                  <BaseButton
-                    update
-                    :disabled="!passwordsMatch || password.current.length < 0"
-                    @click="updatePassword"
-                  />
-                </v-card-actions>
-              </v-card>
-            </div>
-          </v-slide-x-transition>
-        </template>
-      </ToggleState>
-    </section>
-    <section>
-      <BaseCardSectionTitle
-        class="mt-10"
-        :title="$t('profile.preferences')"
+    <header class="flex flex-wrap items-center gap-4">
+      <UserAvatar
+        :tooltip="false"
+        size="72"
+        :user-id="userCopy.id!"
       />
-      <v-card variant="outlined" style="border-color: lightgrey;">
-        <v-card-text>
-          <v-combobox
-            v-model="selectedDefaultActivity"
-            :label="$t('user.default-activity')"
-            :items="activityOptions"
-            :hint="$t('user.default-activity-hint')"
-            density="comfortable"
-            variant="underlined"
-            validate-on="blur"
-            persistent-hint
-          />
-          <v-checkbox
-            v-model="userCopy.showAnnouncements"
-            hide-details
-            :label="$t('announcements.show-announcements-from-mealie')"
-            color="primary"
-            @change="updateUser"
-          />
-          <v-checkbox
-            v-model="userCopy.advanced"
-            hide-details
-            :label="$t('profile.show-advanced-description')"
-            color="primary"
-            @change="updateUser"
-          />
-        </v-card-text>
-      </v-card>
-      <nuxt-link
-        class="mt-5 d-flex flex-column justify-center text-center text-primary"
-        :to="`/group`"
-      > {{
-        $t('profile.looking-for-privacy-settings') }} </nuxt-link>
-      <div class="d-flex flex-wrap justify-center mt-5">
-        <v-btn
-          variant="outlined"
-          class="rounded-xl my-1 mx-1"
-          :to="`/user/profile`"
-          nuxt
-          exact
-        >
-          <v-icon start>
-            {{ $globals.icons.backArrow }}
-          </v-icon>
-          {{ $t('profile.back-to-profile') }}
-        </v-btn>
+      <div class="min-w-0 flex-1">
+        <h1 class="m-0 text-[26px] font-bold tracking-tight sm:text-[32px]">
+          {{ $t("profile.user-settings") }}
+        </h1>
       </div>
+      <AppButtonUpload
+        file-name="profile"
+        accept="image/*"
+        :text="$t('profile.change-photo')"
+        :url="`/api/users/${userCopy.id}/image`"
+        @uploaded="auth.getSession()"
+      />
+    </header>
+
+    <FieldScope ref="userUpdate">
+      <form
+        class="rounded-panel border bg-card p-5 sm:p-6"
+        @submit.prevent="updateUser"
+      >
+        <h2 class="m-0 mb-3 text-xl font-bold tracking-tight">
+          {{ $t('profile.personal-information') }}
+        </h2>
+        <TextField
+          v-model="userCopy.username"
+          autocomplete="username"
+          validate-on="blur"
+          :label="$t('user.username')"
+        />
+        <TextField
+          v-model="userCopy.fullName"
+          autocomplete="name"
+          validate-on="blur"
+          :label="$t('user.full-name')"
+        />
+        <TextField
+          v-model="userCopy.email"
+          type="email"
+          autocomplete="email"
+          validate-on="blur"
+          :label="$t('user.email')"
+          :rules="[validators.required, validators.email]"
+        />
+        <div class="mt-4 flex justify-end border-t pt-4">
+          <Button type="submit">
+            {{ $t("general.update") }}
+          </Button>
+        </div>
+      </form>
+    </FieldScope>
+
+    <FieldScope v-if="$appInfo.allowPasswordLogin">
+      <form
+        class="rounded-panel border bg-card p-5 sm:p-6"
+        @submit.prevent="updatePassword"
+      >
+        <h2 class="m-0 mb-3 text-xl font-bold tracking-tight">
+          {{ $t("settings.change-password") }}
+        </h2>
+        <TextField
+          v-model="password.current"
+          type="password"
+          autocomplete="current-password"
+          validate-on="blur"
+          :label="$t('user.current-password')"
+          :rules="[validators.minLength(1)]"
+        />
+        <TextField
+          v-model="password.newOne"
+          type="password"
+          autocomplete="new-password"
+          :label="$t('user.new-password')"
+          :rules="[validators.minLength(8)]"
+        />
+        <UserPasswordStrength v-model="password.newOne" />
+        <TextField
+          v-model="password.newTwo"
+          type="password"
+          autocomplete="new-password"
+          validate-on="blur"
+          :label="$t('user.confirm-password')"
+          :rules="[password.newOne === password.newTwo || $t('user.password-must-match')]"
+        />
+        <div class="mt-4 flex justify-end border-t pt-4">
+          <Button
+            type="submit"
+            :disabled="!passwordsMatch || !password.current"
+          >
+            {{ $t("settings.change-password") }}
+          </Button>
+        </div>
+      </form>
+    </FieldScope>
+
+    <section class="rounded-panel border bg-card p-5 sm:p-6">
+      <h2 class="m-0 mb-3 text-xl font-bold tracking-tight">
+        {{ $t('profile.preferences') }}
+      </h2>
+      <div class="max-w-sm">
+        <SelectField
+          v-model="selectedDefaultActivity"
+          :items="activityOptions"
+          :label="$t('user.default-activity')"
+          :hint="$t('user.default-activity-hint')"
+        />
+      </div>
+      <div class="mt-2 flex flex-col gap-2">
+        <CheckboxField
+          v-model="userCopy.showAnnouncements"
+          :label="$t('announcements.show-announcements-from-mealie')"
+          @update:model-value="updateUser"
+        />
+        <CheckboxField
+          v-model="userCopy.advanced"
+          :label="$t('profile.show-advanced-description')"
+          @update:model-value="updateUser"
+        />
+      </div>
+      <p class="m-0 mt-5 border-t pt-4 text-sm">
+        <NuxtLink
+          to="/group"
+          class="font-semibold text-primary no-underline hover:underline"
+        >
+          {{ $t('profile.looking-for-privacy-settings') }}
+        </NuxtLink>
+      </p>
     </section>
-  </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { ChevronLeftIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import CheckboxField from "~/components/ui/field/CheckboxField.vue";
+import FieldScope from "~/components/ui/field/FieldScope.vue";
+import SelectField from "~/components/ui/field/SelectField.vue";
+import TextField from "~/components/ui/field/TextField.vue";
 import { useUserApi } from "~/composables/api";
 import UserAvatar from "~/components/Domain/User/UserAvatar.vue";
 import UserPasswordStrength from "~/components/Domain/User/UserPasswordStrength.vue";
@@ -232,7 +158,6 @@ import { useUserActivityPreferences } from "~/composables/use-users/preferences"
 import useDefaultActivity from "~/composables/use-default-activity";
 import { ActivityKey } from "~/lib/api/types/activity";
 import type { UserBase } from "~/lib/api/types/user";
-import type { VForm } from "~/types/auto-forms";
 
 definePageMeta({
   middleware: ["auth"],
@@ -260,7 +185,6 @@ watch(user, () => {
 });
 
 const api = useUserApi();
-const showPassword = ref(false);
 const password = reactive({
   current: "",
   newOne: "",
@@ -269,7 +193,7 @@ const password = reactive({
 
 const passwordsMatch = computed(() => password.newOne === password.newTwo && password.newOne.length > 0);
 
-const userUpdate = ref<VForm | null>(null);
+const userUpdate = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 
 async function updateUser() {
   const { valid } = (await userUpdate.value?.validate()) ?? { valid: false };

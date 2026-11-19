@@ -1,286 +1,103 @@
 <template>
-  <v-container v-if="user" class="mb-8">
-    <section class="d-flex flex-column align-center mt-4">
+  <div
+    v-if="user"
+    class="mx-auto flex w-full max-w-[900px] flex-col gap-10 px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8"
+  >
+    <header class="flex flex-wrap items-center gap-4">
       <UserAvatar
         :tooltip="false"
-        size="96"
+        size="72"
         :user-id="user.id"
       />
-
-      <h2 class="text-h4 text-center">
-        {{ $t('profile.welcome-user', [user.fullName]) }}
-      </h2>
-      <p class="subtitle-1 mb-0 text-center">
-        {{ $t('profile.description') }}
-      </p>
-      <v-card
-        flat
-        color="transparent"
-        width="100%"
-        max-width="600px"
+      <div class="min-w-0 flex-1">
+        <h1 class="m-0 text-[26px] font-bold tracking-tight sm:text-[32px]">
+          {{ $t('profile.welcome-user', [user.fullName]) }}
+        </h1>
+        <p class="m-0 mt-1 text-[15px] text-muted-foreground">
+          {{ $t('profile.description') }}
+        </p>
+      </div>
+      <Button
+        v-if="user.canInvite"
+        variant="outline"
+        @click="inviteDialog = true"
       >
-        <v-card-actions class="d-flex justify-center my-4">
-          <v-btn
-            v-if="user.canInvite"
-            variant="outlined"
-            rounded
-            :prepend-icon="$globals.icons.createAlt"
-            :text="$t('profile.get-invite-link')"
-            @click="inviteDialog = true"
-          />
-        </v-card-actions>
-        <UserInviteDialog v-model="inviteDialog" />
-      </v-card>
-    </section>
-    <section class="my-3">
-      <div>
-        <h3 class="text-h5">
-          {{ $t('profile.account-summary') }}
-        </h3>
-        <p>{{ $t('profile.account-summary-description') }}</p>
+        <MdiIcon
+          :path="$globals.icons.accountPlusOutline"
+          class="size-4"
+        />
+        {{ $t('profile.get-invite-link') }}
+      </Button>
+      <UserInviteDialog v-model="inviteDialog" />
+    </header>
+
+    <section v-if="Object.keys(filteredStats).length">
+      <h2 class="m-0 text-base font-semibold">
+        {{ $t('profile.household-statistics') }}
+      </h2>
+      <p class="m-0 mt-1 mb-3 text-sm text-muted-foreground">
+        {{ $t('profile.household-statistics-description') }}
+      </p>
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+        <NuxtLink
+          v-for="(value, key) in filteredStats"
+          :key="key"
+          :to="getStatsTo(key)"
+          class="flex flex-col gap-1 rounded-card border bg-card px-4 py-3 text-foreground no-underline transition-colors hover:border-primary/50"
+        >
+          <span class="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <MdiIcon
+              :path="getStatsIcon(key)"
+              class="size-4"
+            />
+            {{ getStatsTitle(key) }}
+          </span>
+          <span class="text-[26px] font-bold tabular-nums">{{ value }}</span>
+        </NuxtLink>
       </div>
-      <v-row tag="section">
-        <v-col
-          cols="12"
-          sm="12"
-          md="12"
-        >
-          <v-card variant="outlined" style="border-color: lightgray;" class="mt-4 pa-2">
-            <v-card-title class="text-h6 pb-0">
-              {{ $t('profile.household-statistics') }}
-            </v-card-title>
-            <v-card-text class="py-0">
-              {{ $t('profile.household-statistics-description') }}
-            </v-card-text>
-            <v-card-text
-              class="d-flex flex-wrap justify-center align-center"
-              style="gap: 0.8rem"
-            >
-              <StatsCards
-                v-for="(value, key) in filteredStats"
-                :key="`${key}-${value}`"
-                :min-width="$vuetify.display.xs ? '100%' : '158'"
-                :icon="getStatsIcon(key)"
-                :to="getStatsTo(key)"
-              >
-                <template #title>
-                  {{ getStatsTitle(key) }}
-                </template>
-                <template #value>
-                  {{ value }}
-                </template>
-              </StatsCards>
-            </v-card-text>
-          </v-card>
-        </v-col>
-      </v-row>
     </section>
-    <v-divider class="my-7" />
-    <section>
-      <div>
-        <h3 class="text-h6">
-          {{ $t('profile.personal') }}
-        </h3>
-        <p>{{ $t('profile.personal-description') }}</p>
+
+    <section
+      v-for="section in sections"
+      :key="section.title"
+    >
+      <h2 class="m-0 text-base font-semibold">
+        {{ section.title }}
+      </h2>
+      <p class="m-0 mt-1 mb-3 text-sm text-muted-foreground">
+        {{ section.description }}
+      </p>
+      <div class="grid gap-2 sm:grid-cols-2">
+        <NuxtLink
+          v-for="link in section.links"
+          :key="link.to"
+          :to="link.to"
+          class="group flex items-start gap-3 rounded-card border bg-card p-4 text-foreground no-underline transition-colors hover:border-primary/50 hover:bg-primary/5"
+        >
+          <span class="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-subtle text-subtle-foreground">
+            <MdiIcon
+              :path="link.icon"
+              class="size-5"
+            />
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block font-semibold">{{ link.title }}</span>
+            <span class="mt-0.5 block text-sm text-muted-foreground">{{ link.description }}</span>
+          </span>
+          <ChevronRightIcon class="mt-2.5 size-4 shrink-0 text-muted-foreground group-hover:text-foreground rtl:rotate-180" />
+        </NuxtLink>
       </div>
-      <v-row tag="section">
-        <v-col
-          cols="12"
-          sm="12"
-          md="6"
-        >
-          <UserProfileLinkCard
-            :link="{ text: $t('profile.manage-user-profile'), to: `/user/profile/edit` }"
-            image="/svgs/manage-profile.svg"
-          >
-            <template #title>
-              {{ $t('profile.user-settings') }}
-            </template>
-            {{ $t('profile.user-settings-description') }}
-          </UserProfileLinkCard>
-        </v-col>
-        <AdvancedOnly>
-          <v-col
-            cols="12"
-            sm="12"
-            md="6"
-          >
-            <UserProfileLinkCard
-              :link="{ text: $t('profile.manage-your-api-tokens'), to: `/user/profile/api-tokens` }"
-              image="/svgs/manage-api-tokens.svg"
-            >
-              <template #title>
-                {{ $t('settings.token.api-tokens') }}
-              </template>
-              {{ $t('profile.api-tokens-description') }}
-            </UserProfileLinkCard>
-          </v-col>
-        </AdvancedOnly>
-      </v-row>
     </section>
-    <v-divider class="my-7" />
-    <section>
-      <div>
-        <h3 class="text-h6">
-          {{ $t('household.household') }}
-        </h3>
-        <p>{{ $t('profile.household-description') }}</p>
-      </div>
-      <v-row tag="section">
-        <v-col
-          v-if="user.canManageHousehold"
-          cols="12"
-          sm="12"
-          md="6"
-        >
-          <UserProfileLinkCard
-            :link="{ text: $t('profile.household-settings'), to: `/household` }"
-            image="/svgs/manage-group-settings.svg"
-          >
-            <template #title>
-              {{ $t('profile.household-settings') }}
-            </template>
-            {{ $t('profile.household-settings-description') }}
-          </UserProfileLinkCard>
-        </v-col>
-        <v-col
-          cols="12"
-          sm="12"
-          md="6"
-        >
-          <UserProfileLinkCard
-            :link="{ text: $t('profile.manage-cookbooks'), to: `/g/${groupSlug}/cookbooks` }"
-            image="/svgs/manage-cookbooks.svg"
-          >
-            <template #title>
-              {{ $t('sidebar.cookbooks') }}
-            </template>
-            {{ $t('profile.cookbooks-description') }}
-          </UserProfileLinkCard>
-        </v-col>
-        <v-col
-          v-if="user.canManage"
-          cols="12"
-          sm="12"
-          md="6"
-        >
-          <UserProfileLinkCard
-            :link="{ text: $t('profile.manage-members'), to: `/household/members` }"
-            image="/svgs/manage-members.svg"
-          >
-            <template #title>
-              {{ $t('profile.members') }}
-            </template>
-            {{ $t('profile.members-description') }}
-          </UserProfileLinkCard>
-        </v-col>
-        <AdvancedOnly>
-          <v-col
-            v-if="user.canManageHousehold"
-            cols="12"
-            sm="12"
-            md="6"
-          >
-            <UserProfileLinkCard
-              :link="{ text: $t('profile.manage-webhooks'), to: `/household/webhooks` }"
-              image="/svgs/manage-webhooks.svg"
-            >
-              <template #title>
-                {{ $t('settings.webhooks.webhooks') }}
-              </template>
-              {{ $t('profile.webhooks-description') }}
-            </UserProfileLinkCard>
-          </v-col>
-        </AdvancedOnly>
-        <AdvancedOnly>
-          <v-col
-            v-if="user.canManageHousehold"
-            cols="12"
-            sm="12"
-            md="6"
-          >
-            <UserProfileLinkCard
-              :link="{ text: $t('profile.manage-notifiers'), to: `/household/notifiers` }"
-              image="/svgs/manage-notifiers.svg"
-            >
-              <template #title>
-                {{ $t('profile.notifiers') }}
-              </template>
-              {{ $t('profile.notifiers-description') }}
-            </UserProfileLinkCard>
-          </v-col>
-        </AdvancedOnly>
-      </v-row>
-    </section>
-    <v-divider class="my-7" />
-    <section v-if="user.canManage || user.canOrganize || user.advanced">
-      <div>
-        <h3 class="text-h6">
-          {{ $t('group.group') }}
-        </h3>
-        <p>{{ $t('profile.group-description') }}</p>
-      </div>
-      <v-row tag="section">
-        <v-col
-          v-if="user.canManage"
-          cols="12"
-          sm="12"
-          md="6"
-        >
-          <UserProfileLinkCard
-            :link="{ text: $t('profile.group-settings'), to: `/group` }"
-            image="/svgs/manage-group-settings.svg"
-          >
-            <template #title>
-              {{ $t('profile.group-settings') }}
-            </template>
-            {{ $t('profile.group-settings-description') }}
-          </UserProfileLinkCard>
-        </v-col>
-        <v-col
-          v-if="user.canOrganize"
-          cols="12"
-          sm="12"
-          md="6"
-        >
-          <UserProfileLinkCard
-            :link="{ text: $t('profile.manage-data'), to: `/group/data/foods` }"
-            image="/svgs/manage-recipes.svg"
-          >
-            <template #title>
-              {{ $t('profile.manage-data') }}
-            </template>
-            {{ $t('profile.manage-data-description') }}
-          </UserProfileLinkCard>
-        </v-col>
-        <AdvancedOnly>
-          <v-col
-            cols="12"
-            sm="12"
-            md="6"
-          >
-            <UserProfileLinkCard
-              :link="{ text: $t('profile.manage-data-migrations'), to: `/group/migrations` }"
-              image="/svgs/manage-data-migrations.svg"
-            >
-              <template #title>
-                {{ $t('profile.data-migrations') }}
-              </template>
-              {{ $t('profile.data-migrations-description') }}
-            </UserProfileLinkCard>
-          </v-col>
-        </AdvancedOnly>
-      </v-row>
-    </section>
-  </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">
-import UserProfileLinkCard from "@/components/Domain/User/UserProfileLinkCard.vue";
+import { ChevronRightIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { useUserApi } from "~/composables/api";
 import UserAvatar from "@/components/Domain/User/UserAvatar.vue";
 import { useAsyncKey } from "~/composables/use-utils";
-import StatsCards from "~/components/global/StatsCards.vue";
 import type { UserOut } from "~/lib/api/types/user";
 import UserInviteDialog from "~/components/Domain/User/UserInviteDialog.vue";
 
@@ -372,4 +189,46 @@ const statsTo = computed<{ [key: string]: string }>(() => {
 function getStatsTo(key: string) {
   return statsTo.value[key] ?? "unknown";
 }
+
+// Each section lists only the pages this user can open, as the old cards did
+const sections = computed(() => {
+  const u = user.value;
+  if (!u) {
+    return [];
+  }
+  const advanced = !!u.advanced;
+  const all = [
+    {
+      title: i18n.t("profile.personal"),
+      description: i18n.t("profile.personal-description"),
+      links: [
+        { show: true, to: "/user/profile/edit", icon: $globals.icons.user, title: i18n.t("profile.user-settings"), description: i18n.t("profile.user-settings-description") },
+        { show: advanced, to: "/user/profile/api-tokens", icon: $globals.icons.api, title: i18n.t("settings.token.api-tokens"), description: i18n.t("profile.api-tokens-description") },
+      ],
+    },
+    {
+      title: i18n.t("household.household"),
+      description: i18n.t("profile.household-description"),
+      links: [
+        { show: !!u.canManageHousehold, to: "/household", icon: $globals.icons.household, title: i18n.t("profile.household-settings"), description: i18n.t("profile.household-settings-description") },
+        { show: true, to: `/g/${groupSlug.value}/cookbooks`, icon: $globals.icons.book, title: i18n.t("sidebar.cookbooks"), description: i18n.t("profile.cookbooks-description") },
+        { show: !!u.canManage, to: "/household/members", icon: $globals.icons.group, title: i18n.t("profile.members"), description: i18n.t("profile.members-description") },
+        { show: advanced && !!u.canManageHousehold, to: "/household/webhooks", icon: $globals.icons.webhook, title: i18n.t("settings.webhooks.webhooks"), description: i18n.t("profile.webhooks-description") },
+        { show: advanced && !!u.canManageHousehold, to: "/household/notifiers", icon: $globals.icons.bellPlus, title: i18n.t("profile.notifiers"), description: i18n.t("profile.notifiers-description") },
+      ],
+    },
+    {
+      title: i18n.t("group.group"),
+      description: i18n.t("profile.group-description"),
+      links: [
+        { show: !!u.canManage, to: "/group", icon: $globals.icons.cog, title: i18n.t("profile.group-settings"), description: i18n.t("profile.group-settings-description") },
+        { show: !!u.canOrganize, to: "/group/data/foods", icon: $globals.icons.database, title: i18n.t("profile.manage-data"), description: i18n.t("profile.manage-data-description") },
+        { show: advanced, to: "/group/migrations", icon: $globals.icons.import, title: i18n.t("profile.data-migrations"), description: i18n.t("profile.data-migrations-description") },
+      ],
+    },
+  ];
+  return all
+    .map(section => ({ ...section, links: section.links.filter(link => link.show) }))
+    .filter(section => section.links.length);
+});
 </script>

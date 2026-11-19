@@ -4,6 +4,16 @@ Route: `/user/profile`. Source: [profile/index.vue](../../frontend/app/pages/use
 Access: authenticated users. Layout: default application shell; see [shared shell](../shared-shell.md).
 Status: source contract and visual references reviewed; runtime validation remains in the checklists below.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Centred 96px avatar and welcome text with a rounded outlined invite button below. | A header row: avatar, welcome and description, and Get Invite Link on the right. |
+| Household statistics in an outlined card of Vuetify stat cards. | A row of linked stat tiles (icon, label, big number). |
+| Destination cards with large illustrations in a two-column Vuetify grid, separated by dividers. | Each section (Personal, Household, Group) lists linked rows with an icon, title, description and chevron, two per row on wider screens. Sections with nothing the user can open are left out, as before. |
+| Invite dialog with filled selects and a copy button beside a filled field. | Labelled selects, the link in a read-only monospace field that selects on focus with Copy beside it, and "Or email the invite to" with an Invite button. |
+
+
 ## Functions to preserve
 
 - Display the user's avatar, full name, welcome message, and account-summary description.

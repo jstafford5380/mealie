@@ -4,6 +4,17 @@ Route: `/user/profile/edit`. Source: [edit.vue](../../frontend/app/pages/user/pr
 Access: authenticated users. Layout: [shared application shell](../shared-shell.md).
 Status: source contract and visual references reviewed; runtime validation remains in the checklists below.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| A toggle button switched the page between personal information and password. | Both are shown as separate panels, each with its own Update / Change Password button; they validate separately. |
+| Avatar with an Upload button under it. | Avatar, page title and a "Change photo" button in one header row. |
+| Underlined fields; separate eye icons on every password field. | Labelled fields; each password field has its own show/hide. The strength meter sits under the new password. |
+| Default activity as a free-text combobox. | A select of the available activities. |
+| "Back to profile" as a rounded button at the bottom. | A back link above the title. |
+
+
 ## Avatar
 
 - Show the current avatar.

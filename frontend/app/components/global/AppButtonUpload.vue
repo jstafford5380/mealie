@@ -1,32 +1,39 @@
 <template>
-  <v-form ref="form">
+  <div class="inline-flex">
     <input
       ref="uploader"
-      class="d-none"
+      class="display-none"
       type="file"
       :accept="accept"
       :multiple="multiple"
       @change="onFileChanged"
     >
     <slot v-bind="{ isSelecting, onButtonClick }">
-      <v-btn
-        :loading="isSelecting"
-        :small="small"
-        :color="color"
-        :variant="textBtn ? 'text' : 'elevated'"
-        :disabled="disabled"
+      <Button
+        :size="small ? 'sm' : 'default'"
+        :variant="textBtn ? 'ghost' : 'outline'"
+        :disabled="disabled || isSelecting"
         @click="onButtonClick"
       >
-        <v-icon start>
-          {{ effIcon }}
-        </v-icon>
+        <LoaderCircleIcon
+          v-if="isSelecting"
+          class="size-4 animate-spin"
+        />
+        <MdiIcon
+          v-else
+          :path="effIcon"
+          class="size-4"
+        />
         {{ text ? text : defaultText }}
-      </v-btn>
+      </Button>
     </slot>
-  </v-form>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { LoaderCircleIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { useUserApi } from "~/composables/api";
 
 const UPLOAD_EVENT = "uploaded";
