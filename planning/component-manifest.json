@@ -4473,24 +4473,20 @@
     {
       "source": "frontend/app/components/Layout/LayoutParts/TheSnackbar.vue",
       "name": "TheSnackbar",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-icon",
-        "v-progress-linear",
-        "v-snackbar"
+      "components": [
+        "Toaster",
+        "Transition",
+        "XIcon"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [
-        "click: () => {\n            toastAlert.action?.onClick();\n            toastAlert.open = false\n          }",
         "click: toastLoading.open = false"
       ],
-      "models": [
-        "toastAlert.open",
-        "toastLoading.open"
-      ],
+      "models": [],
       "conditions": [
-        "icon"
+        "toastLoading.open",
+        "toastLoading.title"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": []
@@ -4559,15 +4555,16 @@
     {
       "source": "frontend/app/components/global/AppLoader.vue",
       "name": "AppLoader",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-icon",
-        "v-progress-circular"
+      "components": [
+        "Loader2Icon"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [],
       "models": [],
-      "conditions": [],
+      "conditions": [
+        "(small || tiny) && !$slots.default"
+      ],
       "dynamicComponents": [],
       "vuetifyAPIs": []
     },
@@ -4695,19 +4692,23 @@
     {
       "source": "frontend/app/components/global/BaseButton.vue",
       "name": "BaseButton",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-icon"
+      "components": [
+        "Button",
+        "ButtonVariants",
+        "MdiIcon",
+        "Spinner",
+        "Variant"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [
         "click: download ? downloadFile() : undefined"
       ],
       "models": [],
       "conditions": [
-        "!iconRight",
-        "iconRight"
+        "!iconRight && iconPath",
+        "iconRight && iconPath && !loading",
+        "loading"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": []
@@ -4716,49 +4717,49 @@
       "source": "frontend/app/components/global/BaseButtonGroup.vue",
       "name": "BaseButtonGroup",
       "components": [
-        "BaseMenu"
+        "BaseMenu",
+        "Button",
+        "MdiIcon",
+        "Spinner",
+        "Tooltip",
+        "TooltipContent",
+        "TooltipProvider",
+        "TooltipTrigger"
       ],
       "dependencies": [
         "frontend/app/components/global/BaseMenu.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-icon",
-        "v-item-group",
-        "v-tooltip"
-      ],
+      "vuetify": [],
       "events": [
         "click: $emit(btn.event)",
         "menu: (childEvent) => $emit(childEvent)"
       ],
       "models": [],
       "conditions": [
-        "btn.children"
+        "btn.children",
+        "btn.loading"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "v-tooltip"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/global/BaseCardSectionTitle.vue",
       "name": "BaseCardSectionTitle",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-card",
-        "v-card-text",
-        "v-card-title",
-        "v-divider",
-        "v-icon"
+      "components": [
+        "MdiIcon",
+        "Separator"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
         "$slots.default",
         "icon"
       ],
-      "dynamicComponents": [],
+      "dynamicComponents": [
+        "size === 'large' ? 'h2' : 'h3'"
+      ],
       "vuetifyAPIs": []
     },
     {
@@ -4766,54 +4767,53 @@
       "name": "BaseDialog",
       "components": [
         "BaseDialogContent",
+        "DialogClose",
+        "DialogContent",
         "DialogEmits",
-        "DialogProps"
+        "DialogOverlay",
+        "DialogPortal",
+        "DialogProps",
+        "DialogRoot",
+        "HTMLElement",
+        "Transition",
+        "XIcon"
       ],
       "dependencies": [
         "frontend/app/components/global/BaseDialogContent.vue"
       ],
-      "vuetify": [
-        "v-bottom-sheet",
-        "v-dialog"
-      ],
+      "vuetify": [],
       "events": [
-        "click:outside: emit('cancel')",
-        "keydown.enter: submitOnEnter",
-        "keydown.esc: emit('cancel')"
+        "click: emit('cancel')",
+        "escape-key-down: onEscape",
+        "focus-outside: keepOpenForVuetifyOverlay",
+        "interact-outside: keepOpenForVuetifyOverlay",
+        "keydown.enter: onEnter",
+        "pointer-down-outside: onPointerDownOutside"
       ],
       "models": [
         "dialog"
       ],
       "conditions": [
-        "bottomSheet && $vuetify.display.xs"
+        "$slots['card-actions']",
+        "dialog"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/global/BaseDialogContent.vue",
       "name": "BaseDialogContent",
       "components": [
         "BaseButton",
+        "Button",
         "DialogEmits",
-        "DialogProps"
+        "DialogProps",
+        "MdiIcon"
       ],
       "dependencies": [
         "frontend/app/components/global/BaseButton.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-card-actions",
-        "v-divider",
-        "v-icon",
-        "v-progress-linear",
-        "v-spacer",
-        "v-toolbar",
-        "v-toolbar-title"
-      ],
+      "vuetify": [],
       "events": [
         "click: emit('cancel')",
         "click: emit('confirm')",
@@ -4822,25 +4822,25 @@
       ],
       "models": [],
       "conditions": [
-        "!$vuetify.display.xs",
+        "!isXs",
         "canConfirm",
         "canDelete",
         "canSubmit",
+        "icon",
+        "loading",
         "submitIcon"
       ],
-      "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ]
+      "dynamicComponents": [
+        "titleComponent"
+      ],
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/global/BaseDivider.vue",
       "name": "BaseDivider",
       "components": [],
       "dependencies": [],
-      "vuetify": [
-        "v-divider"
-      ],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [],
@@ -4894,23 +4894,47 @@
       "source": "frontend/app/components/global/BaseMenu.vue",
       "name": "BaseMenu",
       "components": [
-        "BaseMenu"
+        "BaseMenuItems",
+        "Button",
+        "DropdownMenu",
+        "DropdownMenuContent",
+        "DropdownMenuTrigger",
+        "MdiIcon",
+        "Spinner"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseMenu.vue"
+        "frontend/app/components/global/BaseMenuItems.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-divider",
-        "v-icon",
-        "v-list",
-        "v-list-item",
-        "v-list-item-title",
-        "v-menu"
-      ],
+      "vuetify": [],
       "events": [
-        "click: $emit('menu', child.event)",
         "menu: (childEvent) => $emit('menu', childEvent)"
+      ],
+      "models": [],
+      "conditions": [
+        "activator.loading || children.some(({ loading }) => loading)"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/BaseMenuItems.vue",
+      "name": "BaseMenuItems",
+      "components": [
+        "BaseMenuItems",
+        "DropdownMenuItem",
+        "DropdownMenuSeparator",
+        "DropdownMenuSub",
+        "DropdownMenuSubContent",
+        "DropdownMenuSubTrigger",
+        "MdiIcon"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseMenuItems.vue"
+      ],
+      "vuetify": [],
+      "events": [
+        "menu: (childEvent) => $emit('menu', childEvent)",
+        "select: $emit('menu', child.event)"
       ],
       "models": [],
       "conditions": [
@@ -4924,27 +4948,25 @@
       "source": "frontend/app/components/global/BaseOverflowButton.vue",
       "name": "BaseOverflowButton",
       "components": [
-        "MenuItem"
+        "Button",
+        "ChevronDownIcon",
+        "DropdownMenu",
+        "DropdownMenuContent",
+        "DropdownMenuItem",
+        "DropdownMenuSeparator",
+        "DropdownMenuTrigger",
+        "MdiIcon",
+        "MenuItem",
+        "NuxtLink"
       ],
       "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-divider",
-        "v-icon",
-        "v-list",
-        "v-list-item",
-        "v-list-item-title",
-        "v-menu"
-      ],
+      "vuetify": [],
       "events": [
-        "click: $emit(item.event)",
-        "click: setValue(item)"
+        "select: $emit(item.event!)",
+        "select: setValue(item)"
       ],
-      "models": [
-        "itemGroup"
-      ],
+      "models": [],
       "conditions": [
-        "!item.hide",
         "activeObj.icon",
         "item.divider",
         "item.icon",
@@ -4958,14 +4980,16 @@
     {
       "source": "frontend/app/components/global/BasePageTitle.vue",
       "name": "BasePageTitle",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-divider"
+      "components": [
+        "Separator"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
+        "$slots.content",
+        "$slots.default",
         "divider"
       ],
       "dynamicComponents": [],
@@ -4991,18 +5015,18 @@
     {
       "source": "frontend/app/components/global/ContextMenu.vue",
       "name": "ContextMenu",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-icon",
-        "v-list",
-        "v-list-item",
-        "v-list-item-title",
-        "v-menu"
+      "components": [
+        "Button",
+        "DropdownMenu",
+        "DropdownMenuContent",
+        "DropdownMenuItem",
+        "DropdownMenuTrigger",
+        "MdiIcon"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [
-        "click: $emit(item.event)"
+        "select: $emit(item.event)"
       ],
       "models": [],
       "conditions": [],

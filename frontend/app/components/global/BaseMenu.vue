@@ -1,76 +1,49 @@
 <template>
-  <!-- the list already scrolls when the overlay is bounded, but nothing bounds it by default,
-       so a menu taller than the screen simply runs off the bottom -->
-  <v-menu
-    :key="'menu-' + activator.event"
-    active-class="pa-0"
-    start
-    max-height="80vh"
-    :style="stretch ? 'width: 100%;' : ''"
-  >
-    <template #activator="{ props: hoverProps }">
-      <slot name="activator" v-bind="{ props: hoverProps }">
-        <v-btn
-          tile
-          :large="large"
-          icon
-          :color="activator.color"
-          variant="plain"
-          v-bind="hoverProps"
-          :loading="activator.loading || children.some(({ loading }) => loading)"
-        >
-          <v-icon>
-            {{ activator.icon }}
-          </v-icon>
-        </v-btn>
-      </slot>
-    </template>
-    <v-list density="compact">
-      <template
-        v-for="(child, idx) in children"
-        :key="idx"
+  <DropdownMenu :modal="false">
+    <DropdownMenuTrigger as-child>
+      <slot
+        name="activator"
+        v-bind="{ props: {} }"
       >
-        <BaseMenu
-          v-if="child.children"
-          :activator="child"
-          :children="child.children"
-          open-on-hover
-          open-on-focus
-          open-on-click
-          submenu
-          @menu="(childEvent) => $emit('menu', childEvent)"
+        <Button
+          variant="ghost"
+          :size="large ? 'icon-lg' : 'icon'"
+          :aria-label="activator.text"
+          :class="cn(stretch && 'w-full', colorClass(activator.color))"
+          :disabled="activator.disabled"
         >
-          <template #activator="{ props: hoverProps }">
-            <v-list-item
-              density="compact"
-              :prepend-icon="child.icon"
-              :disabled="child.disabled"
-              v-bind="hoverProps"
-            >
-              <v-list-item-title>{{ child.text }}</v-list-item-title>
-            </v-list-item>
-          </template>
-        </BaseMenu>
-        <v-list-item
-          v-else
-          density="compact"
-          :prepend-icon="child.icon"
-          :disabled="child.disabled"
-          @click="$emit('menu', child.event)"
-        >
-          <v-list-item-title>{{ child.text }}</v-list-item-title>
-        </v-list-item>
-        <v-divider
-          v-if="child.divider"
-          :key="`divider-${idx}`"
-          class="my-1"
-        />
-      </template>
-    </v-list>
-  </v-menu>
+          <Spinner
+            v-if="activator.loading || children.some(({ loading }) => loading)"
+            class="size-5"
+          />
+          <MdiIcon
+            v-else
+            :path="activator.icon"
+            class="size-[22px]"
+          />
+        </Button>
+      </slot>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent
+      align="start"
+      class="max-h-[80vh] min-w-48 overflow-y-auto"
+    >
+      <BaseMenuItems
+        :children="children"
+        @menu="(childEvent) => $emit('menu', childEvent)"
+      />
+    </DropdownMenuContent>
+  </DropdownMenu>
 </template>
 
 <script setup lang="ts">
+import { Button } from "~/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "~/components/ui/dropdown-menu";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+import { Spinner } from "~/components/ui/spinner";
+import { cn } from "~/lib/utils";
+import BaseMenuItems from "./BaseMenuItems.vue";
+
 export interface ButtonOption {
   icon?: string;
   color?: string;
@@ -95,4 +68,19 @@ withDefaults(defineProps<{
   large: true,
   stretch: false,
 });
+
+function colorClass(color?: string) {
+  switch (color) {
+    case "error":
+    case "red":
+      return "text-destructive hover:text-destructive";
+    case "success":
+    case "primary":
+      return "text-primary hover:text-primary";
+    case "warning":
+      return "text-brand-strong hover:text-brand-strong";
+    default:
+      return undefined;
+  }
+}
 </script>

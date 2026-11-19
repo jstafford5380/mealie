@@ -74,12 +74,19 @@ function closure(dependencies, seen = new Set()) {
 }
 for (const page of pages) page.componentClosure = closure(page.dependencies);
 
+// Keep replacement statuses ([x]) from the existing inventory when regenerating it.
+const inventoryPath = join(planning, "component-inventory.md");
+const previousStatus = new Map(existsSync(inventoryPath)
+  ? [...readFileSync(inventoryPath, "utf8").matchAll(/^\| \[(.)\] \| \[[^\]]+\]\(\.\.\/([^)]+)\)/gm)].map(match => [match[2], match[1]])
+  : []);
+const statusOf = source => previousStatus.get(source) ?? " ";
+
 writeFileSync(join(planning, "route-manifest.json"), JSON.stringify({ ...previous, pages }, null, 2) + "\n");
 writeFileSync(join(planning, "component-manifest.json"), JSON.stringify({ components: graph }, null, 2) + "\n");
 
 const rows = graph.map(component => {
   const consumers = pages.filter(page => page.componentClosure.includes(component.source));
-  return `| [ ] | [${component.name}](../${component.source}) | ${component.vuetify.map(tag => "`" + tag + "`").join(", ") || "No direct Vuetify tags"} | ${consumers.map(page => "`" + page.id + "`").join(", ") || "Check layouts, dynamic use, and other consumers"} |`;
+  return `| [${statusOf(component.source)}] | [${component.name}](../${component.source}) | ${component.vuetify.map(tag => "`" + tag + "`").join(", ") || "No direct Vuetify tags"} | ${consumers.map(page => "`" + page.id + "`").join(", ") || "Check layouts, dynamic use, and other consumers"} |`;
 });
 writeFileSync(join(planning, "component-inventory.md"), `# Component replacement inventory
 

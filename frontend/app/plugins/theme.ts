@@ -67,6 +67,14 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       __cachedTheme = theme;
     }
     applyTokenOverrides(theme);
+    // Coexistence with Reka UI dialogs (z-index 2050): Vuetify menus and tooltips opened inside
+    // them must stack above. Remove with Vuetify.
+    const defaults = (vuetifyOptions.defaults ?? {}) as Record<string, Record<string, unknown>>;
+    vuetifyOptions.defaults = {
+      ...defaults,
+      VMenu: { ...defaults.VMenu, zIndex: 2400 },
+      VTooltip: { ...defaults.VTooltip, zIndex: 2400 },
+    };
     vuetifyOptions.theme = {
       defaultTheme: nuxtApp.$config.public.useDark ? "dark" : "light",
       variations: {

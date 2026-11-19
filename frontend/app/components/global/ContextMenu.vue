@@ -1,44 +1,46 @@
 <template>
-  <v-menu
-    offset-y
-    start
-    :bottom="!menuTop"
-    :nudge-bottom="!menuTop ? '5' : '0'"
-    :top="menuTop"
-    :nudge-top="menuTop ? '5' : '0'"
-    allow-overflow
-    close-delay="125"
-    content-class="d-print-none"
-  >
-    <template #activator="{ props }">
-      <v-btn
-        size="small"
-        :icon="$globals.icons.dotsVertical"
-        variant="text"
-        dark
-        v-bind="props"
+  <DropdownMenu :modal="false">
+    <DropdownMenuTrigger as-child>
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        class="print:hidden"
+        :aria-label="$t('general.actions')"
         @click.prevent
-      />
-    </template>
-    <v-list density="compact">
-      <v-list-item
+      >
+        <MdiIcon
+          :path="$globals.icons.dotsVertical"
+          class="size-5"
+        />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent
+      :side="menuTop ? 'top' : 'bottom'"
+      align="start"
+      :side-offset="5"
+      class="min-w-44 print:hidden"
+    >
+      <DropdownMenuItem
         v-for="(item, index) in items"
         :key="index"
-        @click="$emit(item.event)"
+        @select="$emit(item.event)"
       >
-        <template #prepend>
-          <v-icon :color="item.color ? item.color : undefined">
-            {{ item.icon }}
-          </v-icon>
-        </template>
-        <v-list-item-title>{{ item.title }}</v-list-item-title>
-      </v-list-item>
-    </v-list>
-  </v-menu>
+        <MdiIcon
+          :path="item.icon"
+          class="size-[18px]"
+          :class="iconColor(item.color)"
+        />
+        {{ item.title }}
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
 </template>
 
 <script setup lang="ts">
 import type { ContextMenuItem } from "~/composables/use-context-presents";
+import { Button } from "~/components/ui/button";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "~/components/ui/dropdown-menu";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 
 defineProps({
   items: {
@@ -50,4 +52,19 @@ defineProps({
     default: true,
   },
 });
+
+function iconColor(color?: string) {
+  switch (color) {
+    case "error":
+    case "red":
+      return "text-destructive";
+    case "success":
+    case "primary":
+      return "text-primary";
+    case "warning":
+      return "text-brand-strong";
+    default:
+      return "text-muted-foreground";
+  }
+}
 </script>

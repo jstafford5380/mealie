@@ -1,111 +1,92 @@
 <template>
-  <v-menu offset-y>
-    <template #activator="{ props: hoverProps }">
-      <v-btn
-        color="primary"
-        v-bind="{ ...hoverProps, ...$attrs }"
+  <DropdownMenu :modal="false">
+    <DropdownMenuTrigger as-child>
+      <Button
+        v-bind="buttonAttrs"
+        :variant="variant"
         :class="btnClass"
         :disabled="disabled"
       >
-        <v-icon
+        <MdiIcon
           v-if="activeObj.icon"
-          start
-        >
-          {{ activeObj.icon }}
-        </v-icon>
+          :path="activeObj.icon"
+          class="size-[18px]"
+        />
         {{ mode === MODES.model ? activeObj.text : btnText }}
-        <v-icon end>
-          {{ $globals.icons.chevronDown }}
-        </v-icon>
-      </v-btn>
-    </template>
-    <!-- Model -->
-    <v-list
-      v-if="mode === MODES.model"
-      v-model:selected="itemGroup"
-      density="compact"
+        <ChevronDownIcon class="size-4 opacity-80" />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent
+      align="start"
+      class="max-h-[80vh] min-w-48 overflow-y-auto"
     >
-      <template v-for="(item, index) in items">
-        <div
-          v-if="!item.hide"
-          :key="index"
+      <template
+        v-for="(item, index) in visibleItems"
+        :key="index"
+      >
+        <!-- Model -->
+        <DropdownMenuItem
+          v-if="mode === MODES.model"
+          :class="item.value === modelValue && 'bg-highlight/60 font-semibold text-highlight-foreground'"
+          :aria-current="item.value === modelValue ? 'true' : undefined"
+          @select="setValue(item)"
         >
-          <v-list-item @click="setValue(item)">
-            <template
-              v-if="item.icon"
-              #prepend
-            >
-              <v-icon>{{ item.icon }}</v-icon>
-            </template>
-            <v-list-item-title>{{ item.text }}</v-list-item-title>
-          </v-list-item>
-          <v-divider
-            v-if="item.divider"
-            :key="`divider-${index}`"
-            class="my-1"
+          <MdiIcon
+            v-if="item.icon"
+            :path="item.icon"
+            class="size-[18px]"
           />
-        </div>
-      </template>
-    </v-list>
-    <!-- Links -->
-    <v-list
-      v-else-if="mode === MODES.link"
-      v-model:selected="itemGroup"
-      density="compact"
-    >
-      <template v-for="(item, index) in items">
-        <div
-          v-if="!item.hide"
-          :key="index"
+          {{ item.text }}
+        </DropdownMenuItem>
+        <!-- Links -->
+        <DropdownMenuItem
+          v-else-if="mode === MODES.link"
+          as-child
         >
-          <v-list-item :to="item.to">
-            <template
+          <NuxtLink
+            :to="item.to"
+            active-class="bg-highlight/60 font-semibold text-highlight-foreground"
+          >
+            <MdiIcon
               v-if="item.icon"
-              #prepend
-            >
-              <v-icon>{{ item.icon }}</v-icon>
-            </template>
-            <v-list-item-title>{{ item.text }}</v-list-item-title>
-          </v-list-item>
-          <v-divider
-            v-if="item.divider"
-            :key="`divider-${index}`"
-            class="my-1"
-          />
-        </div>
-      </template>
-    </v-list>
-    <!-- Event -->
-    <v-list
-      v-else-if="mode === MODES.event"
-      density="compact"
-    >
-      <template v-for="(item, index) in items">
-        <div
-          v-if="!item.hide"
-          :key="index"
+              :path="item.icon"
+              class="size-[18px]"
+            />
+            {{ item.text }}
+          </NuxtLink>
+        </DropdownMenuItem>
+        <!-- Event -->
+        <DropdownMenuItem
+          v-else-if="mode === MODES.event"
+          @select="$emit(item.event!)"
         >
-          <v-list-item @click="$emit(item.event)">
-            <template
-              v-if="item.icon"
-              #prepend
-            >
-              <v-icon>{{ item.icon }}</v-icon>
-            </template>
-            <v-list-item-title>{{ item.text }}</v-list-item-title>
-          </v-list-item>
-          <v-divider
-            v-if="item.divider"
-            :key="`divider-${index}`"
-            class="my-1"
+          <MdiIcon
+            v-if="item.icon"
+            :path="item.icon"
+            class="size-[18px]"
           />
-        </div>
+          {{ item.text }}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator v-if="item.divider" />
       </template>
-    </v-list>
-  </v-menu>
+    </DropdownMenuContent>
+  </DropdownMenu>
 </template>
 
 <script setup lang="ts">
+import { ChevronDownIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+
+defineOptions({ inheritAttrs: false });
+
 const MODES = {
   model: "model",
   link: "link",
@@ -158,20 +139,25 @@ const modelValue = defineModel({
   default: "",
 });
 
+const attrs = useAttrs();
+// `color` is the legacy Vuetify colour; it picks the button style and is not passed on.
+const buttonAttrs = computed(() => Object.fromEntries(Object.entries(attrs).filter(([key]) => key !== "color")));
+const variant = computed(() => {
+  const color = String(attrs.color ?? "primary");
+  if (color === "error" || color === "red") {
+    return "destructive";
+  }
+  return color === "primary" || color === "success" ? "default" : "outline";
+});
+
+const visibleItems = computed(() => props.items.filter(item => !item.hide));
+
 const activeObj = computed<MenuItem>(() =>
   props.items.find(item => item.value === modelValue.value) ?? {
     text: "DEFAULT",
     value: "",
   },
 );
-
-let startIndex = 0;
-props.items.forEach((item, index) => {
-  if (item.value === modelValue.value) {
-    startIndex = index;
-  }
-});
-const itemGroup = ref(startIndex);
 
 function setValue(v: MenuItem) {
   modelValue.value = v.value || "";

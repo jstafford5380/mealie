@@ -1,41 +1,56 @@
 <template>
-  <v-card height="100%" :loading="loading">
-    <template #loader="{ isActive }">
-      <v-progress-linear
-        :active="isActive"
-        indeterminate
-      />
-    </template>
-    <v-toolbar
-      dark
-      density="comfortable"
-      :color="color"
-      class="px-3 position-relative top-0 left-0 w-100"
+  <div
+    data-slot="base-dialog-content"
+    class="relative flex h-full max-h-[inherit] min-h-0 flex-col font-sans text-popover-foreground"
+  >
+    <div
+      v-if="loading"
+      class="absolute inset-x-0 top-0 z-10 h-1 overflow-hidden bg-primary/15"
+      role="progressbar"
+      :aria-label="$t('general.loading')"
     >
-      <v-icon size="large">
-        {{ icon }}
-      </v-icon>
-      <v-toolbar-title class="headline">
-        {{ title }}
-      </v-toolbar-title>
-    </v-toolbar>
+      <div class="dialog-loading-bar absolute inset-y-0 w-1/3 bg-primary motion-reduce:w-full motion-reduce:animate-none" />
+    </div>
 
-    <div style="flex: 1 1 auto; min-height: 0; overflow: auto">
+    <header class="flex items-center gap-3 border-b px-5 py-4 pe-14">
+      <span
+        v-if="icon"
+        class="flex size-9 shrink-0 items-center justify-center rounded-control"
+        :class="tone.icon"
+      >
+        <MdiIcon
+          :path="icon"
+          class="size-5"
+        />
+      </span>
+      <component
+        :is="titleComponent"
+        class="m-0 min-w-0 flex-1 text-lg font-semibold leading-tight tracking-tight"
+      >
+        {{ title }}
+      </component>
+    </header>
+
+    <div class="min-h-0 flex-1 overflow-auto">
       <slot />
     </div>
 
-    <v-spacer />
-    <v-divider />
-    <v-card-actions :class="$vuetify.display.xs ? 'pb-4 grid-small' : undefined">
+    <footer
+      class="flex items-center gap-2 border-t px-5 py-3"
+      :class="isXs ? 'grid auto-cols-fr grid-flow-col pb-4' : ''"
+    >
       <slot name="card-actions">
-        <v-btn
-          variant="text"
-          color="grey"
+        <Button
+          variant="ghost"
+          type="button"
           @click="emit('cancel')"
         >
           {{ cancelLabel }}
-        </v-btn>
-        <v-spacer v-if="!$vuetify.display.xs" />
+        </Button>
+        <span
+          v-if="!isXs"
+          class="flex-1"
+        />
         <slot name="custom-card-action" />
         <BaseButton
           v-if="canDelete"
@@ -44,7 +59,7 @@
         />
         <BaseButton
           v-if="canConfirm"
-          :color="color"
+          :color="color === 'primary' ? 'success' : color"
           type="submit"
           :disabled="submitDisabled"
           @click="emit('confirm')"
@@ -69,11 +84,15 @@
           </template>
         </BaseButton>
       </slot>
-    </v-card-actions>
-  </v-card>
+    </footer>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { useMediaQuery } from "@vueuse/core";
+import { DialogTitle } from "reka-ui";
+import { Button } from "~/components/ui/button";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { useGlobalI18n } from "~/composables/use-global-i18n";
 
 interface DialogProps {
@@ -94,13 +113,15 @@ interface DialogProps {
   canDelete?: boolean;
   canConfirm?: boolean;
   canSubmit?: boolean;
+
+  /** Set by BaseDialog so the title is announced as the dialog's name. */
+  inDialog?: boolean;
 }
 
 interface DialogEmits {
   (e: "submit" | "cancel" | "confirm" | "delete"): void;
 }
 
-// Using TypeScript interface with withDefaults for props
 const props = withDefaults(defineProps<DialogProps>(), {
   color: "primary",
   title: "Modal Title",
@@ -115,22 +136,42 @@ const props = withDefaults(defineProps<DialogProps>(), {
   canDelete: false,
   canConfirm: false,
   canSubmit: false,
+  inDialog: false,
 });
 const emit = defineEmits<DialogEmits>();
 
 const i18n = useGlobalI18n();
+const isXs = useMediaQuery("(max-width: 599.98px)");
 
+const titleComponent = computed(() => (props.inDialog ? DialogTitle : "h2"));
 const submitLabel = computed(() => props.submitText ?? i18n.t("general.create"));
 const cancelLabel = computed(() => props.cancelText ?? i18n.t("general.cancel"));
+
+/** Legacy colour names tint the header icon; destructive dialogs read as such. */
+const tone = computed(() => {
+  switch (props.color) {
+    case "error":
+    case "red":
+      return { icon: "bg-destructive/12 text-destructive" };
+    case "warning":
+      return { icon: "bg-brand-soft text-brand-strong" };
+    default:
+      return { icon: "bg-highlight text-highlight-foreground" };
+  }
+});
 </script>
 
 <style scoped>
-/* On extra-small displays the dialog is a bottom sheet or fullscreen, so the
-   actions stretch evenly across the full width. Larger displays keep the
-   default v-card-actions flex row, where the spacer pushes the actions right. */
-.grid-small {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(min-content, 1fr);
+.dialog-loading-bar {
+  animation: dialog-loading 1.4s ease-in-out infinite;
+}
+
+@keyframes dialog-loading {
+  0% {
+    left: -33%;
+  }
+  100% {
+    left: 100%;
+  }
 }
 </style>
