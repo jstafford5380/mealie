@@ -1,45 +1,44 @@
 <template>
   <BaseDialog
     v-model="mealplannerDialog"
-    bottom-sheet
     :title="$t('recipe.add-recipe-to-mealplan')"
-    color="primary"
     :icon="$globals.icons.calendar"
     can-confirm
     @confirm="addRecipeToPlan"
   >
-    <v-card-text>
-      <MealPlanDatePicker v-model="pickerModel" :multiple="pickerMultiple" :entry-type="newMealType" />
-      <!-- the dates are part of the label, so they stay with the switch instead of floating above the next field -->
-      <v-switch
+    <div class="flex flex-col gap-4 px-6 pb-2 font-sans">
+      <MealPlanDatePicker
+        v-model="pickerModel"
+        :multiple="pickerMultiple"
+        :entry-type="newMealType"
+      />
+      <label
         v-if="mealPlanPreferences.mode === 'weeks'"
-        v-model="isWeekEntry"
-        color="primary"
-        hide-details
-        class="mb-2"
+        class="flex cursor-pointer items-center justify-between gap-3"
       >
-        <template #label>
-          <div>
-            <div>{{ $t("meal-plan.plan-for-the-whole-week") }}</div>
-            <div v-if="isWeekEntry" class="text-caption text-medium-emphasis">
-              {{ $d(weekRange.start, "short") }} - {{ $d(weekRange.end, "short") }}
-            </div>
-          </div>
-        </template>
-      </v-switch>
-      <v-select
+        <span>
+          <span class="block text-[15px] font-medium">{{ $t("meal-plan.plan-for-the-whole-week") }}</span>
+          <span
+            v-if="isWeekEntry"
+            class="block text-sm text-muted-foreground"
+          >{{ $d(weekRange.start, "short") }} – {{ $d(weekRange.end, "short") }}</span>
+        </span>
+        <Switch v-model="isWeekEntry" />
+      </label>
+      <SelectField
         v-model="newMealType"
-        :return-object="false"
         :items="planTypeOptions"
         :label="$t('recipe.entry-type')"
         item-title="text"
         item-value="value"
       />
-    </v-card-text>
+    </div>
   </BaseDialog>
 </template>
 
 <script setup lang="ts">
+import SelectField from "~/components/ui/field/SelectField.vue";
+import { Switch } from "~/components/ui/switch";
 import { useUserApi } from "~/composables/api";
 import { useMealPlanEntryDates } from "~/composables/use-group-mealplan";
 import { alert } from "~/composables/use-toast";

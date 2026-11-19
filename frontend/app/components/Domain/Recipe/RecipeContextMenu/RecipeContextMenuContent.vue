@@ -1,43 +1,47 @@
 <template>
-  <RecipeDialogShare v-model="shareDialog" :recipe-id="recipeId" :name="name" />
-  <RecipeDialogPrintPreferences v-model="printPreferencesDialog" :recipe="recipeRef" />
+  <!-- Dialogs only: the menu items are drawn by RecipeContextMenu from what this component exposes,
+       so the dialogs stay mounted after the menu closes. -->
+  <RecipeDialogShare
+    v-model="shareDialog"
+    :recipe-id="recipeId"
+    :name="name"
+  />
+  <RecipeDialogPrintPreferences
+    v-model="printPreferencesDialog"
+    :recipe="recipeRef"
+  />
   <BaseDialog
     v-model="recipeDeleteDialog"
-    bottom-sheet
     :title="$t('recipe.delete-recipe')"
     color="error"
     :icon="$globals.icons.alertCircle"
-    can-confirm
-    @confirm="deleteRecipe()"
+    can-delete
+    @delete="deleteRecipe()"
   >
-    <v-card-text>
-      <template v-if="isAdminAndNotOwner">
-        {{ $t("recipe.admin-delete-confirmation") }}
-      </template>
-      <template v-else>
-        {{ $t("recipe.delete-confirmation") }}
-      </template>
-    </v-card-text>
+    <p class="m-0 px-6 pb-2 font-sans text-[15px]">
+      {{ isAdminAndNotOwner ? $t("recipe.admin-delete-confirmation") : $t("recipe.delete-confirmation") }}
+    </p>
   </BaseDialog>
   <BaseDialog
     v-model="recipeDuplicateDialog"
-    bottom-sheet
     :title="$t('recipe.duplicate')"
-    color="primary"
     :icon="$globals.icons.duplicate"
     can-confirm
     @confirm="duplicateRecipe()"
   >
-    <v-card-text>
-      <v-text-field
+    <div class="px-6 pb-2">
+      <TextField
         v-model="recipeName"
-        density="compact"
         :label="$t('recipe.recipe-name')"
         autofocus
       />
-    </v-card-text>
+    </div>
   </BaseDialog>
-  <MealPlanAddRecipeDialog v-model="mealplannerDialog" :recipe-id="recipeId" :recipe-scale="recipeScale" />
+  <MealPlanAddRecipeDialog
+    v-model="mealplannerDialog"
+    :recipe-id="recipeId"
+    :recipe-scale="recipeScale"
+  />
   <RecipeDialogAddToShoppingList
     v-if="shoppingLists && recipeRefWithScale"
     v-model="shoppingListDialog"
@@ -45,34 +49,6 @@
     :shopping-lists="shoppingLists"
     @list-created="addShoppingList"
   />
-
-  <v-list density="compact">
-    <v-list-item v-for="(item, index) in menuItems" :key="index" @click="contextMenuEventHandler(item.event)">
-      <template #prepend>
-        <v-icon :color="item.color">
-          {{ item.icon }}
-        </v-icon>
-      </template>
-      <v-list-item-title>{{ item.title }}</v-list-item-title>
-    </v-list-item>
-    <div v-if="useItems.recipeActions && recipeActions && recipeActions.length">
-      <v-divider />
-      <v-list-item
-        v-for="(action, index) in recipeActions"
-        :key="index"
-        @click="executeRecipeAction(action)"
-      >
-        <template #prepend>
-          <v-icon color="undefined">
-            {{ $globals.icons.linkVariantPlus }}
-          </v-icon>
-        </template>
-        <v-list-item-title>
-          {{ action.title }}
-        </v-list-item-title>
-      </v-list-item>
-    </div>
-  </v-list>
 </template>
 
 <script setup lang="ts">
@@ -80,6 +56,7 @@ import { useClipboard, useShare } from "@vueuse/core";
 import RecipeDialogAddToShoppingList from "~/components/Domain/Recipe/RecipeDialogAddToShoppingList.vue";
 import RecipeDialogPrintPreferences from "~/components/Domain/Recipe/RecipeDialogPrintPreferences.vue";
 import RecipeDialogShare from "~/components/Domain/Recipe/RecipeDialogShare.vue";
+import TextField from "~/components/ui/field/TextField.vue";
 import { useUserApi } from "~/composables/api";
 import { useDownloader } from "~/composables/api/use-downloader";
 import { useAddToShoppingListDialog } from "~/composables/shopping-list-page/use-add-to-shopping-list-dialog";
@@ -472,4 +449,6 @@ function contextMenuEventHandler(eventKey: string) {
 }
 
 const recipeActions = groupRecipeActionsStore.recipeActions;
+
+defineExpose({ menuItems, recipeActions, run: contextMenuEventHandler, executeRecipeAction });
 </script>

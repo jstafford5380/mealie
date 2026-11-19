@@ -778,17 +778,16 @@
       "components": [
         "BaseDialog",
         "MealPlanDatePicker",
-        "PlanEntryType"
+        "PlanEntryType",
+        "SelectField",
+        "Switch"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Mealplan/MealPlanDatePicker.vue",
-        "frontend/app/components/global/BaseDialog.vue"
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/ui/field/SelectField.vue"
       ],
-      "vuetify": [
-        "v-card-text",
-        "v-select",
-        "v-switch"
-      ],
+      "vuetify": [],
       "events": [
         "confirm: addRecipeToPlan"
       ],
@@ -809,23 +808,23 @@
       "source": "frontend/app/components/Domain/Mealplan/MealPlanDatePicker.vue",
       "name": "MealPlanDatePicker",
       "components": [
-        "Date"
+        "ChevronLeftIcon",
+        "ChevronRightIcon",
+        "Date",
+        "HTMLElement"
       ],
       "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-date-picker"
-      ],
+      "vuetify": [],
       "events": [
-        "click: nextMonth",
-        "click: prevMonth",
-        "update:month: updateMonth",
-        "update:year: updateYear"
+        "click: month = addMonths(month, -1)",
+        "click: month = addMonths(month, 1)",
+        "click: pick(day); focusDay = day",
+        "keydown: onKey"
       ],
-      "models": [
-        "selectedDate"
+      "models": [],
+      "conditions": [
+        "planned[dayKey(day)]"
       ],
-      "conditions": [],
       "dynamicComponents": [],
       "vuetifyAPIs": []
     },
@@ -1271,7 +1270,15 @@
       "source": "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenu.vue",
       "name": "RecipeContextMenu",
       "components": [
+        "ContentApi",
         "ContextMenuIncludes",
+        "ContextMenuItem",
+        "DropdownMenu",
+        "DropdownMenuContent",
+        "DropdownMenuItem",
+        "DropdownMenuSeparator",
+        "DropdownMenuTrigger",
+        "GroupRecipeActionOut",
         "MdiIcon",
         "Props",
         "RecipeContextMenuContent"
@@ -1279,19 +1286,24 @@
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenuContent.vue"
       ],
-      "vuetify": [
-        "v-menu"
-      ],
+      "vuetify": [],
       "events": [
         "deleted: $emit('deleted', $event)",
+        "focus: load",
         "mealplan-edit: $emit('mealplanEdit')",
         "mealplan-remove: $emit('mealplanRemove')",
+        "pointerenter: load",
         "print: $emit('print')",
-        "update:model-value: onMenuToggle"
+        "select: content?.executeRecipeAction(action)",
+        "select: content?.run(item.event)"
       ],
-      "models": [],
+      "models": [
+        "open"
+      ],
       "conditions": [
-        "isMenuContentLoaded"
+        "!items.length",
+        "isMenuContentLoaded",
+        "useItems.recipeActions && actions.length"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": []
@@ -1308,29 +1320,21 @@
         "RecipeDialogAddToShoppingList",
         "RecipeDialogPrintPreferences",
         "RecipeDialogShare",
-        "RecipeOut"
+        "RecipeOut",
+        "TextField"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Mealplan/MealPlanAddRecipeDialog.vue",
         "frontend/app/components/Domain/Recipe/RecipeDialogAddToShoppingList.vue",
         "frontend/app/components/Domain/Recipe/RecipeDialogPrintPreferences.vue",
         "frontend/app/components/Domain/Recipe/RecipeDialogShare.vue",
-        "frontend/app/components/global/BaseDialog.vue"
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-card-text",
-        "v-divider",
-        "v-icon",
-        "v-list",
-        "v-list-item",
-        "v-list-item-title",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
-        "click: contextMenuEventHandler(item.event)",
-        "click: executeRecipeAction(action)",
-        "confirm: deleteRecipe()",
         "confirm: duplicateRecipe()",
+        "delete: deleteRecipe()",
         "list-created: addShoppingList"
       ],
       "models": [
@@ -1343,9 +1347,7 @@
         "shoppingListDialog"
       ],
       "conditions": [
-        "isAdminAndNotOwner",
-        "shoppingLists && recipeRefWithScale",
-        "useItems.recipeActions && recipeActions && recipeActions.length"
+        "shoppingLists && recipeRefWithScale"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": []
@@ -1451,54 +1453,40 @@
       "source": "frontend/app/components/Domain/Recipe/RecipeDialogAddToShoppingList.vue",
       "name": "RecipeDialogAddToShoppingList",
       "components": [
-        "BaseButtonGroup",
         "BaseDialog",
-        "BasePageTitle",
+        "Button",
+        "Checkbox",
+        "ChevronRightIcon",
+        "MdiIcon",
+        "PlusIcon",
         "Props",
         "RecipeDraft",
         "RecipeIngredientListItem",
         "ShoppingListRecipeIngredientSection",
-        "ShoppingListSummary"
+        "ShoppingListSummary",
+        "TextField"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipeIngredientListItem.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
         "frontend/app/components/global/BaseDialog.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-card-text",
-        "v-card-title",
-        "v-checkbox",
-        "v-col",
-        "v-container",
-        "v-divider",
-        "v-expand-transition",
-        "v-icon",
-        "v-list-item",
-        "v-row",
-        "v-text-field",
-        "v-tooltip"
-      ],
+      "vuetify": [],
       "events": [
-        "check: bulkCheckIngredients(true)",
-        "click: createAndOpenList",
+        "click: bulkCheckIngredients(false)",
+        "click: bulkCheckIngredients(true)",
         "click: dialog = false",
         "click: newListForm.show = true",
         "click: openShoppingListIngredientDialog(list)",
-        "click: recipeIngredientSections[recipeSectionIndex]\n                    .ingredientSections[ingredientSectionIndex]\n                    .ingredients[i].checked = !recipeIngredientSections[recipeSectionIndex]\n                      .ingredientSections[ingredientSectionIndex]\n                      .ingredients[i]\n                      .checked",
         "click: resetNewListForm",
-        "click: setShowAllToggled()",
-        "keyup.enter: createAndOpenList",
+        "submit.prevent: createAndOpenList",
         "submit: addRecipesToList()",
-        "uncheck: bulkCheckIngredients(false)"
+        "update:model-value: preferences.viewAllLists = !!$event; setShowAllToggled()"
       ],
       "models": [
         "dialog",
-        "newListForm.name",
-        "preferences.viewAllLists"
+        "ingredientData.checked",
+        "newListForm.name"
       ],
       "conditions": [
         "!filteredShoppingLists.length && !newListForm.show",
@@ -1509,15 +1497,11 @@
         "recipeIngredientSections.length > 1",
         "recipeSection.parentRecipe?.name",
         "recipeSection.recipeScale > 1",
-        "recipeSectionIndex > 0",
         "shoppingListDialog && ready",
         "shoppingListIngredientDialog"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify",
-        "v-tooltip"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/Recipe/RecipeDialogBulkAdd.vue",
@@ -1550,33 +1534,22 @@
       "name": "RecipeDialogPrintPreferences",
       "components": [
         "BaseDialog",
+        "MdiIcon",
         "Props",
-        "RecipePrintView"
+        "RecipePrintView",
+        "Switch"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipePrintView.vue",
         "frontend/app/components/global/BaseDialog.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-btn-toggle",
-        "v-card",
-        "v-col",
-        "v-container",
-        "v-icon",
-        "v-row",
-        "v-switch"
+      "vuetify": [],
+      "events": [
+        "click: preferences.imagePosition = option.value"
       ],
-      "events": [],
       "models": [
         "dialog",
-        "preferences.expandChildRecipes",
-        "preferences.imagePosition",
-        "preferences.showDescription",
-        "preferences.showLinkedIngredients",
-        "preferences.showNotes",
-        "preferences.showNutrition",
-        "preferences.showSubstitutions"
+        "preferences[toggle.key]"
       ],
       "conditions": [],
       "dynamicComponents": [],
@@ -1586,44 +1559,36 @@
       "source": "frontend/app/components/Domain/Recipe/RecipeDialogShare.vue",
       "name": "RecipeDialogShare",
       "components": [
-        "BaseButton",
+        "ArrowLeftIcon",
         "BaseDialog",
+        "Button",
+        "DateField",
+        "MdiIcon",
+        "PlusIcon",
         "Props",
         "RecipeShareTokenOut"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseDialog.vue"
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/ui/field/DateField.vue"
       ],
-      "vuetify": [
-        "v-avatar",
-        "v-btn",
-        "v-card-actions",
-        "v-card-text",
-        "v-date-picker",
-        "v-icon",
-        "v-list-item",
-        "v-list-item-title",
-        "v-menu",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
-        "click.stop: copyTokenLink(token.id)",
-        "click.stop: deleteToken(token.id)",
-        "click.stop: qrCodeToken = token.id",
+        "click: copyTokenLink(token.id)",
         "click: createNewToken",
+        "click: deleteToken(token.id)",
         "click: downloadQrCode",
         "click: qrCodeToken = null",
-        "click: shareRecipe(token.id)",
-        "update:model-value: datePickerMenu = false"
+        "click: qrCodeToken = token.id",
+        "click: shareRecipe(token.id)"
       ],
       "models": [
-        "datePickerMenu",
         "dialog",
         "expirationDate"
       ],
       "conditions": [
-        "qrCodeToken"
+        "qrCodeToken",
+        "tokens.length"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": []
@@ -2035,54 +2000,40 @@
       "source": "frontend/app/components/Domain/Recipe/RecipeLastMade.vue",
       "name": "RecipeLastMade",
       "components": [
-        "AppButtonUpload",
         "BaseDialog",
         "Blob",
+        "Button",
+        "Checkbox",
         "Date",
+        "DateField",
+        "HTMLInputElement",
         "ImageCropper",
         "MdiIcon",
         "RecipeTimelineEventIn",
-        "VForm"
+        "TextareaField"
       ],
       "dependencies": [
-        "frontend/app/components/global/AppButtonUpload.vue",
         "frontend/app/components/global/BaseDialog.vue",
-        "frontend/app/components/global/ImageCropper.vue"
+        "frontend/app/components/global/ImageCropper.vue",
+        "frontend/app/components/ui/field/DateField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card-text",
-        "v-checkbox",
-        "v-col",
-        "v-container",
-        "v-date-picker",
-        "v-form",
-        "v-icon",
-        "v-list",
-        "v-list-item",
-        "v-menu",
-        "v-row",
-        "v-spacer",
-        "v-text-field",
-        "v-textarea"
-      ],
+      "vuetify": [],
       "events": [
-        "click: childRecipe.checked = !childRecipe.checked",
+        "change: onImagePicked",
         "click: clearImage",
         "click: madeThisDialog = true",
+        "click: madeThisImageInput?.click()",
         "save: updateUploadedImage",
-        "submit: createTimelineEvent",
-        "update:model-value: datePickerMenu = false",
-        "uploaded: uploadImage"
+        "submit: createTimelineEvent"
       ],
       "models": [
-        "datePickerMenu",
+        "childRecipe.checked",
         "madeThisDialog",
         "newTimelineEvent.eventMessage",
         "newTimelineEventTimestamp"
       ],
       "conditions": [
-        "!!newTimelineEventImage",
         "!newTimelineEventImage",
         "childRecipes?.length",
         "lastMadeReady",

@@ -1,99 +1,87 @@
 <template>
   <div v-if="dialog">
+    <!-- Step 1: pick a list -->
     <BaseDialog
       v-if="shoppingListDialog && ready"
       v-model="dialog"
-      bottom-sheet
       :title="$t('recipe.add-to-list')"
       :icon="$globals.icons.cartCheck"
     >
-      <v-container v-if="!filteredShoppingLists.length && !newListForm.show">
-        <BasePageTitle>
-          <template #title>
-            {{ $t('shopping-list.no-shopping-lists-found') }}
-          </template>
-        </BasePageTitle>
-      </v-container>
-      <v-card-text>
-        <v-card
+      <div class="flex flex-col gap-2 px-6 pb-2 font-sans">
+        <p
+          v-if="!filteredShoppingLists.length && !newListForm.show"
+          class="m-0 rounded-card border border-dashed px-4 py-6 text-center text-sm text-muted-foreground"
+        >
+          {{ $t('shopping-list.no-shopping-lists-found') }}
+        </p>
+        <button
           v-for="list in filteredShoppingLists"
           :key="list.id"
-          hover
-          class="my-2 left-border"
+          type="button"
+          class="flex items-center gap-3 rounded-card border bg-card px-4 py-3 text-left text-[15px] font-medium transition-colors hover:border-primary/40 hover:bg-highlight/60"
           @click="openShoppingListIngredientDialog(list)"
         >
-          <v-card-title class="py-2">
-            {{ list.name }}
-          </v-card-title>
-        </v-card>
-
-        <v-expand-transition>
-          <div v-if="newListForm.show" class="mt-3">
-            <v-text-field
-              v-model="newListForm.name"
-              :label="$t('shopping-list.new-list-name')"
-              :loading="newListForm.loading"
-              autofocus
-              variant="outlined"
-              density="compact"
-              hide-details
-              @keyup.enter="createAndOpenList"
-            />
-            <div class="d-flex justify-end mt-2 ga-2">
-              <v-btn
-                variant="text"
-                color="grey"
-                size="small"
-                @click="resetNewListForm"
-              >
-                {{ $t("general.cancel") }}
-              </v-btn>
-              <v-btn
-                variant="tonal"
-                color="primary"
-                size="small"
-                :disabled="!newListForm.name.trim()"
-                :loading="newListForm.loading"
-                @click="createAndOpenList"
-              >
-                {{ $t("general.create") }}
-              </v-btn>
-            </div>
-          </div>
-        </v-expand-transition>
-      </v-card-text>
-      <template #card-actions>
-        <v-btn
-          variant="text"
-          color="grey"
-          @click="dialog = false"
-        >
-          {{ $t("general.cancel") }}
-        </v-btn>
-        <div
-          class="d-flex justify-end align-center"
-          style="width: 100%;"
-        >
-          <v-checkbox
-            v-model="preferences.viewAllLists"
-            hide-details
-            :label="$t('general.show-all')"
-            class="my-auto mr-4"
-            @click="setShowAllToggled()"
+          <MdiIcon
+            :path="$globals.icons.cartCheck"
+            class="size-5 text-primary"
           />
-          <v-btn
+          <span class="min-w-0 flex-1 truncate">{{ list.name }}</span>
+          <ChevronRightIcon class="size-4 text-muted-foreground" />
+        </button>
+        <form
+          v-if="newListForm.show"
+          class="mt-2 flex flex-col gap-2"
+          @submit.prevent="createAndOpenList"
+        >
+          <TextField
+            v-model="newListForm.name"
+            :label="$t('shopping-list.new-list-name')"
+            autofocus
+          />
+          <div class="flex justify-end gap-2">
+            <Button
+              variant="ghost"
+              @click="resetNewListForm"
+            >
+              {{ $t("general.cancel") }}
+            </Button>
+            <Button
+              type="submit"
+              :disabled="!newListForm.name.trim() || newListForm.loading"
+            >
+              {{ $t("general.create") }}
+            </Button>
+          </div>
+        </form>
+      </div>
+      <template #card-actions>
+        <div class="flex w-full flex-wrap items-center gap-3">
+          <Button
+            variant="ghost"
+            @click="dialog = false"
+          >
+            {{ $t("general.cancel") }}
+          </Button>
+          <label class="ms-auto flex cursor-pointer items-center gap-2 text-sm">
+            <Checkbox
+              :model-value="preferences.viewAllLists"
+              @update:model-value="preferences.viewAllLists = !!$event; setShowAllToggled()"
+            />
+            {{ $t('general.show-all') }}
+          </label>
+          <Button
             v-if="!newListForm.show"
-            variant="tonal"
-            color="primary"
-            size="small"
-            :prepend-icon="$globals.icons.create"
+            variant="outline"
             @click="newListForm.show = true"
           >
+            <PlusIcon class="size-4" />
             {{ $t("shopping-list.new-list") }}
-          </v-btn>
+          </Button>
         </div>
       </template>
     </BaseDialog>
+
+    <!-- Step 2: choose the ingredients -->
     <BaseDialog
       v-if="shoppingListIngredientDialog"
       v-model="dialog"
@@ -104,137 +92,92 @@
       can-submit
       @submit="addRecipesToList()"
     >
-      <div style="max-height: 70vh;  overflow-y: auto">
-        <v-card
+      <div class="flex max-h-[65vh] flex-col gap-5 overflow-y-auto px-6 pb-2 font-sans">
+        <div class="flex flex-wrap justify-end gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            @click="bulkCheckIngredients(false)"
+          >
+            <MdiIcon
+              :path="$globals.icons.checkboxMultipleBlankOutline"
+              class="size-4"
+            />
+            {{ $t('shopping-list.uncheck-all-items') }}
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            @click="bulkCheckIngredients(true)"
+          >
+            <MdiIcon
+              :path="$globals.icons.checkboxMultipleMarkedOutline"
+              class="size-4"
+            />
+            {{ $t('shopping-list.check-all-items') }}
+          </Button>
+        </div>
+        <section
           v-for="(recipeSection, recipeSectionIndex) in recipeIngredientSections"
           :key="recipeSection.recipeId + recipeSectionIndex"
-          elevation="0"
-          height="fit-content"
-          width="100%"
+          :class="recipeSectionIndex > 0 && 'border-t pt-4'"
         >
-          <v-divider
-            v-if="recipeSectionIndex > 0"
-            class="mt-3"
-          />
-          <v-card-title
+          <h3
             v-if="recipeIngredientSections.length > 1"
-            class="justify-center text-h5"
-            width="100%"
+            class="m-0 mb-2 flex flex-wrap items-baseline gap-2 font-serif text-xl font-normal"
           >
-            <v-container style="width: 100%;">
-              <v-row
-                no-gutters
-                class="ma-0 pa-0"
-              >
-                <v-col
-                  cols="12"
-                  align-self="center"
-                  class="text-center"
-                >
-                  {{ recipeSection.recipeName }}
-                  <v-tooltip v-if="recipeSection.parentRecipe?.name" location="top">
-                    <template #activator="{ props: tooltipProps }">
-                      <v-icon
-                        v-bind="tooltipProps"
-                        size="tiny"
-                        class="mb-2 ml-2"
-                        style="cursor: pointer"
-                      >
-                        {{ $globals.icons.potSteam }}
-                      </v-icon>
-                    </template>
-                    <span>{{ $t("shopping-list.ingredient-of-recipe", { recipe: recipeSection.parentRecipe.name }) }}</span>
-                  </v-tooltip>
-                </v-col>
-              </v-row>
-              <v-row
-                v-if="recipeSection.recipeScale > 1"
-                no-gutters
-                class="ma-0 pa-0"
-              >
-                <!-- TODO: make this editable in the dialog and visible on single-recipe lists -->
-                <v-col
-                  cols="12"
-                  align-self="center"
-                  class="text-center"
-                >
-                  ({{ $t("recipe.quantity") }}: {{ recipeSection.recipeScale }})
-                </v-col>
-              </v-row>
-            </v-container>
-          </v-card-title>
-          <div>
-            <div
-              v-for="(ingredientSection, ingredientSectionIndex) in recipeSection.ingredientSections"
-              :key="recipeSection.recipeId + recipeSectionIndex + ingredientSectionIndex"
+            {{ recipeSection.recipeName }}
+            <span
+              v-if="recipeSection.parentRecipe?.name"
+              class="font-sans text-xs font-semibold text-muted-foreground"
+            >{{ $t("shopping-list.ingredient-of-recipe", { recipe: recipeSection.parentRecipe.name }) }}</span>
+            <span
+              v-if="recipeSection.recipeScale > 1"
+              class="font-sans text-sm text-muted-foreground"
+            >× {{ recipeSection.recipeScale }}</span>
+          </h3>
+          <div
+            v-for="(ingredientSection, ingredientSectionIndex) in recipeSection.ingredientSections"
+            :key="recipeSection.recipeId + recipeSectionIndex + ingredientSectionIndex"
+          >
+            <h4
+              v-if="ingredientSection.sectionName"
+              class="m-0 mb-1 mt-3 text-sm font-semibold text-muted-foreground"
             >
-              <v-card-title
-                v-if="ingredientSection.sectionName"
-                class="ingredient-title mt-2 pb-0 text-h6"
+              {{ ingredientSection.sectionName }}
+            </h4>
+            <div class="grid grid-cols-1 gap-x-6 md:grid-cols-2">
+              <label
+                v-for="(ingredientData, i) in ingredientSection.ingredients"
+                :key="recipeSection.recipeId + recipeSectionIndex + ingredientSectionIndex + i"
+                class="flex cursor-pointer items-start gap-3 rounded-item px-1 py-1.5 hover:bg-highlight/50"
               >
-                {{ ingredientSection.sectionName }}
-              </v-card-title>
-              <div
-                :class="$vuetify.display.smAndDown ? '' : 'ingredient-grid'"
-                :style="$vuetify.display.smAndDown ? '' : { gridTemplateRows: `repeat(${Math.ceil(ingredientSection.ingredients.length / 2)}, min-content)` }"
-              >
-                <v-list-item
-                  v-for="(ingredientData, i) in ingredientSection.ingredients"
-                  :key="recipeSection.recipeId + recipeSectionIndex + ingredientSectionIndex + i"
-                  density="compact"
-                  @click="recipeIngredientSections[recipeSectionIndex]
-                    .ingredientSections[ingredientSectionIndex]
-                    .ingredients[i].checked = !recipeIngredientSections[recipeSectionIndex]
-                      .ingredientSections[ingredientSectionIndex]
-                      .ingredients[i]
-                      .checked"
-                >
-                  <v-container class="pa-0 ma-0">
-                    <v-row no-gutters>
-                      <v-checkbox
-                        hide-details
-                        :model-value="ingredientData.checked"
-                        class="pt-0 my-auto py-auto mr-2"
-                        color="secondary"
-                        density="compact"
-                      />
-                      <div :key="`${ingredientData.ingredient?.quantity || 'no-qty'}-${i}`" class="pa-auto my-auto">
-                        <RecipeIngredientListItem
-                          :ingredient="ingredientData.ingredient"
-                          :scale="recipeSection.recipeScale"
-                        />
-                      </div>
-                    </v-row>
-                  </v-container>
-                </v-list-item>
-              </div>
+                <Checkbox
+                  v-model="ingredientData.checked"
+                  class="mt-0.5 size-5 shrink-0"
+                />
+                <RecipeIngredientListItem
+                  :key="`${ingredientData.ingredient?.quantity || 'no-qty'}-${i}`"
+                  class="min-w-0 flex-1"
+                  :class="!ingredientData.checked && 'opacity-50'"
+                  :ingredient="ingredientData.ingredient"
+                  :scale="recipeSection.recipeScale"
+                />
+              </label>
             </div>
           </div>
-        </v-card>
-      </div>
-      <div class="d-flex justify-end mb-4 mt-2">
-        <BaseButtonGroup
-          :buttons="[
-            {
-              icon: $globals.icons.checkboxMultipleBlankOutline,
-              text: $t('shopping-list.uncheck-all-items'),
-              event: 'uncheck',
-            },
-            {
-              icon: $globals.icons.checkboxMultipleMarkedOutline,
-              text: $t('shopping-list.check-all-items'),
-              event: 'check',
-            },
-          ]"
-          @uncheck="bulkCheckIngredients(false)"
-          @check="bulkCheckIngredients(true)"
-        />
+        </section>
       </div>
     </BaseDialog>
   </div>
 </template>
 
 <script setup lang="ts">
+import { ChevronRightIcon, PlusIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
+import TextField from "~/components/ui/field/TextField.vue";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { toRefs } from "@vueuse/core";
 import { useUserApi } from "~/composables/api";
 import { useNewShoppingListForm } from "~/composables/shopping-list-page/use-add-to-shopping-list-dialog";
@@ -541,12 +484,3 @@ async function addRecipesToList() {
   dialog.value = false;
 }
 </script>
-
-<style scoped lang="css">
-.ingredient-grid {
-  display: grid;
-  grid-auto-flow: column;
-  grid-template-columns: 1fr 1fr;
-  grid-gap: 0.5rem;
-}
-</style>

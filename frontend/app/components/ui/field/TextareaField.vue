@@ -20,6 +20,7 @@ const props = withDefaults(defineProps<{
   /** Grow with the content instead of scrolling. */
   autoGrow?: boolean;
   required?: boolean;
+  autofocus?: boolean;
 }>(), {
   rows: 3,
   autoGrow: true,
@@ -58,6 +59,14 @@ function fitContent() {
 }
 watch(model, () => nextTick(fitContent));
 onMounted(fitContent);
+
+// The autofocus attribute only works on page load; fields shown later (dialogs, toggled forms)
+// focus themselves once the dialog's own initial focus has settled.
+onMounted(() => {
+  if (props.autofocus) {
+    requestAnimationFrame(() => textareaEl.value?.focus());
+  }
+});
 
 defineExpose({ validate: field.validate, reset: field.reset, resetValidation: field.resetValidation });
 </script>

@@ -787,7 +787,10 @@
     "step-duration-unit": "min",
     "add-step": "Add step",
     "no-steps-yet": "No steps yet. Add one below, or paste a list with Bulk add.",
-    "step-options": "Step options"
+    "step-options": "Step options",
+    "image-left": "Image on the left",
+    "image-right": "Image on the right",
+    "image-hidden": "No image"
   },
   "recipe-finder": {
     "recipe-finder": "Recipe Finder",
@@ -1250,7 +1253,9 @@
     "expires-at": "Expires At",
     "show-qr-code": "Show QR Code",
     "scan-qr-code": "Scan with a phone camera to open this recipe",
-    "recipe-link-copied-message": "Recipe link copied to clipboard"
+    "recipe-link-copied-message": "Recipe link copied to clipboard",
+    "share-link-explainer": "Anyone with a link can view this recipe until the link expires.",
+    "create-link": "Create link"
   },
   "banner-experimental": {
     "title": "Experimental Feature",

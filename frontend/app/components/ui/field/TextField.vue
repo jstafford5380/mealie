@@ -53,6 +53,14 @@ const describedBy = computed(() => {
 });
 
 const inputEl = ref<HTMLInputElement | null>(null);
+
+// The autofocus attribute only works on page load; fields shown later (dialogs, toggled forms)
+// focus themselves once the dialog's own initial focus has settled.
+onMounted(() => {
+  if (props.autofocus) {
+    requestAnimationFrame(() => inputEl.value?.focus());
+  }
+});
 function clear() {
   model.value = null;
   emit("click:clear");

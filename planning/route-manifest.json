@@ -925,11 +925,12 @@
         "frontend/app/components/global/BaseDialogContent.vue",
         "frontend/app/components/global/BaseMenu.vue",
         "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
         "frontend/app/components/global/HelpIcon.vue",
         "frontend/app/components/global/SafeInlineHtml.vue",
         "frontend/app/components/global/SafeMarkdown.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/DateField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
         "frontend/app/components/ui/field/TextField.vue"
       ]
     },
@@ -1052,14 +1053,13 @@
         "frontend/app/components/Domain/SearchFilter.vue",
         "frontend/app/components/Layout/LayoutParts/AppScrollToTop.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
         "frontend/app/components/global/SafeInlineHtml.vue",
-        "frontend/app/components/global/SafeMarkdown.vue"
+        "frontend/app/components/global/SafeMarkdown.vue",
+        "frontend/app/components/ui/field/DateField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
@@ -1150,12 +1150,8 @@
         "frontend/app/components/global/AppButtonUpload.vue",
         "frontend/app/components/global/AppLoader.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
         "frontend/app/components/global/DropZone.vue",
         "frontend/app/components/global/ImageCropper.vue",
         "frontend/app/components/global/MarkdownEditor.vue",
@@ -1165,6 +1161,7 @@
         "frontend/app/components/global/Transition/SwipeTransition.vue",
         "frontend/app/components/global/WakelockSwitch.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/DateField.vue",
         "frontend/app/components/ui/field/NumberInputField.vue",
         "frontend/app/components/ui/field/SearchSelect.vue",
         "frontend/app/components/ui/field/SelectField.vue",
@@ -1743,6 +1740,8 @@
         "frontend/app/components/global/SafeInlineHtml.vue",
         "frontend/app/components/global/SafeMarkdown.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/DateField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
         "frontend/app/components/ui/field/TextField.vue"
       ]
     },
@@ -1837,15 +1836,15 @@
         "frontend/app/components/global/AppButtonUpload.vue",
         "frontend/app/components/global/AppLoader.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
         "frontend/app/components/global/BasePageTitle.vue",
         "frontend/app/components/global/ImageCropper.vue",
         "frontend/app/components/global/SafeInlineHtml.vue",
-        "frontend/app/components/global/SafeMarkdown.vue"
+        "frontend/app/components/global/SafeMarkdown.vue",
+        "frontend/app/components/ui/field/DateField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
@@ -1973,12 +1972,8 @@
         "frontend/app/components/global/AppButtonUpload.vue",
         "frontend/app/components/global/AppLoader.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
         "frontend/app/components/global/DropZone.vue",
         "frontend/app/components/global/ImageCropper.vue",
         "frontend/app/components/global/MarkdownEditor.vue",
@@ -1988,6 +1983,7 @@
         "frontend/app/components/global/Transition/SwipeTransition.vue",
         "frontend/app/components/global/WakelockSwitch.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/DateField.vue",
         "frontend/app/components/ui/field/NumberInputField.vue",
         "frontend/app/components/ui/field/SearchSelect.vue",
         "frontend/app/components/ui/field/SelectField.vue",
@@ -2925,9 +2921,9 @@
         "frontend/app/components/global/BaseDialogContent.vue",
         "frontend/app/components/global/BaseMenu.vue",
         "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
         "frontend/app/components/global/DocLink.vue",
-        "frontend/app/components/global/SafeMarkdown.vue"
+        "frontend/app/components/global/SafeMarkdown.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
@@ -3007,10 +3003,10 @@
         "frontend/app/components/global/BaseDialogContent.vue",
         "frontend/app/components/global/BaseMenu.vue",
         "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
         "frontend/app/components/global/SafeInlineHtml.vue",
         "frontend/app/components/global/SafeMarkdown.vue",
-        "frontend/app/components/global/Transition/SpinTransition.vue"
+        "frontend/app/components/global/Transition/SpinTransition.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
@@ -3094,10 +3090,12 @@
         "frontend/app/components/global/BaseDialogContent.vue",
         "frontend/app/components/global/BaseMenu.vue",
         "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
         "frontend/app/components/global/SafeInlineHtml.vue",
         "frontend/app/components/global/SafeMarkdown.vue",
-        "frontend/app/components/global/Transition/SpinTransition.vue"
+        "frontend/app/components/global/Transition/SpinTransition.vue",
+        "frontend/app/components/ui/field/DateField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
@@ -3782,14 +3780,13 @@
         "frontend/app/components/Domain/Recipe/RecipeTimeCard.vue",
         "frontend/app/components/Layout/LayoutParts/AppScrollToTop.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
         "frontend/app/components/global/SafeInlineHtml.vue",
-        "frontend/app/components/global/SafeMarkdown.vue"
+        "frontend/app/components/global/SafeMarkdown.vue",
+        "frontend/app/components/ui/field/DateField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {

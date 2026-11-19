@@ -12,100 +12,79 @@
         disable-submit-on-enter
         @submit="createTimelineEvent"
       >
-        <v-card-text>
-          <v-form ref="domMadeThisForm">
-            <v-textarea
-              v-model="newTimelineEvent.eventMessage"
-              autofocus
-              :label="$t('recipe.comment')"
-              :hint="$t('recipe.how-did-it-turn-out')"
-              persistent-hint
-              rows="4"
-            />
-            <div v-if="childRecipes?.length">
-              <v-card-text class="pt-6 pb-0 text-title-medium">
-                {{ $t('recipe.include-linked-recipes') }}
-              </v-card-text>
-              <v-list>
-                <v-list-item
-                  v-for="(childRecipe, i) in childRecipes"
-                  :key="childRecipe.recipeId + i"
-                  density="compact"
-                  class="my-0 py-0"
-                  @click="childRecipe.checked = !childRecipe.checked"
-                >
-                  <v-checkbox
-                    hide-details
-                    density="compact"
-                    :input-value="childRecipe.checked"
-                    :label="childRecipe.name"
-                    class="my-0 py-0"
-                    color="secondary"
-                  />
-                </v-list-item>
-              </v-list>
+        <div class="flex flex-col gap-4 px-6 pb-2 font-sans">
+          <TextareaField
+            v-model="newTimelineEvent.eventMessage"
+            autofocus
+            :label="$t('recipe.comment')"
+            :hint="$t('recipe.how-did-it-turn-out')"
+            :rows="4"
+          />
+          <div
+            v-if="childRecipes?.length"
+            class="flex flex-col"
+          >
+            <span class="mb-1 text-sm font-semibold">{{ $t('recipe.include-linked-recipes') }}</span>
+            <label
+              v-for="(childRecipe, i) in childRecipes"
+              :key="childRecipe.recipeId + i"
+              class="flex cursor-pointer items-center gap-3 py-1.5 text-[15px]"
+            >
+              <Checkbox
+                v-model="childRecipe.checked"
+                class="size-5"
+              />
+              {{ childRecipe.name }}
+            </label>
+          </div>
+          <div class="flex flex-wrap items-end gap-3">
+            <div class="min-w-44 flex-1">
+              <DateField
+                v-model="newTimelineEventTimestamp"
+                :label="$t('general.date')"
+                :max="new Date()"
+                required
+              />
             </div>
-            <v-container>
-              <v-row class="mt-4">
-                <v-col cols="5">
-                  <v-menu
-                    v-model="datePickerMenu"
-                    :close-on-content-click="false"
-                    transition="scale-transition"
-                    offset-y
-                  >
-                    <template #activator="{ props: activatorProps }">
-                      <v-text-field
-                        :model-value="$d(newTimelineEventTimestamp)"
-                        :prepend-icon="$globals.icons.calendar"
-                        v-bind="activatorProps"
-                        readonly
-                        density="compact"
-                        min-width="160"
-                      />
-                    </template>
-                    <v-date-picker
-                      v-model="newTimelineEventTimestamp"
-                      hide-header
-                      :first-day-of-week="firstDayOfWeek"
-                      :local="$i18n.locale"
-                      @update:model-value="datePickerMenu = false"
-                    />
-                  </v-menu>
-                </v-col>
-                <v-spacer />
-                <v-col cols="auto">
-                  <AppButtonUpload
-                    v-if="!newTimelineEventImage"
-                    class="ml-auto"
-                    url="none"
-                    file-name="image"
-                    accept="image/*"
-                    :text="$t('recipe.upload-image')"
-                    :text-btn="false"
-                    :post="false"
-                    @uploaded="uploadImage"
-                  />
-                  <v-btn v-if="!!newTimelineEventImage" color="error" @click="clearImage">
-                    <v-icon start>
-                      {{ $globals.icons.close }}
-                    </v-icon>
-                    {{ $t("recipe.remove-image") }}
-                  </v-btn>
-                </v-col>
-              </v-row>
-              <v-row v-if="newTimelineEventImage && newTimelineEventImagePreviewUrl">
-                <v-col cols="12">
-                  <ImageCropper
-                    :img="newTimelineEventImagePreviewUrl"
-                    cropper-width="100%"
-                    @save="updateUploadedImage"
-                  />
-                </v-col>
-              </v-row>
-            </v-container>
-          </v-form>
-        </v-card-text>
+            <Button
+              v-if="!newTimelineEventImage"
+              variant="outline"
+              class="mb-1.5"
+              @click="madeThisImageInput?.click()"
+            >
+              <MdiIcon
+                :path="$globals.icons.fileImage"
+                class="size-4"
+              />
+              {{ $t('recipe.upload-image') }}
+            </Button>
+            <Button
+              v-else
+              variant="ghost"
+              class="mb-1.5 text-destructive hover:text-destructive"
+              @click="clearImage"
+            >
+              <MdiIcon
+                :path="$globals.icons.close"
+                class="size-4"
+              />
+              {{ $t("recipe.remove-image") }}
+            </Button>
+            <input
+              ref="madeThisImageInput"
+              type="file"
+              accept="image/*"
+              class="display-none"
+              @change="onImagePicked"
+            >
+          </div>
+          <ImageCropper
+            v-if="newTimelineEventImage && newTimelineEventImagePreviewUrl"
+            :img="newTimelineEventImagePreviewUrl"
+            cropper-width="100%"
+            @save="updateUploadedImage"
+          />
+        </div>
       </BaseDialog>
     </div>
     <div>
@@ -131,14 +110,16 @@
 </template>
 
 <script setup lang="ts">
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
+import DateField from "~/components/ui/field/DateField.vue";
+import TextareaField from "~/components/ui/field/TextareaField.vue";
 import { MdiIcon } from "~/components/ui/mdi-icon";
 import { whenever } from "@vueuse/core";
 import { formatISO } from "date-fns";
 import { useUserApi } from "~/composables/api";
 import { alert } from "~/composables/use-toast";
-import { useHouseholdSelf } from "~/composables/use-households";
 import type { RecipeOut, RecipeTimelineEventIn, RecipeTimelineEventOut } from "~/lib/api/types/recipe";
-import type { VForm } from "~/types/auto-forms";
 
 const props = defineProps<{ recipe: RecipeOut }>();
 const emit = defineEmits<{
@@ -147,10 +128,8 @@ const emit = defineEmits<{
 
 const madeThisDialog = ref(false);
 const userApi = useUserApi();
-const { household } = useHouseholdSelf();
 const i18n = useI18n();
 const auth = useMealieAuth();
-const domMadeThisForm = ref<VForm>();
 const newTimelineEvent = ref<RecipeTimelineEventIn>({
   subject: "",
   eventType: "comment",
@@ -200,14 +179,20 @@ whenever(
   },
 );
 
-const firstDayOfWeek = computed(() => {
-  return household.value?.preferences?.firstDayOfWeek || 0;
-});
-
 function clearImage() {
   newTimelineEventImage.value = undefined;
   newTimelineEventImageName.value = "";
   newTimelineEventImagePreviewUrl.value = undefined;
+}
+
+const madeThisImageInput = ref<HTMLInputElement>();
+function onImagePicked(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  input.value = "";
+  if (file) {
+    uploadImage(file);
+  }
 }
 
 function uploadImage(fileObject: File) {
@@ -221,7 +206,6 @@ function updateUploadedImage(fileObject: Blob) {
   newTimelineEventImagePreviewUrl.value = URL.createObjectURL(fileObject);
 }
 
-const datePickerMenu = ref(false);
 const madeThisFormLoading = ref(false);
 
 function resetMadeThisForm() {
@@ -231,7 +215,6 @@ function resetMadeThisForm() {
   newTimelineEvent.value.timestamp = undefined;
   clearImage();
   madeThisDialog.value = false;
-  domMadeThisForm.value?.reset();
 }
 
 async function createTimelineEvent() {

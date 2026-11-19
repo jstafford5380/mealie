@@ -45,6 +45,19 @@ Sources: [menu wrapper](../frontend/app/components/Domain/Recipe/RecipeContextMe
 - Persist mandatory image placement Left/Right/Hidden, Description, Notes, Nutrition, Include Linked Recipe Ingredients, Linked Ingredients, and Substitutions.
 - Preview uses RecipePrintView in a 40vh scroll area; dialog width 70%, max 816px. Keep live preference response and complete print content during the recipe-page audit.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Vuetify menu whose dialogs lived inside the menu content. | A shadcn dropdown (Delete shown in red); its items and dialogs load on first hover, focus or open, and the dialogs live beside the menu so they stay open after it closes. Recipe actions from the group still appear after a divider. |
+| Delete and Duplicate as bottom sheets with Vuetify fields. | Centered dialogs; Delete uses a red Delete button; Duplicate focuses the name field. |
+| Share dialog: date field opening a Vuetify date picker, a "New" button, token rows with coloured icons. | A short explanation, the browser's own date input (phones get their native picker), "Create link", and token rows with Copy, QR code and Delete buttons labelled for screen readers. The QR view keeps Back and Download. |
+| Add to meal plan: Vuetify calendar with coloured event dots. | A month calendar in the app's style: today ringed, the chosen day filled, a whole week drawn as a range, and a dot on days that already have meals (filled for the chosen meal type, muted for others). Arrow keys move between days. Whole-week planning and the meal type stay below. |
+| Add to shopping list: cards per list, an expanding new-list form, and a two-column ingredient grid of Vuetify checkboxes. | List buttons, an inline new-list form (Enter or Create), Show all in the footer; then the ingredients as checkbox rows (unchecked ones fade) grouped by recipe and section, with Check all / Uncheck all at the top. |
+| Print preferences: image toggle buttons and six switches in columns. | An image-position segmented control (left, right, none — labelled) and six labelled switches, above the live print preview. |
+| I Made This: Vuetify textarea, checkbox list, date picker menu and an upload button. | Comment box, linked-recipe checkboxes, a native date input that can't go past today, and "Upload image" / "Remove image" with the cropper below. |
+| Enter in any field of a dialog submitted it, even dialogs with nothing to submit. | Enter submits only dialogs that have a submit or confirm action, and leaves fields inside their own form to that form. |
+
 ## Shadcn Vue replacement checklist
 
 - [ ] Compose DropdownMenu, Dialog/Sheet, Calendar, Checkbox/Switch, Select, Button, QR/image preview, scrolling list, and feedback.

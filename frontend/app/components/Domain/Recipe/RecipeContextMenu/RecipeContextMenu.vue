@@ -1,48 +1,89 @@
 <template>
-  <div class="text-center">
-    <v-menu
-      offset-y
-      start
-      :eager="isMenuContentLoaded"
-      :bottom="!menuTop"
-      :nudge-bottom="!menuTop ? '5' : '0'"
-      :top="menuTop"
-      :nudge-top="menuTop ? '5' : '0'"
-      allow-overflow
-      close-delay="125"
-      content-class="d-print-none"
-      @update:model-value="onMenuToggle"
+  <div
+    class="inline-flex print:hidden"
+    @click.prevent.stop
+  >
+    <DropdownMenu
+      v-model:open="open"
+      :modal="false"
     >
-      <template #activator="{ props: activatorProps }">
+      <DropdownMenuTrigger as-child>
         <button
           type="button"
-          v-bind="activatorProps"
           :aria-label="$t('general.actions')"
           :class="fab
             ? 'inline-flex size-11 items-center justify-center rounded-full bg-card text-foreground shadow-sm ring-1 ring-border transition-colors hover:bg-highlight'
             : 'inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-highlight hover:text-foreground'"
-          @click.prevent
+          @pointerenter="load"
+          @focus="load"
         >
           <MdiIcon
             :path="icon"
             :class="fab ? 'size-6' : 'size-5'"
           />
         </button>
-      </template>
-
-      <RecipeContextMenuContent
-        v-if="isMenuContentLoaded"
-        v-bind="contentProps"
-        @print="$emit('print')"
-        @deleted="$emit('deleted', $event)"
-        @mealplan-edit="$emit('mealplanEdit')"
-        @mealplan-remove="$emit('mealplanRemove')"
-      />
-    </v-menu>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        :align="menuTop ? 'end' : 'end'"
+        :side="menuTop ? 'top' : 'bottom'"
+        class="min-w-56"
+        @click.stop
+      >
+        <div
+          v-if="!items.length"
+          class="flex justify-center py-3"
+        >
+          <span class="size-5 animate-spin rounded-full border-2 border-muted border-t-primary" />
+        </div>
+        <DropdownMenuItem
+          v-for="item in items"
+          :key="item.event"
+          :variant="item.event === 'delete' ? 'destructive' : 'default'"
+          @select="content?.run(item.event)"
+        >
+          <MdiIcon
+            :path="item.icon"
+            class="size-4"
+          />
+          {{ item.title }}
+        </DropdownMenuItem>
+        <template v-if="useItems.recipeActions && actions.length">
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            v-for="(action, index) in actions"
+            :key="index"
+            @select="content?.executeRecipeAction(action)"
+          >
+            <MdiIcon
+              :path="$globals.icons.linkVariantPlus"
+              class="size-4"
+            />
+            {{ action.title }}
+          </DropdownMenuItem>
+        </template>
+      </DropdownMenuContent>
+    </DropdownMenu>
+    <RecipeContextMenuContent
+      v-if="isMenuContentLoaded"
+      ref="content"
+      v-bind="contentProps"
+      @print="$emit('print')"
+      @deleted="$emit('deleted', $event)"
+      @mealplan-edit="$emit('mealplanEdit')"
+      @mealplan-remove="$emit('mealplanRemove')"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import type { GroupRecipeActionOut } from "~/lib/api/types/household";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { MdiIcon } from "~/components/ui/mdi-icon";
 import type { RecipeOut } from "~/lib/api/types/recipe";
 import type { ContextMenuIncludes } from "./RecipeContextMenuContent.vue";
@@ -116,11 +157,26 @@ const contentProps = computed(() => {
   return rest;
 });
 
-function onMenuToggle(isOpen: boolean) {
-  if (isOpen && !isMenuContentLoaded.value) {
-    isMenuContentLoaded.value = true;
-  }
+// The items and their dialogs load on first hover, focus or open, so card grids stay light.
+const open = ref(false);
+function load() {
+  isMenuContentLoaded.value = true;
 }
+watch(open, (value) => {
+  if (value) {
+    load();
+  }
+});
+
+interface ContentApi {
+  menuItems: ContextMenuItem[];
+  recipeActions: GroupRecipeActionOut[];
+  run: (event: string) => void;
+  executeRecipeAction: (action: GroupRecipeActionOut) => void;
+}
+const content = ref<ContentApi | null>(null);
+const items = computed<ContextMenuItem[]>(() => unref(content.value?.menuItems) ?? []);
+const actions = computed<GroupRecipeActionOut[]>(() => unref(content.value?.recipeActions) ?? []);
 
 const RecipeContextMenuContent = defineAsyncComponent(
   () => import("./RecipeContextMenuContent.vue"),

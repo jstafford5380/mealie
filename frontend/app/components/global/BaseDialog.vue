@@ -202,7 +202,8 @@ function submitEvent() {
 }
 
 function submitOnEnter() {
-  if (props.disableSubmitOnEnter) {
+  // A dialog with nothing to submit (a picker, a list) has nothing for Enter to do.
+  if (props.disableSubmitOnEnter || !(props.canSubmit || props.canConfirm)) {
     return;
   }
 
@@ -219,8 +220,9 @@ function submitOnEnter() {
 
 /**
  * Enter submits the dialog, as before, except where Enter already means something:
- * new lines in a textarea or rich-text field, activating a focused button or link, and
- * choosing an item in an open select/autocomplete (those mark the event as handled).
+ * new lines in a textarea or rich-text field, activating a focused button or link,
+ * choosing an item in an open select/autocomplete (those mark the event as handled),
+ * and fields inside a form of their own.
  */
 function onEnter(event: KeyboardEvent) {
   const target = event.target as HTMLElement | null;
@@ -228,6 +230,10 @@ function onEnter(event: KeyboardEvent) {
     return;
   }
   if (target.closest("textarea, [contenteditable=''], [contenteditable='true'], button, a[href]")) {
+    return;
+  }
+  // A form inside the dialog submits itself on Enter.
+  if (target.closest("form:not(.v-form)")) {
     return;
   }
   submitOnEnter();
