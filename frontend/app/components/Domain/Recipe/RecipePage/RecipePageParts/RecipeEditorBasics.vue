@@ -96,7 +96,7 @@ const ownerItems = computed(() => {
 </script>
 
 <template>
-  <div class="grid gap-6 font-sans md:grid-cols-[220px_minmax(0,1fr)]">
+  <div class="grid gap-6 font-sans xl:grid-cols-[220px_minmax(0,1fr)]">
     <!-- photo -->
     <div class="flex flex-col gap-2">
       <div class="text-sm font-semibold">
@@ -104,7 +104,7 @@ const ownerItems = computed(() => {
       </div>
       <button
         type="button"
-        class="group relative flex aspect-[2/1] w-full md:aspect-[4/3] items-center justify-center overflow-hidden rounded-card border border-dashed border-input bg-muted text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
+        class="group relative flex aspect-[2/1] w-full max-w-md xl:max-w-none xl:aspect-[4/3] items-center justify-center overflow-hidden rounded-card border border-dashed border-input bg-muted text-muted-foreground transition-colors hover:border-ring hover:text-foreground"
         :aria-label="imageUrl && !imageFailed ? $t('recipe.replace-photo') : $t('recipe.add-photo')"
         :disabled="busy"
         @click="fileInput?.click()"
