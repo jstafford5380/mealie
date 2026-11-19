@@ -1,201 +1,139 @@
 <template>
-  <div>
-    <v-text-field
+  <div class="font-sans">
+    <input
       v-if="titleVisible"
       v-model="model.title"
-      density="compact"
-      variant="underlined"
-      hide-details
-      class="mx-1 mt-3 mb-4"
+      type="text"
       :placeholder="$t('recipe.section-title')"
-      style="max-width: 500px"
+      :aria-label="$t('recipe.section-title')"
+      class="mb-1 mt-3 h-9 w-full max-w-md border-0 border-b border-input bg-transparent px-1 text-[15px] font-semibold outline-none placeholder:font-normal placeholder:text-muted-foreground/80 focus:border-ring"
       @click="$emit('clickIngredientField', 'title')"
-    />
-    <RecipeIngredientEditorLayout :header="enableDragHandle || enableContextMenu">
-      <template v-if="enableDragHandle" #dragHandle>
-        <v-icon class="ma-2 handle" size="large">
-          {{ $globals.icons.arrowUpDown }}
-        </v-icon>
-      </template>
-      <template v-if="enableContextMenu" #contextMenu>
-        <BaseButtonGroup
-          hover
-          :large="false"
-          class="ml-auto"
-          :buttons="btns"
-          @toggle-section="toggleTitle"
-          @toggle-subrecipe="toggleIsRecipe"
-          @toggle-substitutions="toggleSubstitutions"
-          @insert-above="$emit('insert-above')"
-          @insert-below="$emit('insert-below')"
-          @delete="$emit('delete')"
+    >
+    <div class="flex items-start gap-1">
+      <button
+        v-if="enableDragHandle"
+        type="button"
+        class="handle inline-flex h-10 w-7 shrink-0 cursor-grab touch-none items-center justify-center rounded-item text-muted-foreground hover:bg-highlight hover:text-foreground active:cursor-grabbing"
+        :aria-label="$t('general.drag-to-reorder')"
+        :title="$t('general.drag-to-reorder')"
+      >
+        <GripVerticalIcon class="size-4" />
+      </button>
+      <div class="grid min-w-0 flex-1 grid-cols-[5rem_minmax(0,1fr)] gap-2 lg:grid-cols-[5rem_minmax(7rem,9rem)_minmax(0,1fr)_minmax(0,1.4fr)]">
+        <input
+          ref="quantityInput"
+          type="number"
+          inputmode="decimal"
+          min="0"
+          step="any"
+          :value="model.quantity ?? ''"
+          :placeholder="$t('recipe.quantity')"
+          :aria-label="$t('recipe.quantity')"
+          class="h-10 w-full min-w-0 rounded-control border border-input bg-card px-3 text-[15px] tabular-nums outline-none [appearance:textfield] placeholder:text-muted-foreground/80 focus:border-ring focus:ring-3 focus:ring-ring/25 [&::-webkit-inner-spin-button]:appearance-none"
+          @keydown="quantityFilter"
+          @input="onQuantityInput"
+        >
+        <SearchSelect
+          v-model="model.unit"
+          v-model:search="unitSearch"
+          :items="filteredUnits"
+          :placeholder="$t('recipe.choose-unit')"
+          :warning="unitError ? (unitErrorTooltip || ' ') : undefined"
+          creatable
+          @create="createAssignUnit"
         />
-      </template>
-      <template #form>
-        <div class="flex-grow-1">
-          <div class="d-flex ga-2 py-2" :class="$vuetify.display.mdAndDown ? 'flex-column' : ''">
-            <v-number-input
-              v-model="model.quantity"
-              variant="filled"
-              :precision="null"
-              :min="0"
-              hide-details
-              inset
-              density="compact"
-              :style="$vuetify.display.mdAndDown ? '' : 'flex: 3 0 50px;'"
-              :placeholder="$t('recipe.quantity')"
-              :autofocus="autofocusQuantity"
-              @keypress="quantityFilter"
-              @update:focused="onQuantityFocused"
-            />
-            <v-autocomplete
-              ref="unitAutocomplete"
-              v-model="model.unit"
-              v-model:search="unitSearch"
-              auto-select-first
-              hide-details
-              density="compact"
-              :style="$vuetify.display.mdAndDown ? '' : 'flex: 4 0 50px;'"
-              variant="filled"
-              return-object
-              :items="filteredUnits"
-              :custom-filter="() => true"
-              item-title="name"
-              :placeholder="$t('recipe.choose-unit')"
-              clearable
-              :menu-props="{ attach: props.menuAttachTarget, maxHeight: '250px' }"
-              @keyup.enter="handleUnitEnter"
+        <SearchSelect
+          v-if="!state.isRecipe"
+          v-model="model.food"
+          v-model:search="foodSearch"
+          class="col-span-2 lg:col-span-1"
+          :items="filteredFoods"
+          :placeholder="$t('recipe.choose-food')"
+          :warning="foodError ? (foodErrorTooltip || ' ') : undefined"
+          creatable
+          @create="createAssignFood"
+        />
+        <SearchSelect
+          v-else
+          v-model="model.referencedRecipe"
+          v-model:search="search.query.value"
+          class="col-span-2 lg:col-span-1"
+          :items="search.data.value || []"
+          :placeholder="$t('recipe.choose-recipe')"
+          :empty-text="$t('search.type-to-search')"
+          @focus="search.trigger()"
+        />
+        <input
+          v-model="model.note"
+          type="text"
+          :placeholder="$t('recipe.notes')"
+          :aria-label="$t('recipe.notes')"
+          class="col-span-2 h-10 w-full min-w-0 rounded-control border border-input bg-card px-3 text-[15px] outline-none placeholder:text-muted-foreground/80 focus:border-ring focus:ring-3 focus:ring-ring/25 lg:col-span-1"
+          @click="$emit('clickIngredientField', 'note')"
+        >
+      </div>
+      <template v-if="enableContextMenu">
+        <DropdownMenu :modal="false">
+          <DropdownMenuTrigger as-child>
+            <Button
+              variant="ghost"
+              size="icon"
+              class="shrink-0"
+              :aria-label="$t('general.menu')"
             >
-              <template v-if="unitError" #prepend-inner>
-                <v-tooltip location="bottom">
-                  <template #activator="{ props: unitTooltipProps }">
-                    <v-icon
-                      v-bind="unitTooltipProps"
-                      class="opacity-100"
-                      color="primary"
-                    >
-                      {{ $globals.icons.alert }}
-                    </v-icon>
-                  </template>
-                  <span v-if="unitErrorTooltip">
-                    {{ unitErrorTooltip }}
-                  </span>
-                </v-tooltip>
-              </template>
-              <template #no-data>
-                <div class="caption text-center pb-2">
-                  {{ $t("recipe.press-enter-to-create") }}
-                </div>
-              </template>
-              <template #append-item>
-                <div v-if="showCreateUnit" class="px-2">
-                  <BaseButton
-                    block
-                    size="small"
-                    @click="createAssignUnit()"
-                  />
-                </div>
-              </template>
-            </v-autocomplete>
-
-            <!-- Foods Input -->
-            <v-autocomplete
-              v-if="!state.isRecipe"
-              ref="foodAutocomplete"
-              v-model="model.food"
-              v-model:search="foodSearch"
-              auto-select-first
-              hide-details
-              density="compact"
-              :style="$vuetify.display.mdAndDown ? '' : 'flex: 7 0 50px;'"
-              variant="filled"
-              return-object
-              :items="filteredFoods"
-              :custom-filter="() => true"
-              item-title="name"
-              :placeholder="$t('recipe.choose-food')"
-              clearable
-              :menu-props="{ attach: props.menuAttachTarget, maxHeight: '250px' }"
-              @keyup.enter="handleFoodEnter"
+              <EllipsisVerticalIcon class="size-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align="end"
+            class="min-w-52"
+          >
+            <DropdownMenuItem
+              v-for="option in contextMenuOptions"
+              :key="option.event"
+              @select="onMenu(option.event)"
             >
-              <template v-if="foodError" #prepend-inner>
-                <v-tooltip location="bottom">
-                  <template #activator="{ props: foodTooltipProps }">
-                    <v-icon
-                      v-bind="foodTooltipProps"
-                      class="opacity-100"
-                      color="primary"
-                    >
-                      {{ $globals.icons.alert }}
-                    </v-icon>
-                  </template>
-                  <span v-if="foodErrorTooltip">
-                    {{ foodErrorTooltip }}
-                  </span>
-                </v-tooltip>
-              </template>
-              <template #no-data>
-                <div class="caption text-center pb-2">
-                  {{ $t("recipe.press-enter-to-create") }}
-                </div>
-              </template>
-              <template #append-item>
-                <div v-if="showCreateFood" class="px-2">
-                  <BaseButton
-                    block
-                    size="small"
-                    @click="createAssignFood()"
-                  />
-                </div>
-              </template>
-            </v-autocomplete>
-            <!-- Recipe Input -->
-            <v-autocomplete
-              v-if="state.isRecipe"
-              ref="search.query"
-              v-model="model.referencedRecipe"
-              v-model:search="search.query.value"
-              auto-select-first
-              hide-details
-              density="compact"
-              :style="$vuetify.display.mdAndDown ? '' : 'flex: 7 0 50px;'"
-              variant="filled"
-              return-object
-              :items="search.data.value || []"
-              item-title="name"
-              :placeholder="$t('search.type-to-search')"
-              clearable
-              :label="!model.referencedRecipe ? $t('recipe.choose-recipe') : ''"
-              @click="search.trigger()"
-              @focus="search.trigger()"
-            />
-            <v-text-field
-              v-model="model.note"
-              hide-details
-              density="compact"
-              :style="$vuetify.display.mdAndDown ? '' : 'flex: 7 0 50px;'"
-              variant="filled"
-              :placeholder="$t('recipe.notes')"
-              class=""
-              @click="$emit('clickIngredientField', 'note')"
-            />
-          </div>
-        </div>
+              {{ option.text }}
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              variant="destructive"
+              class="sm:display-none"
+              :disabled="deleteDisabled"
+              @select="$emit('delete')"
+            >
+              {{ $t("general.delete") }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <Button
+          variant="ghost"
+          size="icon"
+          class="shrink-0 text-muted-foreground hover:text-destructive max-sm:display-none"
+          :disabled="deleteDisabled"
+          :aria-label="$t('general.delete')"
+          :title="$t('general.delete')"
+          @click="$emit('delete')"
+        >
+          <Trash2Icon class="size-4" />
+        </Button>
       </template>
-    </RecipeIngredientEditorLayout>
-    <div class="px-2" :class="{ 'ml-10': !$vuetify.display.mdAndDown }">
+    </div>
+    <div :class="enableDragHandle && 'ps-8'">
       <!-- shown whenever the ingredient carries substitutions, so the toggle can't hide saved data -->
-      <div v-if="substitutionsVisible" class="py-2">
-        <div class="d-flex align-center text-caption mb-1">
-          <v-icon size="small" class="mr-1">
-            {{ $globals.icons.swapHorizontal }}
-          </v-icon>
+      <div
+        v-if="substitutionsVisible"
+        class="mt-2 rounded-control bg-muted/60 p-3"
+      >
+        <div class="mb-2 flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+          <MdiIcon
+            :path="$globals.icons.swapHorizontal"
+            class="size-4"
+          />
           {{ $t("recipe.substitutions") }}
         </div>
         <RecipeIngredientSubstitutionEditor
           :substitutions="model.substitutions || []"
           :foods="allFoods"
-          :menu-attach-target="props.menuAttachTarget"
           @add="addSubstitution"
           @delete="deleteSubstitution"
         />
@@ -206,9 +144,18 @@
 </template>
 
 <script setup lang="ts">
-import { useNuxtApp } from "#app";
-import { computed, nextTick, reactive, ref, watch } from "vue";
+import { EllipsisVerticalIcon, GripVerticalIcon, Trash2Icon } from "@lucide/vue";
+import { computed, nextTick, onMounted, reactive, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+import SearchSelect from "~/components/ui/field/SearchSelect.vue";
 import { usePublicExploreApi, useUserApi } from "~/composables/api";
 import { useRecipeSearch } from "~/composables/recipes/use-recipe-search";
 import { useFoodData, useFoodStore, useUnitData, useUnitStore } from "~/composables/store";
@@ -262,7 +209,7 @@ const props = defineProps({
   },
 });
 
-defineEmits([
+const emit = defineEmits([
   "clickIngredientField",
   "insert-above",
   "insert-below",
@@ -270,7 +217,6 @@ defineEmits([
 ]);
 
 const i18n = useI18n();
-const { $globals } = useNuxtApp();
 
 const state = reactive({
   showTitle: false,
@@ -294,7 +240,7 @@ const contextMenuOptions = computed(() => {
       event: "toggle-section",
     },
     {
-      text: i18n.t("recipe.toggle-recipe"),
+      text: state.isRecipe ? i18n.t("recipe.use-food-instead") : i18n.t("recipe.use-recipe-instead"),
       event: "toggle-subrecipe",
     },
     {
@@ -316,48 +262,40 @@ const contextMenuOptions = computed(() => {
   return options;
 });
 
-const btns = computed(() => {
-  const out = [
-    {
-      icon: $globals.icons.dotsVertical,
-      text: i18n.t("general.menu"),
-      event: "open",
-      children: contextMenuOptions.value,
-    },
-  ];
-
-  // If delete event is being listened for, show delete button
-  // $attrs is not available in <script setup>, so always show if parent listens
-  out.unshift({
-    icon: $globals.icons.delete,
-    text: i18n.t("general.delete"),
-    event: "delete",
-    children: undefined,
-    disabled: props.deleteDisabled,
-  });
-  return out;
-});
+function onMenu(event: string) {
+  switch (event) {
+    case "toggle-section":
+      toggleTitle();
+      break;
+    case "toggle-subrecipe":
+      toggleIsRecipe();
+      break;
+    case "toggle-substitutions":
+      toggleSubstitutions();
+      break;
+    case "insert-above":
+      emit("insert-above");
+      break;
+    case "insert-below":
+      emit("insert-below");
+      break;
+  }
+}
 
 // Foods
 const foodStore = useFoodStore();
 const foodData = useFoodData();
-const foodAutocomplete = ref<HTMLInputElement>();
 const { search: foodSearch, filtered: filteredFoods } = useSearch(foodStore.store);
 
 // the substitution pickers offer every food; unlike the main field they can't create one,
 // since a substitute the user has to invent is what the note is for
 const allFoods = computed(() => foodStore.store.value);
 
-const showCreateFood = computed(() =>
-  !!foodSearch.value
-  && !filteredFoods.value.some((f: any) => (f.name ?? "").toLowerCase() === foodSearch.value.toLowerCase()),
-);
-
-async function createAssignFood() {
-  foodData.data.name = foodSearch.value;
+async function createAssignFood(name?: string) {
+  foodData.data.name = name || foodSearch.value;
   model.value.food = await foodStore.actions.createOne(foodData.data) || undefined;
   foodData.reset();
-  foodAutocomplete.value?.blur();
+  foodSearch.value = "";
 }
 
 // Recipes
@@ -382,19 +320,13 @@ watch(loading, (val) => {
 // Units
 const unitStore = useUnitStore();
 const unitsData = useUnitData();
-const unitAutocomplete = ref<HTMLInputElement>();
 const { search: unitSearch, filtered: filteredUnits } = useSearch(unitStore.store);
 
-const showCreateUnit = computed(() =>
-  !!unitSearch.value
-  && !filteredUnits.value.some((u: any) => (u.name ?? "").toLowerCase() === unitSearch.value.toLowerCase()),
-);
-
-async function createAssignUnit() {
-  unitsData.data.name = unitSearch.value;
+async function createAssignUnit(name?: string) {
+  unitsData.data.name = name || unitSearch.value;
   model.value.unit = await unitStore.actions.createOne(unitsData.data) || undefined;
   unitsData.reset();
-  unitAutocomplete.value?.blur();
+  unitSearch.value = "";
 }
 
 function toggleTitle() {
@@ -439,41 +371,20 @@ function toggleIsRecipe() {
   state.isRecipe = !state.isRecipe;
 }
 
-function handleUnitEnter() {
-  if (
-    model.value.unit === undefined
-    || model.value.unit === null
-    || !model.value.unit.name.includes(unitSearch.value)
-  ) {
-    createAssignUnit();
+// a new row focuses its quantity with the text selected, so typing replaces it
+const quantityInput = ref<HTMLInputElement>();
+onMounted(() => {
+  if (props.autofocus) {
+    nextTick(() => {
+      quantityInput.value?.focus();
+      quantityInput.value?.select();
+    });
   }
-}
+});
 
-function handleFoodEnter() {
-  if (
-    model.value.food === undefined
-    || model.value.food === null
-    || !model.value.food.name.includes(foodSearch.value)
-  ) {
-    createAssignFood();
-  }
-}
-
-// only the autofocus should select the quantity; later focuses (clicks, tabbing) keep normal caret behaviour
-const autofocusQuantity = ref(props.autofocus);
-
-function onQuantityFocused(focused: boolean) {
-  if (!focused || !autofocusQuantity.value) {
-    return;
-  }
-  autofocusQuantity.value = false;
-
-  // a programmatic focus leaves the caret after the placeholder 0, so typing "2" gives "02";
-  // select it instead, after vuetify has reformatted the text on focus
-  const input = document.activeElement;
-  if (input instanceof HTMLInputElement) {
-    nextTick(() => input.select());
-  }
+function onQuantityInput(event: Event) {
+  const raw = (event.target as HTMLInputElement).value;
+  model.value.quantity = raw === "" ? null : Math.max(0, Number(raw));
 }
 
 function quantityFilter(e: KeyboardEvent) {

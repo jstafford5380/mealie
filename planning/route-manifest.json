@@ -1098,7 +1098,6 @@
         "frontend/app/components/Domain/Recipe/RecipeFavoriteBadge.vue",
         "frontend/app/components/Domain/Recipe/RecipeImageLightbox.vue",
         "frontend/app/components/Domain/Recipe/RecipeIngredientEditor.vue",
-        "frontend/app/components/Domain/Recipe/RecipeIngredientEditorLayout.vue",
         "frontend/app/components/Domain/Recipe/RecipeIngredientHtml.vue",
         "frontend/app/components/Domain/Recipe/RecipeIngredientListItem.vue",
         "frontend/app/components/Domain/Recipe/RecipeIngredientSubstitutionEditor.vue",
@@ -1162,6 +1161,7 @@
         "frontend/app/components/global/Transition/SwipeTransition.vue",
         "frontend/app/components/global/WakelockSwitch.vue",
         "frontend/app/components/ui/field/NumberInputField.vue",
+        "frontend/app/components/ui/field/SearchSelect.vue",
         "frontend/app/components/ui/field/SelectField.vue",
         "frontend/app/components/ui/field/TextField.vue",
         "frontend/app/components/ui/field/TextareaField.vue"
@@ -1910,7 +1910,6 @@
         "frontend/app/components/Domain/Recipe/RecipeFavoriteBadge.vue",
         "frontend/app/components/Domain/Recipe/RecipeImageLightbox.vue",
         "frontend/app/components/Domain/Recipe/RecipeIngredientEditor.vue",
-        "frontend/app/components/Domain/Recipe/RecipeIngredientEditorLayout.vue",
         "frontend/app/components/Domain/Recipe/RecipeIngredientHtml.vue",
         "frontend/app/components/Domain/Recipe/RecipeIngredientListItem.vue",
         "frontend/app/components/Domain/Recipe/RecipeIngredientSubstitutionEditor.vue",
@@ -1974,6 +1973,7 @@
         "frontend/app/components/global/Transition/SwipeTransition.vue",
         "frontend/app/components/global/WakelockSwitch.vue",
         "frontend/app/components/ui/field/NumberInputField.vue",
+        "frontend/app/components/ui/field/SearchSelect.vue",
         "frontend/app/components/ui/field/SelectField.vue",
         "frontend/app/components/ui/field/TextField.vue",
         "frontend/app/components/ui/field/TextareaField.vue"
@@ -2177,6 +2177,7 @@
         "frontend/app/components/global/InputColor.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
         "frontend/app/components/ui/field/NumberInputField.vue",
+        "frontend/app/components/ui/field/SearchSelect.vue",
         "frontend/app/components/ui/field/SelectField.vue",
         "frontend/app/components/ui/field/TextField.vue",
         "frontend/app/components/ui/field/TextareaField.vue"

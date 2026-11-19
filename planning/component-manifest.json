@@ -1866,51 +1866,43 @@
       "source": "frontend/app/components/Domain/Recipe/RecipeIngredientEditor.vue",
       "name": "RecipeIngredientEditor",
       "components": [
-        "BaseButton",
-        "BaseButtonGroup",
+        "Button",
+        "DropdownMenu",
+        "DropdownMenuContent",
+        "DropdownMenuItem",
+        "DropdownMenuTrigger",
+        "EllipsisVerticalIcon",
+        "GripVerticalIcon",
         "HTMLInputElement",
+        "MdiIcon",
         "RecipeIngredient",
-        "RecipeIngredientEditorLayout",
-        "RecipeIngredientSubstitutionEditor"
+        "RecipeIngredientSubstitutionEditor",
+        "SearchSelect",
+        "Trash2Icon"
       ],
       "dependencies": [
-        "frontend/app/components/Domain/Recipe/RecipeIngredientEditorLayout.vue",
         "frontend/app/components/Domain/Recipe/RecipeIngredientSubstitutionEditor.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue"
+        "frontend/app/components/ui/field/SearchSelect.vue"
       ],
-      "vuetify": [
-        "v-autocomplete",
-        "v-icon",
-        "v-number-input",
-        "v-text-field",
-        "v-tooltip"
-      ],
+      "vuetify": [],
       "events": [
         "add: addSubstitution",
         "click: $emit('clickIngredientField', 'note')",
         "click: $emit('clickIngredientField', 'title')",
-        "click: createAssignFood()",
-        "click: createAssignUnit()",
-        "click: search.trigger()",
-        "delete: $emit('delete')",
+        "click: $emit('delete')",
+        "create: createAssignFood",
+        "create: createAssignUnit",
         "delete: deleteSubstitution",
         "focus: search.trigger()",
-        "insert-above: $emit('insert-above')",
-        "insert-below: $emit('insert-below')",
-        "keypress: quantityFilter",
-        "keyup.enter: handleFoodEnter",
-        "keyup.enter: handleUnitEnter",
-        "toggle-section: toggleTitle",
-        "toggle-subrecipe: toggleIsRecipe",
-        "toggle-substitutions: toggleSubstitutions",
-        "update:focused: onQuantityFocused"
+        "input: onQuantityInput",
+        "keydown: quantityFilter",
+        "select: $emit('delete')",
+        "select: onMenu(option.event)"
       ],
       "models": [
         "foodSearch",
         "model.food",
         "model.note",
-        "model.quantity",
         "model.referencedRecipe",
         "model.title",
         "model.unit",
@@ -1921,39 +1913,11 @@
         "!state.isRecipe",
         "enableContextMenu",
         "enableDragHandle",
-        "foodError",
-        "foodErrorTooltip",
-        "showCreateFood",
-        "showCreateUnit",
-        "state.isRecipe",
         "substitutionsVisible",
-        "titleVisible",
-        "unitError",
-        "unitErrorTooltip"
+        "titleVisible"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify",
-        "v-tooltip"
-      ]
-    },
-    {
-      "source": "frontend/app/components/Domain/Recipe/RecipeIngredientEditorLayout.vue",
-      "name": "RecipeIngredientEditorLayout",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [],
-      "events": [],
-      "models": [],
-      "conditions": [
-        "!$vuetify.display.mdAndDown",
-        "$vuetify.display.mdAndDown",
-        "header"
-      ],
-      "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/Recipe/RecipeIngredientHtml.vue",
@@ -2006,29 +1970,28 @@
       "source": "frontend/app/components/Domain/Recipe/RecipeIngredientSubstitutionEditor.vue",
       "name": "RecipeIngredientSubstitutionEditor",
       "components": [
-        "Props"
+        "Button",
+        "PlusIcon",
+        "Props",
+        "SearchSelect",
+        "Trash2Icon"
       ],
-      "dependencies": [],
-      "vuetify": [
-        "v-autocomplete",
-        "v-btn",
-        "v-icon",
-        "v-text-field"
+      "dependencies": [
+        "frontend/app/components/ui/field/SearchSelect.vue"
       ],
+      "vuetify": [],
       "events": [
         "click: emit('add')",
         "click: emit('delete', i)",
-        "update:model-value: emit('food-changed', i)"
+        "update:model-value: substitution.substituteFoodId = $event?.id ?? null; emit('food-changed', i)"
       ],
       "models": [
-        "substitution.note",
-        "substitution.substituteFoodId"
+        "searchTerms[i]",
+        "substitution.note"
       ],
       "conditions": [],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/Recipe/RecipeIngredientSubstitutions.vue",
@@ -2745,8 +2708,10 @@
       "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageIngredientEditor.vue",
       "name": "RecipePageIngredientEditor",
       "components": [
-        "BaseButton",
+        "Button",
         "InstanceType",
+        "MdiIcon",
+        "PlusIcon",
         "RecipeDialogBulkAdd",
         "RecipeIngredientEditor",
         "RecipeOut",
@@ -2754,18 +2719,9 @@
       ],
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipeDialogBulkAdd.vue",
-        "frontend/app/components/Domain/Recipe/RecipeIngredientEditor.vue",
-        "frontend/app/components/global/BaseButton.vue"
+        "frontend/app/components/Domain/Recipe/RecipeIngredientEditor.vue"
       ],
-      "vuetify": [
-        "v-alert",
-        "v-btn",
-        "v-icon",
-        "v-list",
-        "v-list-item",
-        "v-menu",
-        "v-skeleton-loader"
-      ],
+      "vuetify": [],
       "events": [
         "bulk-data: addIngredient",
         "click: addIngredient",

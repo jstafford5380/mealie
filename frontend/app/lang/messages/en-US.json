@@ -189,7 +189,9 @@
     "scroll-to-top": "Scroll to top",
     "previous": "Previous",
     "more": "More",
-    "remove": "Remove"
+    "remove": "Remove",
+    "create-name": "Create “{name}”",
+    "drag-to-reorder": "Drag to reorder"
   },
   "group": {
     "create-group": "Create Group",
@@ -769,7 +771,10 @@
     "section-source": "Source",
     "jump-to-section": "Sections",
     "add-note": "Add note",
-    "add-extra": "Add extra"
+    "add-extra": "Add extra",
+    "use-recipe-instead": "Use a recipe instead",
+    "use-food-instead": "Use a food instead",
+    "no-ingredients-yet": "No ingredients yet. Add one below, or paste a list with Bulk add."
   },
   "recipe-finder": {
     "recipe-finder": "Recipe Finder",

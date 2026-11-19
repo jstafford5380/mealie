@@ -38,6 +38,21 @@ Edit mode opens in the same page frame as the reader. The ingredient, method, or
 | Time inputs: hour and minute spinners plus an unlabelled text field. | Hour and minute boxes with units, and a "Note" box (for example "plus overnight"). |
 | Notes and nutrition editors in Vuetify cards. | Note cards with Title, Note and a remove button, plus "Add note". Nutrition as a grid of number boxes with units. |
 
+### Ingredient editor (implemented)
+
+| Before | Now |
+| --- | --- |
+| Rows of filled Vuetify fields with an up/down drag icon, a trash icon and a ⋮ group. | Compact rows: a grip handle, Quantity, Unit, Food (or Recipe) and Notes boxes, then ⋮ and Delete. On phones the row wraps (Quantity + Unit, then Food, then Notes) and Delete moves into the ⋮ menu. |
+| Unit and food autocompletes; creating meant typing a name and pressing Enter (or a small Create button in the list). | Searchable pickers that list matches as you type, with a "Create “…”" option whenever nothing matches exactly. Enter picks the highlighted option, so Enter on a name with no match still creates it. A clear (×) button appears on hover or focus. |
+| Parser warnings as a coloured icon with a tooltip. | A marigold outline and warning icon on the unit or food the parser couldn't match (the message is read out to screen readers). |
+| "Toggle Recipe" in the row menu. | The row menu says what it will do: "Use a recipe instead" / "Use a food instead". |
+| Section title as an underlined text field above the row. | A heading-style input above the row; still added and cleared from the row menu. |
+| A split "Add ▾" button (Add Food / Add Recipe / Bulk Add). | Three visible buttons: Bulk add, Add recipe, Add food. |
+| Empty ingredient list showed a grey skeleton. | An empty list says so and points to Add food and Bulk add. |
+| "Ingredients aren't parsed" as a Vuetify alert. | A tinted notice with a Parse button. |
+
+The same row is used in the parser dialog, and the substitution editor (also shared with the food manager's substitution dialog) uses the same pickers.
+
 ## Page mode, draft, and save
 
 Source: [RecipePage](../frontend/app/components/Domain/Recipe/RecipePage/RecipePage.vue).

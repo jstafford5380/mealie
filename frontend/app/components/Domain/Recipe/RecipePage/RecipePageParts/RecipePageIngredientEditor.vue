@@ -1,29 +1,26 @@
 <template>
-  <div>
-    <div class="mb-4">
-      <v-alert
-        v-if="recipe.recipeIngredient.length > 0 && !hasFoodOrUnit"
-        border="start"
-        color="info"
-        :icon="$globals.icons.information"
-        variant="tonal"
+  <div class="font-sans">
+    <div
+      v-if="recipe.recipeIngredient.length > 0 && !hasFoodOrUnit"
+      class="mb-5 flex flex-wrap items-center gap-3 rounded-card border border-primary/25 bg-highlight/50 p-4"
+    >
+      <MdiIcon
+        :path="$globals.icons.information"
+        class="size-5 shrink-0 text-primary"
+      />
+      <p class="m-0 min-w-0 flex-1 text-sm">
+        {{ $t('recipe.ingredients-not-parsed-description', { parse: $t('recipe.parse') }) }}
+      </p>
+      <Button
+        variant="outline"
+        @click="toggleIsParsing(true)"
       >
-        <div>
-          {{ $t('recipe.ingredients-not-parsed-description', { parse: $t('recipe.parse') }) }}
-        </div>
-        <div class="d-flex flex-wrap justify-end mt-3">
-          <BaseButton
-            class="mb-1"
-            color="info"
-            @click="toggleIsParsing(true)"
-          >
-            <template #icon>
-              {{ $globals.icons.foods }}
-            </template>
-            {{ $t('recipe.parse') }}
-          </BaseButton>
-        </div>
-      </v-alert>
+        <MdiIcon
+          :path="$globals.icons.foods"
+          class="size-4"
+        />
+        {{ $t('recipe.parse') }}
+      </Button>
     </div>
     <VueDraggable
       v-if="recipe.recipeIngredient.length > 0"
@@ -31,6 +28,7 @@
       handle=".handle"
       :delay="250"
       :delay-on-touch-only="true"
+      class="flex flex-col gap-2"
       v-bind="{
         animation: 200,
         group: 'recipe-ingredients',
@@ -53,72 +51,50 @@
         @insert-below="insertNewIngredient(index + 1)"
       />
     </VueDraggable>
-    <v-skeleton-loader
+    <p
       v-else
-      boilerplate
-      elevation="2"
-      type="list-item"
-    />
-    <div class="d-flex flex-wrap justify-center justify-sm-end mt-3">
+      class="m-0 rounded-card border border-dashed px-4 py-6 text-center text-sm text-muted-foreground"
+    >
+      {{ $t('recipe.no-ingredients-yet') }}
+    </p>
+    <div class="mt-4 flex flex-wrap justify-end gap-2">
       <RecipeDialogBulkAdd
         ref="domBulkAddDialog"
-        class="mx-1 mb-1"
-        style="display: none"
+        class="display-none"
         @bulk-data="addIngredient"
       />
-      <div class="d-inline-flex">
-        <!-- Main button: Add Food -->
-        <v-btn
-          color="success"
-          class="split-main ml-2"
-          @click="addIngredient"
-        >
-          <v-icon start>
-            {{ $globals.icons.createAlt }}
-          </v-icon>
-          {{ $t('general.add') || 'Add Food' }}
-        </v-btn>
-        <!-- Dropdown button -->
-        <v-menu>
-          <template #activator="{ props }">
-            <v-btn
-              color="success"
-              class="split-dropdown"
-              v-bind="props"
-            >
-              <v-icon>{{ $globals.icons.chevronDown }}</v-icon>
-            </v-btn>
-          </template>
-          <v-list>
-            <v-list-item
-              slim
-              density="comfortable"
-              :prepend-icon="$globals.icons.foods"
-              :title="$t('new-recipe.add-food')"
-              @click="addIngredient"
-            />
-            <v-list-item
-              slim
-              density="comfortable"
-              :prepend-icon="$globals.icons.silverwareForkKnife"
-              :title="$t('new-recipe.add-recipe')"
-              @click="addRecipe"
-            />
-            <v-list-item
-              slim
-              density="comfortable"
-              :prepend-icon="$globals.icons.create"
-              :title="$t('new-recipe.bulk-add')"
-              @click="showBulkAdd"
-            />
-          </v-list>
-        </v-menu>
-      </div>
+      <Button
+        variant="ghost"
+        @click="showBulkAdd"
+      >
+        <MdiIcon
+          :path="$globals.icons.create"
+          class="size-4"
+        />
+        {{ $t('new-recipe.bulk-add') }}
+      </Button>
+      <Button
+        variant="outline"
+        @click="addRecipe"
+      >
+        <MdiIcon
+          :path="$globals.icons.silverwareForkKnife"
+          class="size-4"
+        />
+        {{ $t('new-recipe.add-recipe') }}
+      </Button>
+      <Button @click="addIngredient">
+        <PlusIcon class="size-4" />
+        {{ $t('new-recipe.add-food') }}
+      </Button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { PlusIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { VueDraggable } from "vue-draggable-plus";
 import type { RecipeOut, RecipeIngredient } from "~/lib/api/types/recipe";
 import RecipeIngredientEditor from "~/components/Domain/Recipe/RecipeIngredientEditor.vue";
@@ -242,17 +218,3 @@ function insertNewIngredient(dest: number) {
   });
 }
 </script>
-
-<style scoped>
-.split-main {
-  border-top-right-radius: 0 !important;
-  border-bottom-right-radius: 0 !important;
-}
-.split-dropdown {
-  border-top-left-radius: 0 !important;
-  border-bottom-left-radius: 0 !important;
-  min-width: 30px;
-  padding-left: 0;
-  padding-right: 0;
-}
-</style>

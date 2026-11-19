@@ -7,7 +7,7 @@ defineProps<{ id: string; title: string; description?: string }>();
   <section
     :id="id"
     :aria-labelledby="`${id}-title`"
-    class="scroll-mt-36 rounded-panel border bg-card p-5 font-sans sm:p-6"
+    class="scroll-mt-36 rounded-panel border bg-card p-4 font-sans sm:p-6"
   >
     <header class="mb-5 flex flex-wrap items-center gap-3">
       <div class="min-w-0 flex-1">

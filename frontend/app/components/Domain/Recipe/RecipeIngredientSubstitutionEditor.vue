@@ -1,60 +1,60 @@
 <template>
-  <div>
-    <div v-for="substitution, i in substitutions" :key="i" class="mb-2">
+  <div class="flex flex-col gap-2 font-sans">
+    <div
+      v-for="substitution, i in substitutions"
+      :key="i"
+    >
       <!-- wraps rather than stacking: on a narrow screen the food takes its own line and the
-           note keeps the delete button company, instead of stranding it on a line of its own -->
-      <div class="d-flex ga-2 align-center flex-wrap">
-        <v-autocomplete
-          v-model="substitution.substituteFoodId"
-          :items="foods"
-          :custom-filter="normalizeFilter"
-          item-value="id"
-          item-title="name"
+           note keeps the remove button company -->
+      <div class="flex flex-wrap items-center gap-2">
+        <SearchSelect
+          v-model:search="searchTerms[i]"
+          :model-value="foodById(substitution.substituteFoodId)"
+          :items="filtered(i)"
           :placeholder="$t('recipe.choose-substitute-food')"
-          :style="$vuetify.display.mdAndDown ? 'flex: 1 1 100%;' : 'flex: 6 0 50px;'"
-          :menu-props="{ attach: menuAttachTarget, maxHeight: '250px' }"
-          density="compact"
-          variant="filled"
-          clearable
-          hide-details
-          @update:model-value="emit('food-changed', i)"
+          class="min-w-48 flex-[6_1_12rem]"
+          @update:model-value="substitution.substituteFoodId = $event?.id ?? null; emit('food-changed', i)"
         />
-        <v-text-field
+        <input
           v-model="substitution.note"
+          type="text"
           :placeholder="$t('recipe.note')"
-          :style="$vuetify.display.mdAndDown ? 'flex: 1 1 0;' : 'flex: 4 0 50px;'"
-          density="compact"
-          variant="filled"
-          hide-details
-        />
-        <!-- left at the default size: an icon button is a 36px touch target everywhere else in
-             the app, and the smaller sizes fall under the 24px accessible minimum -->
-        <v-btn
-          icon
-          variant="plain"
+          :aria-label="$t('recipe.note')"
+          class="h-10 min-w-32 flex-[4_1_8rem] rounded-control border border-input bg-card px-3 text-[15px] outline-none placeholder:text-muted-foreground/80 focus:border-ring focus:ring-3 focus:ring-ring/25"
+        >
+        <Button
+          variant="ghost"
+          size="icon"
+          :aria-label="$t('general.delete')"
           :title="$t('general.delete')"
           @click="emit('delete', i)"
         >
-          <v-icon>{{ $globals.icons.delete }}</v-icon>
-        </v-btn>
+          <Trash2Icon class="size-4" />
+        </Button>
       </div>
-      <slot name="after-row" :substitution="substitution" :index="i" />
+      <slot
+        name="after-row"
+        :substitution="substitution"
+        :index="i"
+      />
     </div>
-    <v-btn
-      variant="text"
-      color="primary"
+    <Button
+      variant="ghost"
+      size="sm"
+      class="self-start text-primary"
       @click="emit('add')"
     >
-      <v-icon start>
-        {{ $globals.icons.create }}
-      </v-icon>
+      <PlusIcon class="size-4" />
       {{ $t("general.add") }}
-    </v-btn>
+    </Button>
   </div>
 </template>
 
 <script setup lang="ts">
-import { normalizeFilter } from "~/composables/use-utils";
+import { PlusIcon, Trash2Icon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import SearchSelect from "~/components/ui/field/SearchSelect.vue";
+import { normalize } from "~/composables/use-utils";
 import type { IngredientFoodOut } from "~/lib/api/types/recipe";
 
 /**
@@ -70,12 +70,21 @@ export interface EditableSubstitution {
 interface Props {
   substitutions: EditableSubstitution[];
   foods: IngredientFoodOut[];
-  // left unset inside a dialog, so the menu stays in Vuetify's overlay stack rather than being
-  // teleported to the body and risking a render behind the dialog
+  /** Kept for callers; the list now always opens in the top layer. */
   menuAttachTarget?: string;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
+
+// One search box per row; matching mirrors the old autocomplete (case- and accent-insensitive).
+const searchTerms = ref<string[]>([]);
+function filtered(index: number) {
+  const term = normalize(searchTerms.value[index] ?? "");
+  return term ? props.foods.filter(f => normalize(f.name ?? "").includes(term)) : props.foods;
+}
+function foodById(id?: string | null) {
+  return id ? props.foods.find(f => f.id === id) ?? null : null;
+}
 
 const emit = defineEmits<{
   "add": [];
