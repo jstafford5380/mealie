@@ -1,39 +1,19 @@
 /*
- * Tailwind + Shadcn Vue design tokens for the UI overhaul.
+ * Tailwind + Shadcn Vue design tokens.
  *
- * Coexistence with Vuetify (remove these measures once Vuetify is gone):
- * - Cascade layer order is declared in nuxt.config.ts (app.head.style) so it is
- *   the first stylesheet the browser sees. Tailwind's base sits below Vuetify,
- *   Tailwind utilities sit above Vuetify utilities.
- * - Tailwind's preflight is not imported; it would restyle headings, lists and
- *   images on pages that still use Vuetify. A minimal reset lives in @layer base.
- * - Class names that Vuetify also defines with a different value are never
- *   generated (see `@source not inline` below). Use the alternatives instead:
- *   w-full / h-full / w-1/2 instead of w-100 / h-100 / w-50, `rounded-control`,
- *   `rounded-item` and `rounded-card` instead of rounded-sm / -md / -xl,
- *   `max-sm:hidden`-style variants are fine, but plain `hidden` is not (main.css
- *   defines .hidden as visibility: hidden); use `display-none` or v-show.
- * - Vuetify generates bg-/text-/border-<theme colour> classes at runtime. Tokens
- *   whose names it shares must mean the same thing: `primary` and `background`
- *   are aligned with the Vuetify theme (plugins/theme.ts). Shadcn's `secondary`
- *   and `accent` are renamed `subtle` and `highlight`, and Vuetify's success,
- *   info, warning, error, surface, secondary and accent are not defined here.
+ * - Shadcn's `secondary` and `accent` tokens are named `subtle` and `highlight` here.
+ * - The radius scale uses item / control / card / panel (see @theme below).
+ * - `display-none` is kept as an alias of `hidden` for existing markup.
  */
 @import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
 @import "tailwindcss/utilities.css" layer(utilities);
 @import "tw-animate-css";
 
-@source not inline("{w,h}-{25,33,50,66,75,100}");
-@source not inline("rounded-{sm,md,xl}");
-@source not inline("rounded-{t,b,s,e,l,r,ts,te,bs,be,tl,tr,bl,br}-{sm,md,xl}");
-@source not inline("hidden");
 
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Vuetify reads these for html and its typography classes, so old screens use the new typeface too. */
-  --v-font-body: "Figtree", ui-sans-serif, system-ui, sans-serif;
-  --v-font-heading: "Figtree", ui-sans-serif, system-ui, sans-serif;
   --background: #f5f7f3;
   --foreground: #1e2420;
   --card: #ffffff;
@@ -140,7 +120,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Radius scale. Names avoid Vuetify's rounded-sm/-md/-xl, which mean something else. */
+  /* Radius scale. */
   --radius-item: calc(var(--radius) - 4px);
   --radius-control: var(--radius);
   --radius-card: calc(var(--radius) + 6px);
@@ -151,24 +131,16 @@
   *,
   ::before,
   ::after {
-    box-sizing: border-box;
-    border-width: 0;
-    border-style: solid;
     border-color: var(--color-border);
   }
-  hr {
-    height: 0;
-    color: inherit;
-    border-top-width: 1px;
-  }
-  button,
-  input,
-  select,
-  textarea {
-    background-color: transparent;
-  }
   body {
+    background-color: var(--color-background);
     color: var(--color-foreground);
+    font-family: var(--font-sans);
+  }
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
   }
   /* native controls (select menus, date and time pickers, scrollbars) follow the theme */
   :root {

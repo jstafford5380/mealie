@@ -12,7 +12,6 @@ export default defineNuxtConfig({
     "@vite-pwa/nuxt",
     "@nuxtjs/i18n",
     "@nuxt/fonts",
-    "vuetify-nuxt-module",
     "@nuxt/eslint",
   ],
   ssr: false,
@@ -54,14 +53,6 @@ export default defineNuxtConfig({
           content: "Mealie is a recipe management app for your kitchen.",
         },
       ],
-      style: [
-        {
-          // Cascade layer order for Vuetify/Tailwind coexistence. It must be the first
-          // stylesheet in the document, before Vuetify and Tailwind declare their layers.
-          innerHTML: "@layer theme, base, vuetify-core, vuetify-components, vuetify-overrides, components, vuetify-utilities, utilities, vuetify-final;",
-          tagPriority: "critical",
-        },
-      ],
       script: [
         {
           innerHTML: `(function(){try{var d=localStorage.getItem('vueuse-color-scheme');var m=d==='dark'||(d!=='light'&&matchMedia('(prefers-color-scheme:dark)').matches);document.documentElement.classList.toggle('dark',m);document.documentElement.style.backgroundColor=m?'#1E1E1E':'#FFFFFF'}catch(e){}})()`,
@@ -84,7 +75,7 @@ export default defineNuxtConfig({
     viewTransition: true,
   },
 
-  css: ["~/assets/tailwind.css", "~/assets/main.css", "~/assets/style-overrides.scss"],
+  css: ["~/assets/tailwind.css", "~/assets/main.css"],
 
   runtimeConfig: {
     sessionPassword: process.env.SESSION_PASSWORD || "password-with-at-least-32-characters",
@@ -264,39 +255,4 @@ export default defineNuxtConfig({
     manifest: false, // This is served via the backend, see mealie/routes/spa/manifest.py
   },
 
-  // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
-  vuetify: {
-    moduleOptions: {
-      prefixComposables: ["useLayout"],
-    },
-    vuetifyOptions: {
-      icons: {
-        defaultSet: "mdi-svg",
-      },
-      // Theme Config set at runtime by /plugins/theme.ts
-      // This config doesn't do anything.
-      theme: {},
-      locale: {
-        locale: "en-US",
-        fallback: "en-US",
-      },
-      defaults: {
-        VOverlay: {
-          scrollStrategy: "close",
-        },
-        VMenu: {
-          scrollStrategy: "close",
-        },
-        VAutocomplete: {
-          scrollStrategy: "close",
-        },
-        VCombobox: {
-          scrollStrategy: "close",
-        },
-        VSelect: {
-          scrollStrategy: "close",
-        },
-      },
-    },
-  },
 });

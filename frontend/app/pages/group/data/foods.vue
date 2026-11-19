@@ -44,7 +44,7 @@
     >
       <div class="flex flex-col gap-3 px-6 pb-2 text-[15px]">
         {{ $t('data-pages.foods.delete-unused-confirm', { count: unusedFoodIds.length }, unusedFoodIds.length) }}
-        <ul class="m-0 ps-5 text-sm leading-7 text-muted-foreground">
+        <ul class="m-0 list-disc ps-5 text-sm leading-7 text-muted-foreground">
           <li v-for="name in unusedFoodNamesPreview" :key="name">
             {{ name }}
           </li>
@@ -250,7 +250,7 @@
       <template #delete-dialog-bottom>
         <div v-if="affectedRecipes.length > 0" class="rounded-control border border-brand/50 bg-brand/10 px-3 py-2 text-sm">
           {{ $t("data-pages.foods.delete-affects-recipes", { count: affectedRecipesTotal }) }}
-          <ul class="m-0 mt-1 ps-5">
+          <ul class="m-0 mt-1 list-disc ps-5">
             <li v-for="recipe in affectedRecipes.slice(0, 5)" :key="recipe.slug">
               <NuxtLink :to="recipe.url" class="text-primary">{{ recipe.name }}</NuxtLink>
             </li>

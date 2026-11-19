@@ -49,59 +49,11 @@ async function fetchTheme(): Promise<ThemeConfig | undefined> {
   }
 }
 
-export default defineNuxtPlugin(async (nuxtApp) => {
-  nuxtApp.hook("vuetify:before-create", async ({ vuetifyOptions }) => {
-    let theme = __cachedTheme;
-    if (!theme) {
-      theme = await fetchTheme();
-      __cachedTheme = theme;
-    }
-    applyTokenOverrides(theme);
-    // Coexistence with Reka UI dialogs (z-index 2050): Vuetify menus and tooltips opened inside
-    // them must stack above. Remove with Vuetify.
-    const defaults = (vuetifyOptions.defaults ?? {}) as Record<string, Record<string, unknown>>;
-    vuetifyOptions.defaults = {
-      ...defaults,
-      VMenu: { ...defaults.VMenu, zIndex: 2400 },
-      VTooltip: { ...defaults.VTooltip, zIndex: 2400 },
-    };
-    vuetifyOptions.theme = {
-      defaultTheme: nuxtApp.$config.public.useDark ? "dark" : "light",
-      variations: {
-        colors: ["primary", "accent", "secondary", "success", "info", "warning", "error", "background"],
-        lighten: 3,
-        darken: 3,
-      },
-      themes: {
-        light: {
-          dark: false,
-          colors: {
-            primary: theme?.lightPrimary ?? DEFAULT_LIGHT_PRIMARY,
-            accent: theme?.lightAccent ?? "#007A99",
-            secondary: theme?.lightSecondary ?? "#973542",
-            success: theme?.lightSuccess ?? "#43A047",
-            info: theme?.lightInfo ?? "#1976d2",
-            warning: theme?.lightWarning ?? "#FF6D00",
-            error: theme?.lightError ?? "#EF5350",
-            background: "#F5F7F3",
-            surface: "#FFFFFF",
-          },
-        },
-        dark: {
-          dark: true,
-          colors: {
-            primary: theme?.darkPrimary ?? DEFAULT_DARK_PRIMARY,
-            accent: theme?.darkAccent ?? "#007A99",
-            secondary: theme?.darkSecondary ?? "#973542",
-            success: theme?.darkSuccess ?? "#43A047",
-            info: theme?.darkInfo ?? "#1976d2",
-            warning: theme?.darkWarning ?? "#FF6D00",
-            error: theme?.darkError ?? "#EF5350",
-            background: "#141816",
-            surface: "#1C211E",
-          },
-        },
-      },
-    };
-  });
+export default defineNuxtPlugin(async () => {
+  let theme = __cachedTheme;
+  if (!theme) {
+    theme = await fetchTheme();
+    __cachedTheme = theme;
+  }
+  applyTokenOverrides(theme);
 });

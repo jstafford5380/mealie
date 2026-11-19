@@ -1,5 +1,4 @@
 import { useDark, useToggle } from "@vueuse/core";
-import type { FilterFunction } from "vuetify";
 
 export const useToggleDarkMode = () => {
   const isDark = useDark();
@@ -53,7 +52,7 @@ export const normalize = (str: string) => {
 /**
  * @deprecated prefer fuse.js/use-search.ts
  */
-export const normalizeFilter: FilterFunction = (value: string, query: string) => {
+export const normalizeFilter = (value: string, query: string) => {
   const normalizedValue = normalize(value);
   const normalizeQuery = normalize(query);
   return normalizedValue.includes(normalizeQuery);

@@ -11,11 +11,6 @@ export default {
     }),
   ],
   test: {
-    server: {
-      deps: {
-        inline: ["vuetify"],
-      },
-    },
     globals: true,
     environment: "jsdom",
     // Node 25+ defines its own global localStorage, which is undefined without --localstorage-file

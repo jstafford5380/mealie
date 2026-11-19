@@ -1,8 +1,6 @@
 import { mount } from "@vue/test-utils";
 import { createI18n } from "vue-i18n";
 import { describe, expect, it } from "vitest";
-import { createVuetify } from "vuetify";
-import { VNumberInput } from "vuetify/components/VNumberInput";
 import messages from "@/lang/messages/en-US.json";
 import CookTime from "./CookTime.vue";
 
@@ -10,8 +8,7 @@ function editor(value: number | null = null) {
   return mount(CookTime, {
     props: { modelValue: value, isEditMode: true },
     global: {
-      plugins: [createVuetify(), createI18n({ legacy: false, locale: "en-US", messages: { "en-US": messages } })],
-      components: { VNumberInput },
+      plugins: [createI18n({ legacy: false, locale: "en-US", messages: { "en-US": messages } })],
     },
   });
 }

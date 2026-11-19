@@ -14,6 +14,20 @@ Visual direction: [design canvas](https://claude.ai/artifact/XWeEjRbrLRHd3gkb3Cx
 | `frontend/components.json` | Shadcn Vue CLI configuration for adding more primitives. |
 | `frontend/nuxt.config.ts` | Tailwind Vite plugin, cascade-layer order, `ui/**` excluded from component auto-import. |
 
+## Vuetify removed
+
+Vuetify and `vuetify-nuxt-module` are gone from the app, its config and its dependencies. What replaced the coexistence measures below:
+
+- Tailwind's preflight is imported (`tailwind.css`), so headings, lists and links start unstyled. Rendered markdown (`SafeMarkdown`) and announcement bodies style their own lists, links and headings; the print view styles its small headings.
+- The layer statement and the `@source not inline(...)` exclusions are deleted; `hidden`, `w-100`-style and `rounded-sm/-md/-xl` classes are ordinary Tailwind again. The item/control/card/panel radius names stay.
+- `plugins/theme.ts` fetches the server theme and sets the primary tokens directly; `plugins/dark-mode.client.ts` only keeps `.dark` on `<html>`.
+- The locale composable sets `<html lang>` and `<html dir>` (RTL for Arabic and Hebrew), which Vuetify's locale used to handle; the locale files no longer load Vuetify's messages.
+- `lib/vuetify-coexistence.ts` only keeps dialogs open for clicks on toasts and the loading notice.
+- Validation scopes are `FieldScope` / `provideFieldGroup()` (the `VForm` type in `types/auto-forms.ts` is now a small local interface). The injection key keeps its old string value.
+- Breakpoint checks use `useMediaQuery`; `useDisplay`, `useRtl`, `useLocale` and `useTheme` have no remaining users.
+
+The sections below describe the coexistence period and are kept for history.
+
 ## Coexistence rules
 
 1. **Layer order.** `nuxt.config.ts` puts `@layer theme, base, vuetify-core, vuetify-components, vuetify-overrides, components, vuetify-utilities, utilities, vuetify-final;` first in `<head>`. Tailwind's base sits below Vuetify; Tailwind utilities beat Vuetify components and utilities.

@@ -66,7 +66,7 @@
         <h3 class="m-0 mb-4 text-xl font-bold tracking-tight">
           {{ currentAnnouncement.meta?.title }}
         </h3>
-        <div class="announcement-body text-[15px] leading-relaxed">
+        <div class="text-[15px] leading-relaxed [&_a:not([class])]:text-primary [&_a:not([class])]:underline [&_hr]:my-4 [&_li]:mb-1 [&_p]:mb-3 [&_ul]:mb-3 [&_ul]:list-disc [&_ul]:ps-5">
           <component :is="currentAnnouncement.component" />
         </div>
       </div>

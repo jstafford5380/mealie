@@ -45,7 +45,7 @@
     >
       <div class="flex flex-col gap-3 px-6 pb-2 text-[15px]">
         {{ $t('data-pages.categories.delete-unused-confirm', { count: unusedCategoryIds.length }, unusedCategoryIds.length) }}
-        <ul class="m-0 ps-5 text-sm leading-7 text-muted-foreground">
+        <ul class="m-0 list-disc ps-5 text-sm leading-7 text-muted-foreground">
           <li v-for="name in unusedCategoryNamesPreview" :key="name">
             {{ name }}
           </li>

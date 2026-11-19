@@ -423,6 +423,22 @@ p {
   margin-bottom: 0 !important;
 }
 
+.wrapper h4,
+.wrapper h5,
+.wrapper h6 {
+  margin: 0.5rem 0 0.25rem;
+  font-weight: 700;
+}
+
+.wrapper h4 {
+  font-size: 1rem;
+}
+
+.wrapper h5,
+.wrapper h6 {
+  font-size: 0.9rem;
+}
+
 .print-heading {
   margin: 1.25rem 0 0.5rem;
   font-size: 1.25rem;

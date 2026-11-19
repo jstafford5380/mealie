@@ -16,7 +16,6 @@ import TheSnackbar from "./TheSnackbar.vue";
 /**
  * Application frame: persistent sidebar on large screens (collapsible), a slide-over
  * navigation sheet below that, a phone tab bar for members, and global search.
- * <v-app> stays as the root only so pages that still use Vuetify keep its context.
  */
 const props = withDefaults(defineProps<{
   sections: AppNavSection[];
@@ -67,7 +66,7 @@ function openAnnouncements() {
 </script>
 
 <template>
-  <v-app class="app-shell-root">
+  <div class="app-shell-root">
     <a
       href="#main-content"
       class="sr-only z-[3000] rounded-control bg-primary px-4 py-2 font-sans font-semibold text-primary-foreground focus:not-sr-only focus:fixed focus:start-3 focus:top-3"
@@ -199,15 +198,5 @@ function openAnnouncements() {
     <AnnouncementDialog v-model="announcementsOpen" />
     <LanguageDialog v-model="languageOpen" />
     <TheSnackbar />
-  </v-app>
+  </div>
 </template>
-
-<style>
-/* Vuetify's application wrapper stays only as a context provider for legacy pages. */
-.app-shell-root.v-application {
-  background: var(--background) !important;
-}
-.app-shell-root > .v-application__wrap {
-  min-height: 100dvh;
-}
-</style>

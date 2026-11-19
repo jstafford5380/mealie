@@ -6,7 +6,7 @@ import { MEALPLAN_SCALE_SAVE_DELAY_MS } from "~/composables/use-mealplan-scale";
 import type { PlanEntryOut } from "~/lib/api/types/meal-plan";
 import { makePlanEntry, makeRecipeSummary } from "~/tests/factories";
 
-// the real button needs vuetify; all this control adds on top of it is the debounced save
+// the real button is stubbed; all this control adds on top of it is the debounced save
 const RecipeScaleEditButton = defineComponent({
   name: "RecipeScaleEditButton",
   props: {

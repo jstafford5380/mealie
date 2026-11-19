@@ -57,7 +57,7 @@ describe("RecipeTimeline", () => {
 
     shallowMount(RecipeTimeline, {
       props: { queryFilter: "groupId=\"g\"", showRecipeCards: true },
-      global: { mocks: { $globals: { icons: {} }, $vuetify: { display: { smAndDown: false } } } },
+      global: { mocks: { $globals: { icons: {} } } },
     });
     await flushPromises();
 

@@ -57,7 +57,6 @@ describe("RecipePage parsing navigation", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubGlobal("useDisplay", () => ({ smAndUp: ref(true) }));
     vi.stubGlobal("useMealieAuth", () => ({ user: ref({ groupSlug: "home" }) }));
     vi.stubGlobal("onBeforeRouteLeave", vi.fn());
   });

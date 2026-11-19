@@ -1,5 +1,3 @@
-import type { VForm as VuetifyForm } from "vuetify/components/VForm";
-
 type FormFieldType
   = | "text"
     | "textarea"
@@ -44,4 +42,9 @@ export interface FormField {
 
 export type AutoFormItems = FormField[];
 
-export type VForm = InstanceType<typeof VuetifyForm>;
+/** What a validation scope exposes (FieldScope, provideFieldGroup), in place of Vuetify's form. */
+export interface VForm {
+  validate: () => Promise<{ valid: boolean; errors?: unknown[] }>;
+  reset?: () => void | Promise<void>;
+  resetValidation?: () => void | Promise<void>;
+}

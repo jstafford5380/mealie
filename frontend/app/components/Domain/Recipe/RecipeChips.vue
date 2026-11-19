@@ -5,7 +5,7 @@
   >
     <h2
       v-if="title"
-      class="mt-4"
+      class="mt-4 mb-2 text-lg font-bold"
     >
       {{ title }}
     </h2>

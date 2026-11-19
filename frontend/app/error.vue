@@ -1,53 +1,42 @@
 <template>
-  <v-app
+  <div
     v-if="ready"
-    dark
+    class="flex min-h-dvh flex-col items-center justify-center gap-6 bg-background px-4 text-center font-sans text-foreground"
   >
-    <v-card-title>
-      <slot>
-        <h1 class="mx-auto">
-          {{ $t("page.404-page-not-found") }}
-        </h1>
-      </slot>
-    </v-card-title>
-    <div class="d-flex justify-space-around">
-      <div class="d-flex align-center">
-        <p class="primary--text">
-          4
-        </p>
-        <v-icon
-          color="primary"
-          class="mx-auto mb-0"
-          size="200"
-        >
-          {{ $globals.icons.primary }}
-        </v-icon>
-        <p class="primary--text">
-          4
-        </p>
-      </div>
+    <div
+      class="flex items-center gap-4 text-[96px] leading-none font-bold text-primary sm:text-[140px]"
+      aria-hidden="true"
+    >
+      <span>4</span>
+      <AppLogo :size="104" />
+      <span>4</span>
     </div>
-    <v-card-actions>
-      <v-spacer />
+    <slot>
+      <h1 class="m-0 text-[26px] font-bold tracking-tight">
+        {{ $t("page.404-page-not-found") }}
+      </h1>
+    </slot>
+    <div class="flex flex-wrap justify-center gap-2">
       <slot name="actions">
-        <v-btn
+        <Button
           v-for="(button, index) in buttons"
           :key="index"
-          color="primary"
           @click="clearError({ redirect: button.to })"
         >
-          <v-icon start>
-            {{ button.icon }}
-          </v-icon>
+          <MdiIcon
+            :path="button.icon"
+            class="size-4"
+          />
           {{ button.text }}
-        </v-btn>
+        </Button>
       </slot>
-      <v-spacer />
-    </v-card-actions>
-  </v-app>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { Button } from "~/components/ui/button";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { useGlobalI18n } from "~/composables/use-global-i18n";
 
 const props = defineProps({

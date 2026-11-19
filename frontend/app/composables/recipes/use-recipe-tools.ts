@@ -1,6 +1,6 @@
 import { useAsyncKey } from "../use-utils";
 import { useUserApi } from "~/composables/api";
-import type { VForm } from "~/types/vuetify";
+import type { VForm } from "~/types/auto-forms";
 import type { ToolOut } from "~/lib/api/types/recipe";
 
 export const useTools = function (eager = true) {

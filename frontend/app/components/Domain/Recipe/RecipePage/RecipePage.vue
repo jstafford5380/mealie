@@ -253,7 +253,7 @@ import { useHouseholdSelf } from "~/composables/use-households";
 
 const recipe = defineModel<RecipeOut>({ required: true });
 
-const display = useDisplay();
+const isSmallScreen = useMediaQuery("(max-width: 599.98px)");
 const isDesktop = useMediaQuery("(min-width: 1024px)");
 const { user } = usePageUser();
 const i18n = useI18n();
@@ -488,7 +488,7 @@ async function deleteRecipe() {
  */
 const landscape = computed(() => {
   const preferLandscape = recipe.value.settings?.landscapeView;
-  const smallScreen = !display.smAndUp.value;
+  const smallScreen = isSmallScreen.value;
 
   if (preferLandscape) {
     return true;

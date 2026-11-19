@@ -168,7 +168,8 @@ const emit = defineEmits<{
 
 const SWIPE_THRESHOLD = 50;
 
-const { isRtl } = useRtl();
+// reading direction comes from <html dir>, set from the locale
+const isRtl = computed(() => typeof document !== "undefined" && document.documentElement.dir === "rtl");
 const swipeRowRef = ref<HTMLElement | null>(null);
 
 onMounted(() => {

@@ -59,16 +59,16 @@ Keep their behavior and replace the surrounding Vuetify controls.
 
 ## Non-component cleanup
 
-- [ ] Replace `useDisplay` and all `$vuetify.display` consumers with a consistent breakpoint adapter.
-- [ ] Replace injected theme APIs, `$vuetify.theme`, Vuetify hooks, and the dark-mode plugin integration.
-- [ ] Preserve server-provided theme values and branding overrides in the new token system.
-- [ ] Replace Vuetify directives and CSS selectors, including deep selectors and responsive utility classes.
-- [ ] Replace Vuetify-specific form types and component imports in tests.
+- [x] Replace `useDisplay` and all `$vuetify.display` consumers with a consistent breakpoint adapter.
+- [x] Replace injected theme APIs, `$vuetify.theme`, Vuetify hooks, and the dark-mode plugin integration.
+- [x] Preserve server-provided theme values and branding overrides in the new token system.
+- [x] Replace Vuetify directives and CSS selectors, including deep selectors and responsive utility classes.
+- [x] Replace Vuetify-specific form types and component imports in tests.
 - [ ] Preserve Nuxt auto-import names or update every consumer deliberately.
 - [ ] Preserve API clients, generated schemas, composable state, data scoping, and route middleware.
 - [ ] Verify app plugins, PWA share redirects, auth refresh, cookies, and error toasts after layout changes.
 - [ ] Verify print styles and specialized no-print controls.
-- [ ] Keep every locale intact. Add new strings only to `en-US`.
+- [x] Keep every locale intact. Add new strings only to `en-US`.
 
 ## Completion gates
 
@@ -77,7 +77,7 @@ Keep their behavior and replace the surrounding Vuetify controls.
 - [ ] Screenshots cover the full page and the distinct interaction states needed to explain it.
 - [ ] Public and permission-limited users retain the correct functions and restrictions.
 - [ ] Desktop, narrow screens, touch input, keyboard access, dark mode, and RTL all pass review.
-- [ ] No runtime or source dependency on Vuetify remains in the application UI.
+- [x] No runtime or source dependency on Vuetify remains in the application UI.
 - [ ] Repository frontend checks and relevant end-to-end workflows pass.
 
 An empty grep result alone does not prove replacement. A passing screenshot comparison alone does not prove function parity.

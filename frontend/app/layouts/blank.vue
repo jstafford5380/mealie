@@ -1,5 +1,5 @@
 <template>
-  <v-app class="app-shell-root">
+  <div class="app-shell-root">
     <div class="flex min-h-dvh flex-col bg-background font-sans text-foreground">
       <div
         v-if="$appInfo.demoStatus"
@@ -16,7 +16,7 @@
       </main>
     </div>
     <TheSnackbar />
-  </v-app>
+  </div>
 </template>
 
 <script setup lang="ts">

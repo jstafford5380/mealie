@@ -4,7 +4,6 @@ import { useGlobalI18n } from "../use-global-i18n";
 
 export const useLocales = () => {
   const i18n = useGlobalI18n();
-  const { current: vuetifyLocale } = useLocale();
 
   const locale = computed<LocaleObject["code"]>({
     get: () => i18n.locale.value,
@@ -13,11 +12,17 @@ export const useLocales = () => {
     },
   });
 
+  // the page's language and reading direction follow the chosen locale (RTL for Arabic, Hebrew)
   function updateLocale(lc: LocaleObject["code"]) {
-    vuetifyLocale.value = lc;
+    if (typeof document === "undefined") {
+      return;
+    }
+    const entry = LOCALES.find(l => l.value === lc);
+    document.documentElement.lang = lc;
+    document.documentElement.dir = entry?.dir === "rtl" ? "rtl" : "ltr";
   }
 
-  // auto update vuetify locale
+  // keep <html lang/dir> in step with the locale
   watch(locale, (lc) => {
     updateLocale(lc);
   });

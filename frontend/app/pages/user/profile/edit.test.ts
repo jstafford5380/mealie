@@ -2,8 +2,6 @@ import { flushPromises, mount } from "@vue/test-utils";
 import { ref } from "vue";
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 import { createI18n } from "vue-i18n";
-import { createVuetify } from "vuetify";
-import * as components from "vuetify/components";
 import messages from "@/lang/messages/en-US.json";
 import ProfileEditPage from "./edit.vue";
 
@@ -56,7 +54,6 @@ describe("profile email validation", () => {
     const wrapper = mount(ProfileEditPage, {
       global: {
         plugins: [
-          createVuetify({ components }),
           createI18n({ legacy: false, locale: "en-US", messages: { "en-US": messages } }),
         ],
         stubs: {
