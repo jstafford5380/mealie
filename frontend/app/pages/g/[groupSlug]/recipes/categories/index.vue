@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <div class="mx-auto w-full max-w-[1100px] px-4 pb-16 pt-3 sm:px-6 lg:pt-8">
     <RecipeOrganizerPage
       v-if="store"
       :items="store"
@@ -12,7 +12,7 @@
         {{ $t("category.categories") }}
       </template>
     </RecipeOrganizerPage>
-  </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">

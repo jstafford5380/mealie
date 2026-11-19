@@ -2118,39 +2118,37 @@
       "source": "frontend/app/components/Domain/Recipe/RecipeOrganizerPage.vue",
       "name": "RecipeOrganizerPage",
       "components": [
-        "BaseButton",
-        "BaseCardSectionTitle",
         "BaseDialog",
-        "ContextMenu",
+        "Button",
+        "CheckboxField",
+        "DropdownMenu",
+        "DropdownMenuContent",
+        "DropdownMenuItem",
+        "DropdownMenuTrigger",
+        "EllipsisVerticalIcon",
+        "MdiIcon",
+        "NuxtLink",
+        "PencilIcon",
+        "PlusIcon",
         "RecipeOrganizerDialog",
-        "T"
+        "SearchIcon",
+        "T",
+        "TextField",
+        "Trash2Icon"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipeOrganizerDialog.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
-        "frontend/app/components/global/ContextMenu.vue"
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-card",
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-checkbox",
-        "v-col",
-        "v-icon",
-        "v-row",
-        "v-spacer",
-        "v-text-field",
-        "v-toolbar-title"
-      ],
+      "vuetify": [],
       "events": [
         "click: dialogs.organizer = true",
         "confirm: deleteOne()",
         "confirm: updateOne()",
-        "delete: confirmDelete(item)",
-        "edit: openUpdateDialog(item)"
+        "select: confirmDelete(item)",
+        "select: openUpdateDialog(item)"
       ],
       "models": [
         "dialogs.delete",
@@ -2161,6 +2159,7 @@
         "updateTarget.onHand"
       ],
       "conditions": [
+        "!fuzzyItems.length",
         "deleteTarget",
         "isTitle(key)",
         "item",
@@ -3373,6 +3372,14 @@
       "name": "RecipeTimeline",
       "components": [
         "AppLoader",
+        "Button",
+        "DropdownMenu",
+        "DropdownMenuCheckboxItem",
+        "DropdownMenuContent",
+        "DropdownMenuItem",
+        "DropdownMenuSeparator",
+        "DropdownMenuTrigger",
+        "MdiIcon",
         "Props",
         "RecipeSummary",
         "RecipeTimelineItem"
@@ -3381,38 +3388,22 @@
         "frontend/app/components/Domain/Recipe/RecipeTimelineItem.vue",
         "frontend/app/components/global/AppLoader.vue"
       ],
-      "vuetify": [
-        "v-badge",
-        "v-btn",
-        "v-card",
-        "v-card-title",
-        "v-col",
-        "v-divider",
-        "v-icon",
-        "v-list",
-        "v-list-item",
-        "v-list-item-title",
-        "v-menu",
-        "v-row",
-        "v-spacer",
-        "v-timeline"
-      ],
+      "vuetify": [],
       "events": [
-        "click: reverseSort",
-        "click: toggleEventTypeOption(option.value)",
         "delete: deleteTimelineEvent(index)",
-        "update: updateTimelineEvent(index, $event)"
+        "select.prevent: reverseSort",
+        "update: updateTimelineEvent(index, $event)",
+        "update:model-value: toggleEventTypeOption(option.value)"
       ],
       "models": [],
       "conditions": [
         "!loading",
+        "filterBadgeCount > 0",
         "loading",
         "timelineEvents.length"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/Recipe/RecipeTimelineBadge.vue",
@@ -3445,34 +3436,30 @@
         "AppButtonUpload",
         "BaseDialog",
         "Blob",
-        "ImageCropper"
+        "Button",
+        "DropdownMenu",
+        "DropdownMenuContent",
+        "DropdownMenuItem",
+        "DropdownMenuTrigger",
+        "ImageCropper",
+        "MdiIcon",
+        "TextField",
+        "TextareaField",
+        "XIcon"
       ],
       "dependencies": [
         "frontend/app/components/global/AppButtonUpload.vue",
         "frontend/app/components/global/BaseDialog.vue",
-        "frontend/app/components/global/ImageCropper.vue"
+        "frontend/app/components/global/ImageCropper.vue",
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card-text",
-        "v-col",
-        "v-form",
-        "v-icon",
-        "v-img",
-        "v-list",
-        "v-list-item",
-        "v-list-item-title",
-        "v-menu",
-        "v-row",
-        "v-spacer",
-        "v-text-field",
-        "v-textarea"
-      ],
+      "vuetify": [],
       "events": [
         "click: clearImage",
-        "click: contextMenuEventHandler(item.event)",
         "confirm: $emit('delete')",
         "save: updateUploadedImage",
+        "select: contextMenuEventHandler(item.event)",
         "submit: submitEdit",
         "uploaded: uploadImage"
       ],
@@ -3494,30 +3481,20 @@
       "source": "frontend/app/components/Domain/Recipe/RecipeTimelineItem.vue",
       "name": "RecipeTimelineItem",
       "components": [
+        "MdiIcon",
         "Props",
-        "RecipeCardMobile",
+        "RecipeCardLineItem",
         "RecipeTimelineContextMenu",
         "SafeMarkdown",
         "UserAvatar"
       ],
       "dependencies": [
-        "frontend/app/components/Domain/Recipe/RecipeCardMobile.vue",
+        "frontend/app/components/Domain/Recipe/RecipeCardLineItem.vue",
         "frontend/app/components/Domain/Recipe/RecipeTimelineContextMenu.vue",
         "frontend/app/components/Domain/User/UserAvatar.vue",
         "frontend/app/components/global/SafeMarkdown.vue"
       ],
-      "vuetify": [
-        "v-card",
-        "v-card-text",
-        "v-card-title",
-        "v-chip",
-        "v-col",
-        "v-divider",
-        "v-icon",
-        "v-img",
-        "v-row",
-        "v-timeline-item"
-      ],
+      "vuetify": [],
       "events": [
         "click: $emit('selected')",
         "delete: $emit('delete')",
@@ -3526,19 +3503,14 @@
       ],
       "models": [],
       "conditions": [
-        "!useMobileFormat",
         "currentUser && currentUser.id == event.userId && event.eventType != 'system'",
         "event.eventMessage",
         "event.timestamp",
-        "eventImageUrl",
-        "showRecipeCards && recipe",
-        "showRecipeCards && recipe && (useMobileFormat || event.eventMessage)",
-        "useMobileFormat"
+        "eventImageUrl && !hideImage",
+        "showRecipeCards && recipe"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "useDisplay"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/Recipe/RecipeUnitSystemButton.vue",

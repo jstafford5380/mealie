@@ -1,96 +1,75 @@
 <template>
-  <div style="height: 100%;">
-    <v-row class="mb-0 mt-3 mx-7">
-      <v-spacer />
-      <v-col class="text-right">
-        <!-- Filters -->
-        <v-menu
-          offset-y
-          bottom
-          start
-          nudge-bottom="3"
-          :close-on-content-click="false"
+  <div class="h-full font-sans">
+    <div class="mb-4 flex justify-end">
+      <DropdownMenu :modal="false">
+        <DropdownMenuTrigger as-child>
+          <Button variant="outline">
+            <MdiIcon
+              :path="$globals.icons.filter"
+              class="size-4"
+            />
+            {{ $t("general.filter") }}
+            <span
+              v-if="filterBadgeCount > 0"
+              class="rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground tabular-nums"
+            >{{ filterBadgeCount }}</span>
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          class="min-w-56"
         >
-          <template #activator="{ props: activatorProps }">
-            <v-badge
-              :content="filterBadgeCount"
-              :model-value="filterBadgeCount > 0"
-              bordered
-            >
-              <v-btn
-                variant="text"
-                v-bind="activatorProps"
-                :prepend-icon="$globals.icons.filter"
-              >
-                {{ $t("general.filter") }}
-              </v-btn>
-            </v-badge>
-          </template>
-          <v-card>
-            <v-list>
-              <v-list-item
-                :prepend-icon="preferences.orderDirection === 'asc' ? $globals.icons.sortCalendarDescending : $globals.icons.sortCalendarAscending"
-                :title="preferences.orderDirection === 'asc' ? $t('general.sort-descending') : $t('general.sort-ascending')"
-                @click="reverseSort"
-              />
-              <v-divider />
-              <v-list-item
-                v-for="option, idx in eventTypeFilterState"
-                :key="idx"
-                :active="option.checked"
-                :color="option.checked ? 'primary' : undefined"
-                @click="toggleEventTypeOption(option.value)"
-              >
-                <template #prepend>
-                  <v-icon>
-                    {{ option.icon }}
-                  </v-icon>
-                </template>
-                <v-list-item-title>
-                  {{ option.label }}
-                </v-list-item-title>
-              </v-list-item>
-            </v-list>
-          </v-card>
-        </v-menu>
-      </v-col>
-    </v-row>
+          <DropdownMenuItem @select.prevent="reverseSort">
+            <MdiIcon
+              :path="preferences.orderDirection === 'asc' ? $globals.icons.sortCalendarDescending : $globals.icons.sortCalendarAscending"
+              class="size-4"
+            />
+            {{ preferences.orderDirection === 'asc' ? $t('general.sort-descending') : $t('general.sort-ascending') }}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuCheckboxItem
+            v-for="option, idx in eventTypeFilterState"
+            :key="idx"
+            :model-value="option.checked"
+            @select.prevent
+            @update:model-value="toggleEventTypeOption(option.value)"
+          >
+            <MdiIcon
+              :path="option.icon"
+              class="size-4"
+            />
+            {{ option.label }}
+          </DropdownMenuCheckboxItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
     <div
       v-if="timelineEvents.length"
       id="timeline-container"
-      height="fit-content"
-      width="100%"
-      class="px-1"
       :style="maxHeight ? `max-height: ${maxHeight}; overflow-y: auto;` : ''"
     >
-      <v-timeline
-        :density="$vuetify.display.smAndDown ? ($vuetify.display.xs ? 'compact' : 'comfortable') : undefined"
-        justify="center"
-        class="timeline"
-      >
+      <!-- the rail runs behind the dots -->
+      <ol class="relative m-0 list-none p-0 before:absolute before:inset-y-2 before:start-[17px] before:w-0.5 before:bg-border">
         <RecipeTimelineItem
           v-for="(event, index) in timelineEvents"
           :key="event.id"
           :event="event"
           :recipe="recipes.get(event.recipeId)"
           :show-recipe-cards="showRecipeCards"
-          :width="$vuetify.display.smAndDown ? '100%' : undefined"
           @update="updateTimelineEvent(index, $event)"
           @delete="deleteTimelineEvent(index)"
         />
-      </v-timeline>
+      </ol>
     </div>
-    <v-card
+    <p
       v-else-if="!loading"
-      class="mt-2"
+      class="m-0 rounded-card border border-dashed px-4 py-10 text-center text-sm text-muted-foreground"
     >
-      <v-card-title class="justify-center pa-9">
-        {{ $t("recipe.timeline-no-events-found-try-adjusting-filters") }}
-      </v-card-title>
-    </v-card>
+      {{ $t("recipe.timeline-no-events-found-try-adjusting-filters") }}
+    </p>
     <div
       v-if="loading"
-      class="mb-3 text-center"
+      class="my-4 text-center"
     >
       <AppLoader
         :loading="loading"
@@ -101,6 +80,16 @@
 </template>
 
 <script setup lang="ts">
+import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { useThrottleFn, whenever } from "@vueuse/core";
 import RecipeTimelineItem from "./RecipeTimelineItem.vue";
 import type { TimelineEventEdit } from "./RecipeTimelineContextMenu.vue";

@@ -1,32 +1,17 @@
 <template>
-  <div>
-    <BasePageTitle
+  <div class="mx-auto w-full max-w-[760px] px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8">
+    <h1
       v-if="groupName"
-      class="mt-n4 pt-8"
+      class="m-0 mb-2 text-[26px] font-bold tracking-tight sm:text-[32px]"
     >
-      <template #header>
-        <v-img
-          width="100%"
-          max-height="200"
-          max-width="150"
-          src="/svgs/manage-members.svg"
-        />
-      </template>
-      <template #title>
-        {{ $t("recipe.group-global-timeline", { groupName }) }}
-      </template>
-    </BasePageTitle>
-    <v-sheet
-      :class="$vuetify.display.smAndDown ? 'pa-0' : 'px-3 py-0'"
-      style="background-color: transparent;"
-    >
-      <RecipeTimeline
-        v-if="queryFilter"
-        v-model="ready"
-        show-recipe-cards
-        :query-filter="queryFilter"
-      />
-    </v-sheet>
+      {{ $t("recipe.group-global-timeline", { groupName }) }}
+    </h1>
+    <RecipeTimeline
+      v-if="queryFilter"
+      v-model="ready"
+      show-recipe-cards
+      :query-filter="queryFilter"
+    />
   </div>
 </template>
 

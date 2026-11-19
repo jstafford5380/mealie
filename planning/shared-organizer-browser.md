@@ -20,6 +20,16 @@ Applies to category, tag, and tool browsing pages. Source: [RecipeOrganizerPage.
 
 The card context button has an icon without an accessible name, and its contents are nested inside a linked card. In captures it can be absent from the accessibility tree until opened. Use a named button with independent keyboard focus and retain the prevention of card navigation.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Outlined search field above a toolbar row holding the icon, title and Create. | Heading (the organizer type) with Create beside it, then a search field. |
+| Letter sections with Vuetify card links; a context-menu button inside each card. | Letter headings over a grid of rows (1–4 columns by width); each row links to the filtered recipes and has its own labelled "…" menu with Edit and Delete. |
+| No results left an empty area. | "No results" (or "Nothing here yet") appears when the list is empty. |
+| Delete confirmation as a bottom sheet. | The standard dialog, with the target name highlighted. |
+
+
 ## Shadcn Vue replacement checklist
 
 - [ ] Use Input with clear control, Card links, separately focusable DropdownMenu triggers, Dialog/Sheet, and Checkbox.

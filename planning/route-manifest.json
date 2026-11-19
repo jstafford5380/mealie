@@ -936,9 +936,7 @@
         "frontend/app/components/Domain/Mealplan/MealPlanAddRecipeDialog.vue",
         "frontend/app/components/Domain/Mealplan/MealPlanDatePicker.vue",
         "frontend/app/components/Domain/Recipe/RecipeAssets.vue",
-        "frontend/app/components/Domain/Recipe/RecipeCardImage.vue",
-        "frontend/app/components/Domain/Recipe/RecipeCardMobile.vue",
-        "frontend/app/components/Domain/Recipe/RecipeCardRating.vue",
+        "frontend/app/components/Domain/Recipe/RecipeCardLineItem.vue",
         "frontend/app/components/Domain/Recipe/RecipeChips.vue",
         "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenu.vue",
         "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenuContent.vue",
@@ -984,6 +982,7 @@
         "frontend/app/components/Domain/Recipe/RecipeRating.vue",
         "frontend/app/components/Domain/Recipe/RecipeScaleEditButton.vue",
         "frontend/app/components/Domain/Recipe/RecipeSettingsSwitches.vue",
+        "frontend/app/components/Domain/Recipe/RecipeThumb.vue",
         "frontend/app/components/Domain/Recipe/RecipeTimeCard.vue",
         "frontend/app/components/Domain/Recipe/RecipeTimeInput.vue",
         "frontend/app/components/Domain/Recipe/RecipeTimeline.vue",
@@ -1408,9 +1407,7 @@
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipeOrganizerPage.vue"
       ],
-      "vuetify": [
-        "v-container"
-      ],
+      "vuetify": [],
       "events": [
         "delete: actions.deleteOne",
         "update: actions.updateOne"
@@ -1425,10 +1422,8 @@
         "frontend/app/components/Domain/Recipe/RecipeOrganizerDialog.vue",
         "frontend/app/components/Domain/Recipe/RecipeOrganizerPage.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/ContextMenu.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
         "frontend/app/components/ui/field/TextField.vue"
       ]
@@ -1568,9 +1563,7 @@
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipeOrganizerPage.vue"
       ],
-      "vuetify": [
-        "v-container"
-      ],
+      "vuetify": [],
       "events": [
         "delete: actions.deleteOne",
         "update: actions.updateOne"
@@ -1585,10 +1578,8 @@
         "frontend/app/components/Domain/Recipe/RecipeOrganizerDialog.vue",
         "frontend/app/components/Domain/Recipe/RecipeOrganizerPage.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/ContextMenu.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
         "frontend/app/components/ui/field/TextField.vue"
       ]
@@ -1600,17 +1591,12 @@
       "document": "pages/g--groupSlug--recipes--timeline.md",
       "status": "reviewed",
       "components": [
-        "BasePageTitle",
         "RecipeTimeline"
       ],
       "dependencies": [
-        "frontend/app/components/Domain/Recipe/RecipeTimeline.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/Domain/Recipe/RecipeTimeline.vue"
       ],
-      "vuetify": [
-        "v-img",
-        "v-sheet"
-      ],
+      "vuetify": [],
       "events": [],
       "models": [
         "ready"
@@ -1620,26 +1606,10 @@
         "queryFilter"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ],
+      "vuetifyAPIs": [],
       "componentClosure": [
-        "frontend/app/components/Domain/Mealplan/MealPlanAddRecipeDialog.vue",
-        "frontend/app/components/Domain/Mealplan/MealPlanDatePicker.vue",
-        "frontend/app/components/Domain/Recipe/RecipeCardImage.vue",
-        "frontend/app/components/Domain/Recipe/RecipeCardMobile.vue",
-        "frontend/app/components/Domain/Recipe/RecipeCardRating.vue",
-        "frontend/app/components/Domain/Recipe/RecipeChips.vue",
-        "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenu.vue",
-        "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenuContent.vue",
-        "frontend/app/components/Domain/Recipe/RecipeDialogAddToShoppingList.vue",
-        "frontend/app/components/Domain/Recipe/RecipeDialogPrintPreferences.vue",
-        "frontend/app/components/Domain/Recipe/RecipeDialogShare.vue",
-        "frontend/app/components/Domain/Recipe/RecipeFavoriteBadge.vue",
-        "frontend/app/components/Domain/Recipe/RecipeIngredientListItem.vue",
-        "frontend/app/components/Domain/Recipe/RecipeIngredientSubstitutions.vue",
-        "frontend/app/components/Domain/Recipe/RecipePrintView.vue",
-        "frontend/app/components/Domain/Recipe/RecipeTimeCard.vue",
+        "frontend/app/components/Domain/Recipe/RecipeCardLineItem.vue",
+        "frontend/app/components/Domain/Recipe/RecipeThumb.vue",
         "frontend/app/components/Domain/Recipe/RecipeTimeline.vue",
         "frontend/app/components/Domain/Recipe/RecipeTimelineContextMenu.vue",
         "frontend/app/components/Domain/Recipe/RecipeTimelineItem.vue",
@@ -1649,13 +1619,10 @@
         "frontend/app/components/global/BaseButton.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
         "frontend/app/components/global/ImageCropper.vue",
-        "frontend/app/components/global/SafeInlineHtml.vue",
         "frontend/app/components/global/SafeMarkdown.vue",
-        "frontend/app/components/ui/field/DateField.vue",
-        "frontend/app/components/ui/field/SelectField.vue",
-        "frontend/app/components/ui/field/TextField.vue"
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ]
     },
     {
@@ -1670,9 +1637,7 @@
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipeOrganizerPage.vue"
       ],
-      "vuetify": [
-        "v-container"
-      ],
+      "vuetify": [],
       "events": [
         "delete: deleteOne",
         "update: updateOne"
@@ -1687,10 +1652,8 @@
         "frontend/app/components/Domain/Recipe/RecipeOrganizerDialog.vue",
         "frontend/app/components/Domain/Recipe/RecipeOrganizerPage.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/ContextMenu.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
         "frontend/app/components/ui/field/TextField.vue"
       ]
@@ -1722,9 +1685,7 @@
         "frontend/app/components/Domain/Mealplan/MealPlanAddRecipeDialog.vue",
         "frontend/app/components/Domain/Mealplan/MealPlanDatePicker.vue",
         "frontend/app/components/Domain/Recipe/RecipeAssets.vue",
-        "frontend/app/components/Domain/Recipe/RecipeCardImage.vue",
-        "frontend/app/components/Domain/Recipe/RecipeCardMobile.vue",
-        "frontend/app/components/Domain/Recipe/RecipeCardRating.vue",
+        "frontend/app/components/Domain/Recipe/RecipeCardLineItem.vue",
         "frontend/app/components/Domain/Recipe/RecipeChips.vue",
         "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenu.vue",
         "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenuContent.vue",
@@ -1770,6 +1731,7 @@
         "frontend/app/components/Domain/Recipe/RecipeRating.vue",
         "frontend/app/components/Domain/Recipe/RecipeScaleEditButton.vue",
         "frontend/app/components/Domain/Recipe/RecipeSettingsSwitches.vue",
+        "frontend/app/components/Domain/Recipe/RecipeThumb.vue",
         "frontend/app/components/Domain/Recipe/RecipeTimeCard.vue",
         "frontend/app/components/Domain/Recipe/RecipeTimeInput.vue",
         "frontend/app/components/Domain/Recipe/RecipeTimeline.vue",
@@ -3265,9 +3227,7 @@
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipeCardSection.vue"
       ],
-      "vuetify": [
-        "v-container"
-      ],
+      "vuetify": [],
       "events": [
         "append-recipes: appendRecipes",
         "delete: removeRecipe",

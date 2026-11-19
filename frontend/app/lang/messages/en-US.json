@@ -198,7 +198,8 @@
     "create-name": "Create “{name}”",
     "drag-to-reorder": "Drag to reorder",
     "success": "Success",
-    "failed": "Failed"
+    "failed": "Failed",
+    "options-for": "Options for {name}"
   },
   "group": {
     "create-group": "Create Group",

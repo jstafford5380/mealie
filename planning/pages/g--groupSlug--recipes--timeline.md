@@ -31,6 +31,15 @@ Route: `/g/:groupSlug/recipes/timeline`. Sources: [timeline.vue](../../frontend/
 - Delete opens an explicit irreversible event review. Confirm calls delete; only HTTP 200 removes its local row and shows Event Deleted. Cancel keeps it.
 - No event was deleted; image edits were cancelled. The synthetic comment fixture has a Markdown message and is owned by the catalog account.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Illustration title; a Vuetify timeline alternating cards left and right of a centre line, with date chips on the opposite side. | Plain title; a single-column feed with a rail of event-type dots. Each entry shows the author avatar, subject and date, the message, any photo, and the recipe as a linked row. |
+| Filter menu with a badge for hidden types. | A Filter button with a count of hidden types; the menu holds the sort order and a checkbox per event type. |
+| Owner menu and edit dialog in Vuetify; image upload/remove as separate buttons. | A labelled "…" menu; the edit dialog has labelled fields, shows the current or new photo (with the cropper) and one Upload / Remove button. |
+
+
 ## Screenshots
 
 ### System-created events and filter menu

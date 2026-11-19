@@ -1,5 +1,8 @@
 <template>
-  <div v-if="items">
+  <div
+    v-if="items"
+    class="font-sans"
+  >
     <RecipeOrganizerDialog
       v-model="dialogs.organizer"
       :item-type="itemType"
@@ -8,19 +11,20 @@
     <BaseDialog
       v-if="deleteTarget"
       v-model="dialogs.delete"
-      bottom-sheet
       :title="$t('general.delete-with-name', { name: $t(translationKey) })"
       color="error"
       :icon="$globals.icons.alertCircle"
       can-confirm
       @confirm="deleteOne()"
     >
-      <v-card-text>
-        <p>{{ $t("general.confirm-delete-generic-with-name", { name: $t(translationKey) }) }}</p>
-        <p class="mt-4 mb-0 ml-4">
+      <div class="flex flex-col gap-3 px-6 pb-2 text-[15px]">
+        <p class="m-0">
+          {{ $t("general.confirm-delete-generic-with-name", { name: $t(translationKey) }) }}
+        </p>
+        <p class="m-0 rounded-control bg-muted px-3 py-2 font-semibold">
           {{ deleteTarget.name }}
         </p>
-      </v-card-text>
+      </div>
     </BaseDialog>
 
     <BaseDialog
@@ -31,101 +35,123 @@
       can-confirm
       @confirm="updateOne()"
     >
-      <v-card-text>
-        <v-text-field
+      <div class="px-6 pb-2">
+        <TextField
           v-model="updateTarget.name"
+          autofocus
           :label="$t('general.name')"
         />
-        <v-checkbox
+        <CheckboxField
           v-if="itemType === Organizer.Tool"
           v-model="updateTarget.onHand"
           :label="$t('tool.on-hand')"
         />
-      </v-card-text>
+      </div>
     </BaseDialog>
 
-    <v-row density="comfortable">
-      <v-col>
-        <v-text-field
-          v-model="searchString"
-          variant="outlined"
-          autofocus
-          color="primary accent-3"
-          :placeholder="$t('search.search-placeholder')"
-          :prepend-inner-icon="$globals.icons.search"
-          clearable
-        />
-      </v-col>
-    </v-row>
-
-    <v-row
-      color="transparent"
-      flat
-      class="mt-n1 rounded align-center position-relative w-100 left-0 top-0"
-    >
-      <v-icon
-        size="large"
-        start
-      >
-        {{ icon }}
-      </v-icon>
-      <v-toolbar-title class="headline">
+    <header class="mb-4 flex flex-wrap items-center gap-3">
+      <h1 class="m-0 flex flex-1 items-center gap-2.5 text-[26px] font-bold tracking-tight sm:text-[32px]">
         <slot name="title" />
-      </v-toolbar-title>
-      <v-spacer />
-      <BaseButton
-        create
-        @click="dialogs.organizer = true"
-      />
-    </v-row>
-    <section
-      v-for="(itms, key, idx) in itemsSorted"
-      :key="'header' + idx"
-      :class="idx === 1 ? null : 'my-4'"
+      </h1>
+      <Button @click="dialogs.organizer = true">
+        <PlusIcon class="size-4" />
+        {{ $t('general.create') }}
+      </Button>
+    </header>
+
+    <label class="mb-6 flex h-11 max-w-md items-center gap-2 rounded-control border border-input bg-card px-3 focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/25">
+      <SearchIcon class="size-4 shrink-0 text-muted-foreground" />
+      <input
+        v-model="searchString"
+        type="search"
+        autofocus
+        :placeholder="$t('search.search-placeholder')"
+        :aria-label="$t('search.search')"
+        class="h-full min-w-0 flex-1 bg-transparent text-[15px] outline-none"
+      >
+    </label>
+
+    <p
+      v-if="!fuzzyItems.length"
+      class="m-0 rounded-card border border-dashed px-4 py-8 text-center text-sm text-muted-foreground"
     >
-      <BaseCardSectionTitle
+      {{ searchString ? $t('search.no-results') : $t('data-pages.nothing-here-yet') }}
+    </p>
+
+    <section
+      v-for="(itms, key) in itemsSorted"
+      :key="key"
+      class="mb-6"
+    >
+      <h2
         v-if="isTitle(key)"
-        :title="key"
-      />
-      <v-row>
-        <v-col
-          v-for="(item, index) in itms"
-          :key="'cat' + index"
-          cols="12"
-          :sm="12"
-          :md="6"
-          :lg="4"
-          :xl="3"
+        class="m-0 mb-2 text-sm font-bold text-muted-foreground"
+      >
+        {{ key }}
+      </h2>
+      <ul class="m-0 grid list-none gap-2 p-0 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <template
+          v-for="item in itms"
+          :key="item?.id"
         >
-          <v-card
+          <li
             v-if="item"
-            class="left-border"
-            hover
-            :to="`/g/${groupSlug}?${itemType}=${item.id}`"
+            class="flex min-w-0 items-center rounded-card border bg-card pe-1 transition-colors hover:border-primary/50"
           >
-            <v-card-actions>
-              <v-icon>
-                {{ icon }}
-              </v-icon>
-              <v-card-title class="py-1 text-truncate flex-shrink-1 flex-grow-1">
-                {{ item.name }}
-              </v-card-title>
-              <ContextMenu
-                :items="[presets.delete, presets.edit]"
-                @delete="confirmDelete(item)"
-                @edit="openUpdateDialog(item)"
+            <NuxtLink
+              :to="`/g/${groupSlug}?${itemType}=${item.id}`"
+              class="flex min-w-0 flex-1 items-center gap-3 py-3 ps-4 text-foreground no-underline"
+            >
+              <MdiIcon
+                :path="icon"
+                class="size-5 shrink-0 text-muted-foreground"
               />
-            </v-card-actions>
-          </v-card>
-        </v-col>
-      </v-row>
+              <span class="truncate font-semibold">{{ item.name }}</span>
+            </NuxtLink>
+            <DropdownMenu :modal="false">
+              <DropdownMenuTrigger as-child>
+                <button
+                  type="button"
+                  class="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-highlight hover:text-foreground"
+                  :aria-label="$t('general.options-for', { name: item.name })"
+                >
+                  <EllipsisVerticalIcon class="size-4" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem @select="openUpdateDialog(item)">
+                  <PencilIcon class="size-4" />
+                  {{ $t('general.edit') }}
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  variant="destructive"
+                  @select="confirmDelete(item)"
+                >
+                  <Trash2Icon class="size-4" />
+                  {{ $t('general.delete') }}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </li>
+        </template>
+      </ul>
     </section>
   </div>
 </template>
 
 <script setup lang="ts" generic="T extends { id: string; name: string; slug: string; onHand?: boolean }">
+import { EllipsisVerticalIcon, PencilIcon, PlusIcon, SearchIcon, Trash2Icon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import CheckboxField from "~/components/ui/field/CheckboxField.vue";
+import TextField from "~/components/ui/field/TextField.vue";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import Fuse from "fuse.js";
-import { useContextPresets } from "~/composables/use-context-presents";
 import RecipeOrganizerDialog from "~/components/Domain/Recipe/RecipeOrganizerDialog.vue";
 import { Organizer, type RecipeOrganizer } from "~/lib/api/types/non-generated";
 import { useRouteQuery } from "~/composables/use-router";
@@ -169,8 +195,6 @@ const dialogs = ref({
   update: false,
   delete: false,
 });
-
-const presets = useContextPresets();
 
 const translationKey = computed<string>(() => {
   const typeMap = {

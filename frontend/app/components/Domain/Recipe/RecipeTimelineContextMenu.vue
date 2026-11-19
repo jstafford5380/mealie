@@ -1,5 +1,5 @@
 <template>
-  <div class="text-center">
+  <div class="font-sans">
     <BaseDialog
       v-model="recipeEventEditDialog"
       :title="$t('recipe.edit-timeline-event')"
@@ -9,106 +9,112 @@
       :submit-text="$t('general.save')"
       @submit="submitEdit"
     >
-      <v-card-text>
-        <v-form ref="domEditEventForm" @submit.prevent>
-          <v-text-field v-model="localEvent.subject" :label="$t('general.subject')" />
-          <v-textarea v-model="localEvent.eventMessage" :label="$t('general.message')" rows="4" />
-          <v-row>
-            <v-spacer />
-            <v-col cols="auto">
-              <AppButtonUpload
-                v-if="!newImage && !hasExistingImage"
-                url="none"
-                file-name="image"
-                accept="image/*"
-                :text="$t('recipe.upload-image')"
-                :text-btn="false"
-                :post="false"
-                @uploaded="uploadImage"
-              />
-              <v-btn v-else color="error" @click="clearImage">
-                <v-icon start>
-                  {{ $globals.icons.close }}
-                </v-icon>
-                {{ $t("recipe.remove-image") }}
-              </v-btn>
-            </v-col>
-          </v-row>
-          <v-img
+      <div class="flex flex-col gap-1 px-6 pb-2">
+        <TextField
+          v-model="localEvent.subject"
+          :label="$t('general.subject')"
+        />
+        <TextareaField
+          v-model="localEvent.eventMessage"
+          :label="$t('general.message')"
+          :rows="4"
+        />
+        <div class="mt-2 flex flex-col gap-3">
+          <img
             v-if="hasExistingImage"
             :src="imageUrl"
-            max-height="300"
-            contain
-            class="mt-4"
-          />
+            alt=""
+            class="max-h-72 w-full rounded-card border object-contain"
+          >
           <ImageCropper
             v-if="newImage && newImagePreviewUrl"
             :img="newImagePreviewUrl"
             cropper-width="100%"
-            class="mt-4"
             @save="updateUploadedImage"
           />
-        </v-form>
-      </v-card-text>
+          <div class="flex justify-end">
+            <AppButtonUpload
+              v-if="!newImage && !hasExistingImage"
+              url="none"
+              file-name="image"
+              accept="image/*"
+              :text="$t('recipe.upload-image')"
+              :text-btn="false"
+              :post="false"
+              @uploaded="uploadImage"
+            />
+            <Button
+              v-else
+              type="button"
+              variant="ghost"
+              class="text-destructive hover:text-destructive"
+              @click="clearImage"
+            >
+              <XIcon class="size-4" />
+              {{ $t("recipe.remove-image") }}
+            </Button>
+          </div>
+        </div>
+      </div>
     </BaseDialog>
 
     <BaseDialog
       v-model="recipeEventDeleteDialog"
-      bottom-sheet
       :title="$t('events.delete-event')"
       color="error"
       :icon="$globals.icons.alertCircle"
       can-confirm
       @confirm="$emit('delete')"
     >
-      <v-card-text>
+      <p class="m-0 px-6 pb-2 text-[15px]">
         {{ $t('events.event-delete-confirmation') }}
-      </v-card-text>
+      </p>
     </BaseDialog>
 
-    <v-menu
-      offset-y
-      start
-      :bottom="!props.menuTop"
-      :nudge-bottom="!props.menuTop ? '5' : '0'"
-      :top="props.menuTop"
-      :nudge-top="props.menuTop ? '5' : '0'"
-      allow-overflow
-      close-delay="125"
-      content-class="d-print-none"
-    >
-      <template #activator="{ props: btnProps }">
-        <v-btn
-          :class="{ 'rounded-circle': props.fab }"
-          :x-small="props.fab"
-          :elevation="props.elevation ?? undefined"
-          :color="props.color"
-          :icon="!props.fab"
-          v-bind="btnProps"
+    <DropdownMenu :modal="false">
+      <DropdownMenuTrigger as-child>
+        <button
+          type="button"
+          class="inline-flex size-9 items-center justify-center rounded-full text-muted-foreground hover:bg-highlight hover:text-foreground print:hidden"
+          :aria-label="$t('general.options-for', { name: event.subject })"
           @click.prevent
         >
-          <v-icon>{{ icon }}</v-icon>
-        </v-btn>
-      </template>
-      <v-list density="compact">
-        <v-list-item
+          <MdiIcon
+            :path="icon"
+            class="size-5"
+          />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent :align="menuTop ? 'end' : 'end'">
+        <DropdownMenuItem
           v-for="(item, index) in menuItems"
           :key="index"
-          @click="contextMenuEventHandler(item.event)"
+          :variant="item.color === 'error' ? 'destructive' : 'default'"
+          @select="contextMenuEventHandler(item.event)"
         >
-          <template #prepend>
-            <v-icon :color="item.color">
-              {{ item.icon }}
-            </v-icon>
-          </template>
-          <v-list-item-title>{{ item.title }}</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-menu>
+          <MdiIcon
+            :path="item.icon"
+            class="size-4"
+          />
+          {{ item.title }}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   </div>
 </template>
 
 <script setup lang="ts">
+import { XIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
+import TextareaField from "~/components/ui/field/TextareaField.vue";
+import TextField from "~/components/ui/field/TextField.vue";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { useI18n, useNuxtApp } from "#imports";
 import type { RecipeTimelineEventOut, RecipeTimelineEventUpdate } from "~/lib/api/types/recipe";
 
@@ -144,7 +150,6 @@ const props = defineProps<{
 
 const emit = defineEmits(["delete", "update"]);
 
-const domEditEventForm = ref();
 const recipeEventEditDialog = ref(false);
 const recipeEventDeleteDialog = ref(false);
 const loading = ref(false);
