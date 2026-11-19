@@ -1188,7 +1188,8 @@
       "categorize-recipes": "Categorize Recipes",
       "export-recipes": "Export Recipes",
       "delete-recipes": "Delete Recipes",
-      "source-unit-will-be-deleted": "Source Unit will be deleted"
+      "source-unit-will-be-deleted": "Source Unit will be deleted",
+      "no-exports-yet": "No exports yet. Select recipes above and choose Export."
     },
     "recipe-actions": {
       "recipe-actions-data": "Recipe Actions Data",
@@ -1248,7 +1249,21 @@
       "merge-tool-example": "Merging {tool1} into {tool2}",
       "delete-unused-confirm": "Okay to delete this unused tool? This cannot be undone. | Okay to delete these {count} unused tools? This cannot be undone.",
       "no-unused-tools": "No unused tools to delete"
-    }
+    },
+    "table-options": "Table options",
+    "download-all-json": "Download all as JSON",
+    "selected-count": "{count} selected | {count} selected | {count} selected",
+    "clear-selection": "Clear",
+    "select-all": "Select all on this page",
+    "select-item": "Select {name}",
+    "edit-item": "Edit {name}",
+    "delete-item": "Delete {name}",
+    "nothing-here-yet": "Nothing here yet.",
+    "range-of-total": "{start}–{end} of {total}",
+    "per-page": "Per page",
+    "all-rows": "All",
+    "data-management-intro": "Tidy up the recipes, foods, units, labels and organizers your household shares.",
+    "aliases-help": "Other names for {name}. The ingredient parser matches these too."
   },
   "user-registration": {
     "user-registration": "User Registration",

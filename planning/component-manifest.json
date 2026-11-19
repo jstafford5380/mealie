@@ -473,28 +473,20 @@
       "components": [
         "Array",
         "AutoForm",
-        "BaseButton",
-        "BaseCardSectionTitle",
         "BaseDialog",
         "BulkAction",
+        "Button",
         "CrudTable",
+        "PlusIcon",
         "TableConfig",
         "TableHeaders"
       ],
       "dependencies": [
         "frontend/app/components/global/AutoForm.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/CrudTable.vue"
       ],
-      "vuetify": [
-        "v-card",
-        "v-card-text",
-        "v-list-item",
-        "v-list-item-title",
-        "v-virtual-scroll"
-      ],
+      "vuetify": [],
       "events": [
         "bulk-action: handleBulkAction",
         "click: createDialog = true",
@@ -525,19 +517,17 @@
       "source": "frontend/app/components/Domain/Group/GroupExportData.vue",
       "name": "GroupExportData",
       "components": [
-        "BaseButton"
+        "DownloadIcon"
       ],
-      "dependencies": [
-        "frontend/app/components/global/BaseButton.vue"
-      ],
-      "vuetify": [
-        "v-data-table"
-      ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [
-        "click:row: downloadData"
+        "click: api.utils.download(`/api/recipes/bulk-actions/export/${item.id}/download`)"
       ],
       "models": [],
-      "conditions": [],
+      "conditions": [
+        "!exports.length"
+      ],
       "dynamicComponents": [],
       "vuetifyAPIs": []
     },
@@ -1349,28 +1339,23 @@
       "source": "frontend/app/components/Domain/Recipe/RecipeDataAliasManagerDialog.vue",
       "name": "RecipeDataAliasManagerDialog",
       "components": [
-        "BaseButton",
-        "BaseButtonGroup",
         "BaseDialog",
+        "Button",
         "GenericAlias",
-        "Props"
+        "PlusIcon",
+        "Props",
+        "TextField",
+        "Trash2Icon"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
-        "frontend/app/components/global/BaseDialog.vue"
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-card-text",
-        "v-col",
-        "v-container",
-        "v-row",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
         "cancel: $emit('cancel')",
         "click: createAlias",
-        "delete: deleteAlias(i)",
+        "click: deleteAlias(i)",
         "submit: saveAliases"
       ],
       "models": [
@@ -1386,6 +1371,7 @@
       "name": "RecipeDataSubstitutionManagerDialog",
       "components": [
         "BaseDialog",
+        "Checkbox",
         "Props",
         "RecipeIngredientSubstitutionEditor",
         "SubstitutionRow"
@@ -1394,10 +1380,7 @@
         "frontend/app/components/Domain/Recipe/RecipeIngredientSubstitutionEditor.vue",
         "frontend/app/components/global/BaseDialog.vue"
       ],
-      "vuetify": [
-        "v-card-text",
-        "v-checkbox"
-      ],
+      "vuetify": [],
       "events": [
         "add: createSubstitution",
         "cancel: $emit('cancel')",
@@ -1419,19 +1402,22 @@
       "source": "frontend/app/components/Domain/Recipe/RecipeDataTable.vue",
       "name": "RecipeDataTable",
       "components": [
+        "CrudTable",
+        "NuxtLink",
         "Props",
         "RecipeChip",
         "RecipeSummary",
+        "TableHeaders",
         "UserAvatar",
         "UserSummary"
       ],
       "dependencies": [
-        "frontend/app/components/Domain/User/UserAvatar.vue"
+        "frontend/app/components/Domain/User/UserAvatar.vue",
+        "frontend/app/components/global/CrudTable.vue"
       ],
-      "vuetify": [
-        "v-data-table"
-      ],
+      "vuetify": [],
       "events": [
+        "bulk-action: (event, items) => $emit('bulk-action', event, items)",
         "click: $emit('click')",
         "item-selected: filterItems"
       ],
@@ -3838,27 +3824,20 @@
     {
       "source": "frontend/app/components/Domain/User/UserAvatar.vue",
       "name": "UserAvatar",
-      "components": [],
+      "components": [
+        "Avatar",
+        "AvatarFallback",
+        "AvatarImage"
+      ],
       "dependencies": [],
-      "vuetify": [
-        "v-avatar",
-        "v-img",
-        "v-tooltip"
-      ],
-      "events": [
-        "error: error = true",
-        "load: error = false"
-      ],
+      "vuetify": [],
+      "events": [],
       "models": [],
       "conditions": [
-        "list",
-        "user",
         "userId"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "v-tooltip"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/User/UserInviteDialog.vue",
@@ -4823,38 +4802,57 @@
       "source": "frontend/app/components/global/CrudTable.vue",
       "name": "CrudTable",
       "components": [
-        "BaseButton",
-        "BaseButtonGroup",
-        "BaseOverflowButton"
+        "ArrowUpDownIcon",
+        "ArrowUpIcon",
+        "Button",
+        "CheckIcon",
+        "Checkbox",
+        "ChevronLeftIcon",
+        "ChevronRightIcon",
+        "DownloadIcon",
+        "DropdownMenu",
+        "DropdownMenuCheckboxItem",
+        "DropdownMenuContent",
+        "DropdownMenuItem",
+        "DropdownMenuLabel",
+        "DropdownMenuSeparator",
+        "DropdownMenuTrigger",
+        "EllipsisIcon",
+        "LoaderCircleIcon",
+        "MdiIcon",
+        "MinusIcon",
+        "PencilIcon",
+        "SearchIcon",
+        "Trash2Icon"
       ],
-      "dependencies": [
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
-        "frontend/app/components/global/BaseOverflowButton.vue"
-      ],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-card-actions",
-        "v-card-text",
-        "v-checkbox",
-        "v-data-table",
-        "v-icon",
-        "v-menu",
-        "v-text-field"
-      ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [
-        "click: downloadAsJson(data, 'export.json')",
-        "delete: $emit('delete-one', item)",
-        "edit: $emit('edit-one', item)"
+        "click: $emit('delete-one', item)",
+        "click: $emit('edit-one', item)",
+        "click: page += 1",
+        "click: page -= 1",
+        "click: runBulk(action)",
+        "click: selected = []",
+        "click: toggleSort(header.value)",
+        "select: downloadAsJson(data, 'export.json')",
+        "update:model-value: header.show = $event",
+        "update:model-value: toggleItem(item)",
+        "update:model-value: togglePage"
       ],
       "models": [
-        "itemValue.show",
-        "search",
-        "selected"
+        "pageSize",
+        "search"
       ],
       "conditions": [
+        "!pageItems.length",
         "bulkActions.length > 0",
+        "bulkActions.length > 0 && selected.length > 0",
+        "header.sortable",
+        "loading",
+        "modelValue === 'indeterminate'",
+        "rowActions",
+        "sortKey === header.value",
         "tableConfig.hideColumns"
       ],
       "dynamicComponents": [],

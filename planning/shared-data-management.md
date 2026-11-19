@@ -73,11 +73,29 @@ Do not remove these shared controls from another data page because its screensho
 - Preserve auto-growing textareas and masked password fields.
 - Replace the underlying primitives without changing the data shape expected by each consumer.
 
+## Redesign (implemented)
+
+All data pages share one layout now. Changes users will notice:
+
+| Before | Now |
+| --- | --- |
+| A page banner with an illustration and a "Select data" dropdown button to switch between data types. | A "Data Management" heading with one row of tabs (Recipes, Recipe Actions · Foods, Units, Labels · Categories, Tags, Tools); it scrolls sideways on phones. |
+| Section title with an icon; a gear button for columns, a disabled "Actions" menu until rows were picked, and an underlined search field. | Title with the record count; search, the page's own actions (outline buttons) and a primary "New …" button on one toolbar; a "…" menu holds the column toggles and "Download all as JSON". |
+| Bulk actions lived in an overflow menu that stayed disabled with nothing selected. | Selecting rows shows a bar with "N selected", Clear, and each bulk action as its own button (Delete in red). Select All covers the current page and shows a dash when only some rows are picked. |
+| Row Edit/Delete as a responsive button group. | Pencil and trash icon buttons at the end of each row, labelled with the record's name. |
+| Vuetify footer pagination. | "1–15 of N", a Per page select (15, 30, 60, All) and previous/next buttons. Sort cycles ascending → descending → off. |
+| Download sat in the table footer. | Download all as JSON is in the "…" menu; Seed sits in the footer as a quiet button. |
+| Combine dialogs used Vuetify autocompletes. | Combine dialogs use searchable selects (accent- and case-insensitive) with the result spelled out before confirming. |
+| Bulk delete listed targets in a virtual scroller. | A scrollable list of names. |
+| Alias manager in a Vuetify grid. | One row per alias with a delete button and "Create alias" below, plus a line explaining what aliases do. |
+
+The **Recipes** data page uses the same table (selection stays while its bulk dialogs are open), its own Export All button in the toolbar, and a plain exports table whose Purge button is disabled when there are no exports.
+
 ## Shared replacement checklist
 
-- [ ] Replace table rendering with Shadcn Vue Table/Data Table, Checkbox, Pagination, and menu primitives.
-- [ ] Replace create/edit dialogs with Dialog or Sheet, labeled fields, and explicit validation state.
-- [ ] Replace deletion review with Alert Dialog or an equivalent confirmation composition.
+- [x] Replace table rendering with Shadcn Vue Table/Data Table, Checkbox, Pagination, and menu primitives.
+- [x] Replace create/edit dialogs with Dialog or Sheet, labeled fields, and explicit validation state.
+- [x] Replace deletion review with Alert Dialog or an equivalent confirmation composition.
 - [ ] Retain full target review and specialized deletion warnings.
 - [ ] Preserve JSON download, column selection, sorting, searching, pagination, and bulk selection.
 - [ ] Test empty data, a filtered-empty table, more than one page, and a long deletion target list.

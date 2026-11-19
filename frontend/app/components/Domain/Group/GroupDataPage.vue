@@ -11,7 +11,7 @@
     can-confirm
     @confirm="emit('create-one', createForm.data)"
   >
-    <div class="mx-2 mt-2">
+    <div class="px-4">
       <slot name="create-dialog-top" />
       <AutoForm
         v-model="createForm.data"
@@ -34,7 +34,7 @@
     can-confirm
     @confirm="emit('edit-one', editForm.data)"
   >
-    <div class="mx-2 mt-2">
+    <div class="px-4">
       <slot name="edit-dialog-top" />
       <AutoForm
         v-model="editForm.data"
@@ -51,26 +51,29 @@
   <!-- Delete Dialog -->
   <BaseDialog
     v-model="deleteDialog"
-    bottom-sheet
     :title="$t('general.confirm')"
     :icon="$globals.icons.alertCircle"
     color="error"
     can-confirm
     @confirm="$emit('deleteOne', deleteTarget.id)"
   >
-    <v-card-text>
-      {{ $t("general.confirm-delete-generic") }}
-      <p v-if="deleteTarget" class="mt-4 mb-0 font-weight-bold">
+    <div class="flex flex-col gap-3 px-6 pb-2 text-[15px]">
+      <p class="m-0">
+        {{ $t("general.confirm-delete-generic") }}
+      </p>
+      <p
+        v-if="deleteTarget"
+        class="m-0 rounded-control bg-muted px-3 py-2 font-semibold"
+      >
         {{ deleteTarget.name || deleteTarget.title || deleteTarget.id }}
       </p>
       <slot name="delete-dialog-bottom" />
-    </v-card-text>
+    </div>
   </BaseDialog>
 
   <!-- Bulk Delete Dialog -->
   <BaseDialog
     v-model="bulkDeleteDialog"
-    bottom-sheet
     width="650px"
     :title="$t('general.confirm')"
     :icon="$globals.icons.alertCircle"
@@ -78,64 +81,67 @@
     can-confirm
     @confirm="$emit('bulk-action', 'delete-selected', bulkDeleteTarget)"
   >
-    <v-card-text>
-      <p class="h4">
+    <div class="flex flex-col gap-3 px-6 pb-2 text-[15px]">
+      <p class="m-0">
         {{ $t('general.confirm-delete-generic-items') }}
       </p>
-      <v-card variant="outlined">
-        <v-virtual-scroll height="400" item-height="25" :items="bulkDeleteTarget">
-          <template #default="{ item }">
-            <v-list-item class="pb-2">
-              <v-list-item-title>{{ item.name || item.title || item.id }}</v-list-item-title>
-            </v-list-item>
-          </template>
-        </v-virtual-scroll>
-      </v-card>
+      <ul class="m-0 max-h-[40vh] list-none overflow-y-auto rounded-control border p-0">
+        <li
+          v-for="item in bulkDeleteTarget"
+          :key="item.id || item.name"
+          class="border-b px-3 py-2 last:border-b-0"
+        >
+          {{ item.name || item.title || item.id }}
+        </li>
+      </ul>
       <slot name="delete-dialog-bottom" />
-    </v-card-text>
+    </div>
   </BaseDialog>
 
-  <BaseCardSectionTitle
-    :icon="icon"
-    section
-    :title="title"
-  />
+  <section class="flex flex-col gap-4">
+    <header class="flex items-baseline gap-3">
+      <h2 class="m-0 text-xl font-bold tracking-tight">
+        {{ title }}
+      </h2>
+      <span class="text-sm text-muted-foreground tabular-nums">{{ (data || []).length }}</span>
+    </header>
 
-  <CrudTable
-    :headers="tableHeaders"
-    :table-config="tableConfig"
-    :data="data || []"
-    :bulk-actions="bulkActions"
-    :initial-sort="initialSort"
-    @edit-one="editEventHandler"
-    @delete-one="deleteEventHandler"
-    @bulk-action="handleBulkAction"
-  >
-    <template
-      v-for="slotName in itemSlotNames"
-      #[slotName]="slotProps"
+    <CrudTable
+      :headers="tableHeaders"
+      :table-config="tableConfig"
+      :data="data || []"
+      :bulk-actions="bulkActions"
+      :initial-sort="initialSort"
+      @edit-one="editEventHandler"
+      @delete-one="deleteEventHandler"
+      @bulk-action="handleBulkAction"
     >
-      <slot
-        :name="slotName"
-        v-bind="slotProps"
-      />
-    </template>
-    <template #button-row>
-      <BaseButton
-        create
-        @click="createDialog = true"
+      <template
+        v-for="slotName in itemSlotNames"
+        #[slotName]="slotProps"
       >
-        {{ $t("general.create") }}
-      </BaseButton>
-      <slot name="table-button-row" />
-    </template>
-    <template #button-bottom>
-      <slot name="table-button-bottom" />
-    </template>
-  </CrudTable>
+        <slot
+          :name="slotName"
+          v-bind="slotProps"
+        />
+      </template>
+      <template #button-row>
+        <slot name="table-button-row" />
+        <Button @click="createDialog = true">
+          <PlusIcon class="size-4" />
+          {{ createTitle || $t("general.create") }}
+        </Button>
+      </template>
+      <template #button-bottom>
+        <slot name="table-button-bottom" />
+      </template>
+    </CrudTable>
+  </section>
 </template>
 
 <script setup lang="ts">
+import { PlusIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
 import type { TableHeaders, TableConfig, BulkAction } from "~/components/global/CrudTable.vue";
 import type { AutoFormItems } from "~/types/auto-forms";
 
@@ -239,6 +245,5 @@ async function bulkDeleteEventHandler(items: Array<any>) {
     await props.onDeleteDialogOpen(items);
   }
   bulkDeleteDialog.value = true;
-  console.log("Bulk Delete Event Handler", items);
 }
 </script>

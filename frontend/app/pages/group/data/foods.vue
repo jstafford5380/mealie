@@ -10,33 +10,27 @@
       @confirm="mergeFoods"
       @close="resetMergeDialog"
     >
-      <v-card-text>
+      <div class="flex flex-col gap-3 px-6 pb-2 text-[15px]">
         <div>
           {{ $t("data-pages.foods.merge-dialog-text") }}
         </div>
-        <v-autocomplete
+        <FilterSelect
           v-model="fromFood"
-          return-object
           :items="foods"
-          :custom-filter="normalizeFilter"
-          item-title="name"
           :label="$t('data-pages.foods.source-food')"
         />
-        <v-autocomplete
+        <FilterSelect
           v-model="toFood"
-          return-object
           :items="foods"
-          :custom-filter="normalizeFilter"
-          item-title="name"
           :label="$t('data-pages.foods.target-food')"
         />
 
         <template v-if="canMerge && fromFood && toFood">
-          <div class="text-center">
+          <div class="rounded-control bg-muted px-3 py-2 text-center text-sm">
             {{ $t("data-pages.foods.merge-food-example", { food1: fromFood.name, food2: toFood.name }) }}
           </div>
         </template>
-      </v-card-text>
+      </div>
     </BaseDialog>
 
     <!-- Delete Unused Dialog -->
@@ -48,17 +42,17 @@
       can-confirm
       @confirm="confirmDeleteUnused"
     >
-      <v-card-text>
+      <div class="flex flex-col gap-3 px-6 pb-2 text-[15px]">
         {{ $t('data-pages.foods.delete-unused-confirm', { count: unusedFoodIds.length }, unusedFoodIds.length) }}
-        <ul style="margin: 0.5rem 0 0; padding-left: 1.25rem; font-size: 0.85rem; color: rgba(var(--v-theme-on-surface), 0.7); line-height: 1.8;">
+        <ul class="m-0 ps-5 text-sm leading-7 text-muted-foreground">
           <li v-for="name in unusedFoodNamesPreview" :key="name">
             {{ name }}
           </li>
         </ul>
-        <div v-if="unusedFoodNamesRemaining > 0" class="text-body-2 pl-2">
+        <div v-if="unusedFoodNamesRemaining > 0" class="text-sm text-muted-foreground">
           {{ $t('data-pages.delete-unused-more', { count: unusedFoodNamesRemaining }) }}
         </div>
-      </v-card-text>
+      </div>
     </BaseDialog>
 
     <!-- Seed Dialog -->
@@ -70,34 +64,33 @@
       can-confirm
       @confirm="seedDatabase"
     >
-      <v-card-text>
+      <div class="flex flex-col gap-3 px-6 pb-2 text-[15px]">
         <div class="pb-2">
           {{ $t("data-pages.foods.seed-dialog-text") }}
         </div>
-        <v-autocomplete
+        <FilterSelect
           v-model="locale"
           :items="locales"
-          item-title="name"
-          :custom-filter="normalizeFilter"
+          item-value="value"
+          item-key="value"
+          :clearable="false"
           :label="$t('data-pages.select-language')"
-          class="my-3"
-          hide-details
-          variant="outlined"
-          offset
         >
-          <template #item="{ item, props }">
-            <v-list-item v-bind="props">
-              <v-list-item-subtitle>
-                {{ item.raw.progress }}% {{ $t("language-dialog.translated") }}
-              </v-list-item-subtitle>
-            </v-list-item>
+          <template #item="{ item }">
+            <span class="flex items-baseline justify-between gap-3">
+              <span class="truncate">{{ item.name }}</span>
+              <span class="shrink-0 text-xs text-muted-foreground">{{ item.progress }}% {{ $t("language-dialog.translated") }}</span>
+            </span>
           </template>
-        </v-autocomplete>
+        </FilterSelect>
 
-        <v-alert v-if="foods && foods.length > 0" type="error" class="mb-0 text-body-2">
+        <p
+          v-if="foods && foods.length > 0"
+          class="m-0 rounded-control border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+        >
           {{ $t("data-pages.foods.seed-dialog-warning") }}
-        </v-alert>
-      </v-card-text>
+        </p>
+      </div>
     </BaseDialog>
 
     <!-- Alias Sub-Dialog -->
@@ -127,31 +120,31 @@
       can-confirm
       @confirm="assignSelected"
     >
-      <v-card-text>
-        <v-card class="mb-4">
-          <v-card-title>{{ $t("general.caution") }}</v-card-title>
-          <v-card-text>{{ $t("data-pages.foods.label-overwrite-warning") }}</v-card-text>
-        </v-card>
+      <div class="flex flex-col gap-3 px-6 pb-2 text-[15px]">
+        <p class="m-0 rounded-control border border-brand/50 bg-brand/10 px-3 py-2 text-sm">
+          <strong>{{ $t("general.caution") }}:</strong> {{ $t("data-pages.foods.label-overwrite-warning") }}
+        </p>
 
-        <v-autocomplete
+        <FilterSelect
           v-model="bulkAssignLabelId"
           clearable
           :items="allLabels"
-          :custom-filter="normalizeFilter"
           item-value="id"
-          item-title="name"
           :label="$t('data-pages.foods.food-label')"
         />
-        <v-card variant="outlined">
-          <v-virtual-scroll height="400" item-height="25" :items="bulkAssignTarget">
-            <template #default="{ item }">
-              <v-list-item class="pb-2">
-                <v-list-item-title>{{ item.name }}</v-list-item-title>
-              </v-list-item>
-            </template>
-          </v-virtual-scroll>
-        </v-card>
-      </v-card-text>
+        <p class="m-0 text-sm font-semibold">
+          {{ $t('data-pages.selected-count', bulkAssignTarget.length) }}
+        </p>
+        <ul class="m-0 max-h-[40vh] list-none overflow-y-auto rounded-control border p-0">
+          <li
+            v-for="item in bulkAssignTarget"
+            :key="item.id"
+            class="border-b px-3 py-2 last:border-b-0"
+          >
+            {{ item.name }}
+          </li>
+        </ul>
+      </div>
     </BaseDialog>
 
     <GroupDataPage
@@ -175,21 +168,28 @@
       @bulk-action="handleBulkAction"
     >
       <template #table-button-row>
-        <BaseButton @click="mergeDialog = true">
-          <template #icon>
-            {{ $globals.icons.externalLink }}
-          </template>
+        <Button
+          variant="outline"
+          @click="mergeDialog = true"
+        >
+          <MdiIcon
+            :path="$globals.icons.externalLink"
+            class="size-4"
+          />
           {{ $t("data-pages.combine") }}
-        </BaseButton>
+        </Button>
 
-        <v-divider vertical class="mx-2" />
-
-        <BaseButton color="error" :loading="loadingEmpty" @click="openDeleteUnusedDialog">
-          <template #icon>
-            {{ $globals.icons.broom }}
-          </template>
+        <Button
+          variant="outline"
+          :disabled="loadingEmpty"
+          @click="openDeleteUnusedDialog"
+        >
+          <MdiIcon
+            :path="$globals.icons.broom"
+            class="size-4"
+          />
           {{ $t("data-pages.delete-unused") }}
-        </BaseButton>
+        </Button>
       </template>
 
       <template #[`item.recipeCount`]="{ item }">
@@ -204,9 +204,17 @@
       </template>
 
       <template #[`item.onHand`]="{ item }">
-        <v-icon :color="item.onHand ? 'success' : undefined">
-          {{ item.onHand ? $globals.icons.check : $globals.icons.close }}
-        </v-icon>
+        <MdiIcon
+          v-if="item.onHand"
+          :path="$globals.icons.check"
+          class="size-5 text-primary"
+          :aria-label="$t('general.yes')"
+        />
+        <span
+          v-else
+          class="text-muted-foreground"
+          :aria-label="$t('general.no')"
+        >–</span>
       </template>
 
       <template #[`item.substitutions`]="{ item }">
@@ -218,12 +226,16 @@
       </template>
 
       <template #table-button-bottom>
-        <BaseButton @click="seedDialog = true">
-          <template #icon>
-            {{ $globals.icons.database }}
-          </template>
+        <Button
+          variant="ghost"
+          @click="seedDialog = true"
+        >
+          <MdiIcon
+            :path="$globals.icons.database"
+            class="size-4"
+          />
           {{ $t("data-pages.seed") }}
-        </BaseButton>
+        </Button>
       </template>
 
       <template #edit-dialog-custom-action>
@@ -236,27 +248,30 @@
       </template>
 
       <template #delete-dialog-bottom>
-        <v-alert v-if="affectedRecipes.length > 0" type="warning" density="compact" class="mt-4 mb-0">
+        <div v-if="affectedRecipes.length > 0" class="rounded-control border border-brand/50 bg-brand/10 px-3 py-2 text-sm">
           {{ $t("data-pages.foods.delete-affects-recipes", { count: affectedRecipesTotal }) }}
-          <ul class="mt-1 pl-5 mb-0">
+          <ul class="m-0 mt-1 ps-5">
             <li v-for="recipe in affectedRecipes.slice(0, 5)" :key="recipe.slug">
-              <NuxtLink :to="recipe.url" class="text-white">{{ recipe.name }}</NuxtLink>
+              <NuxtLink :to="recipe.url" class="text-primary">{{ recipe.name }}</NuxtLink>
             </li>
           </ul>
           <NuxtLink
             v-if="affectedRecipesTotal > 5"
             :to="affectedRecipesMoreLink"
-            class="text-white d-inline-block mt-1"
+            class="mt-1 inline-block font-semibold text-primary"
           >
             {{ $t("data-pages.foods.delete-affects-recipes-more", { count: affectedRecipesTotal }) }}
           </NuxtLink>
-        </v-alert>
+        </div>
       </template>
     </GroupDataPage>
   </div>
 </template>
 
 <script setup lang="ts">
+import FilterSelect from "~/components/ui/field/FilterSelect.vue";
+import { Button } from "~/components/ui/button";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import type { LocaleObject } from "@nuxtjs/i18n";
 import RecipeDataAliasManagerDialog from "~/components/Domain/Recipe/RecipeDataAliasManagerDialog.vue";
 import RecipeDataSubstitutionManagerDialog from "~/components/Domain/Recipe/RecipeDataSubstitutionManagerDialog.vue";
@@ -271,7 +286,6 @@ import type {
 } from "~/lib/api/types/recipe";
 import MultiPurposeLabel from "~/components/Domain/ShoppingList/MultiPurposeLabel.vue";
 import { useLocales } from "~/composables/use-locales";
-import { normalizeFilter } from "~/composables/use-utils";
 import { alert } from "~/composables/use-toast";
 import { useFoodStore, useLabelStore } from "~/composables/store";
 import type { MultiPurposeLabelOut } from "~/lib/api/types/labels";

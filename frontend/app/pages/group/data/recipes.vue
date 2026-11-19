@@ -1,23 +1,23 @@
 <template>
-  <v-container fluid>
+  <div>
     <!-- Export Purge Confirmation Dialog -->
     <BaseDialog
       v-model="purgeExportsDialog"
-      bottom-sheet
       :title="$t('data-pages.recipes.purge-exports')"
       color="error"
       :icon="$globals.icons.alertCircle"
       can-confirm
       @confirm="purgeExports()"
     >
-      <v-card-text> {{ $t('data-pages.recipes.are-you-sure-you-want-to-delete-all-export-data') }} </v-card-text>
+      <p class="m-0 px-6 pb-2 text-[15px]">
+        {{ $t('data-pages.recipes.are-you-sure-you-want-to-delete-all-export-data') }}
+      </p>
     </BaseDialog>
 
-    <!-- Base Dialog Object -->
+    <!-- One dialog for every bulk action -->
     <BaseDialog
       ref="domDialog"
       v-model="dialog.state"
-      bottom-sheet
       width="650px"
       :color="dialog.mode == MODES.delete ? 'error' : undefined"
       :icon="dialog.icon"
@@ -28,218 +28,145 @@
       @submit="dialog.callback"
       @delete="dialog.callback"
     >
-      <v-card-text v-if="dialog.mode == MODES.tag">
-        <RecipeOrganizerSelector
-          v-model="toSetTags"
-          selector-type="tags"
-        />
-      </v-card-text>
-      <v-card-text v-else-if="dialog.mode == MODES.category">
-        <RecipeOrganizerSelector
-          v-model="toSetCategories"
-          selector-type="categories"
-        />
-      </v-card-text>
-      <v-card-text v-else-if="dialog.mode == MODES.delete">
-        <p class="h4">
-          {{ $t('data-pages.recipes.confirm-delete-recipes') }}
-        </p>
-        <v-card variant="outlined">
-          <v-virtual-scroll
-            height="400"
-            item-height="25"
-            :items="selected"
-          >
-            <template #default="{ item }">
-              <v-list-item class="pb-2">
-                <v-list-item-title>{{ item.name }}</v-list-item-title>
-              </v-list-item>
-            </template>
-          </v-virtual-scroll>
-        </v-card>
-      </v-card-text>
-      <v-card-text v-else-if="dialog.mode == MODES.export">
-        <p class="h4">
-          {{ $t('data-pages.recipes.the-following-recipes-selected-length-will-be-exported',
-                [selected.length]) }}
-        </p>
-        <v-card variant="outlined">
-          <v-virtual-scroll
-            height="400"
-            item-height="25"
-            :items="selected"
-          >
-            <template #default="{ item }">
-              <v-list-item class="pb-2">
-                <v-list-item-title>{{ item.name }}</v-list-item-title>
-              </v-list-item>
-            </template>
-          </v-virtual-scroll>
-        </v-card>
-      </v-card-text>
-      <v-card-text
-        v-else-if="dialog.mode == MODES.updateSettings"
-        class="px-12"
-      >
-        <p>{{ $t('data-pages.recipes.settings-chosen-explanation') }}</p>
-        <div class="mx-auto">
+      <div class="flex flex-col gap-3 px-6 pb-2 text-[15px]">
+        <template v-if="dialog.mode == MODES.tag">
+          <RecipeOrganizerSelector
+            v-model="toSetTags"
+            selector-type="tags"
+          />
+        </template>
+        <template v-else-if="dialog.mode == MODES.category">
+          <RecipeOrganizerSelector
+            v-model="toSetCategories"
+            selector-type="categories"
+          />
+        </template>
+        <template v-else-if="dialog.mode == MODES.delete || dialog.mode == MODES.export">
+          <p class="m-0">
+            {{ dialog.mode == MODES.delete
+              ? $t('data-pages.recipes.confirm-delete-recipes')
+              : $t('data-pages.recipes.the-following-recipes-selected-length-will-be-exported', [selected.length]) }}
+          </p>
+          <ul class="m-0 max-h-[40vh] list-none overflow-y-auto rounded-control border p-0">
+            <li
+              v-for="item in selected"
+              :key="item.id || item.slug"
+              class="border-b px-3 py-2 last:border-b-0"
+            >
+              {{ item.name }}
+            </li>
+          </ul>
+        </template>
+        <template v-else-if="dialog.mode == MODES.updateSettings">
+          <p class="m-0 text-muted-foreground">
+            {{ $t('data-pages.recipes.settings-chosen-explanation') }}
+          </p>
           <RecipeSettingsSwitches v-model="recipeSettings" />
-        </div>
-        <p class="text-center mb-0">
-          <i>{{ $t('data-pages.recipes.selected-length-recipe-s-settings-will-be-updated', selected.length) }}</i>
-        </p>
-      </v-card-text>
-      <v-card-text v-else-if="dialog.mode == MODES.changeOwner">
-        <v-select
-          v-model="selectedOwner"
-          :items="allUsers"
-          item-title="fullName"
-          item-value="id"
-          :label="$t('general.owner')"
-          hide-details
-        >
-          <template #prepend>
+          <p class="m-0 text-sm text-muted-foreground">
+            {{ $t('data-pages.recipes.selected-length-recipe-s-settings-will-be-updated', selected.length) }}
+          </p>
+        </template>
+        <template v-else-if="dialog.mode == MODES.changeOwner">
+          <div class="flex items-end gap-3">
             <UserAvatar
+              v-if="selectedOwner"
+              class="mb-2.5"
               :user-id="selectedOwner"
               :tooltip="false"
+              size="36"
             />
-          </template>
-        </v-select>
-        <v-card-text
-          v-if="selectedOwnerHousehold"
-          class="d-flex"
-          style="align-items: flex-end;"
-        >
-          <v-icon>{{ $globals.icons.household }}</v-icon>
-          <span class="pl-1">{{ selectedOwnerHousehold.name }}</span>
-        </v-card-text>
-      </v-card-text>
-    </BaseDialog>
-    <section>
-      <!-- Recipe Data Table -->
-      <BaseCardSectionTitle
-        :icon="$globals.icons.primary"
-        :title="$t('data-pages.recipes.recipe-data')"
-      >
-        {{ $t('data-pages.recipes.recipe-data-description') }}
-      </BaseCardSectionTitle>
-      <v-card-actions class="mt-n5 mb-1">
-        <v-menu
-          offset-y
-          bottom
-          nudge-bottom="6"
-          :close-on-content-click="false"
-        >
-          <template #activator="{ props }">
-            <v-btn
-              color="accent"
-              class="mr-2"
-              variant="elevated"
-              dark
-              v-bind="props"
-            >
-              <v-icon start>
-                {{ $globals.icons.cog }}
-              </v-icon>
-              {{ $t('data-pages.columns') }}
-            </v-btn>
-          </template>
-          <v-card>
-            <v-card-title class="py-2">
-              <div>{{ $t('data-pages.recipes.recipe-columns') }}</div>
-            </v-card-title>
-            <v-divider class="mx-2" />
-            <v-card-text class="mt-n5">
-              <v-checkbox
-                v-for="(_, key) in headers"
-                :key="key"
-                v-model="headers[key]"
-                density="compact"
-                flat
-                inset
-                :label="headerLabels[key]"
-                hide-details
+            <div class="min-w-0 flex-1">
+              <SelectField
+                v-model="selectedOwner"
+                :items="allUsers"
+                item-title="fullName"
+                item-value="id"
+                :label="$t('general.owner')"
               />
-            </v-card-text>
-          </v-card>
-        </v-menu>
-        <BaseOverflowButton
-          :disabled="selected.length < 1"
-          mode="event"
-          color="info"
-          variant="elevated"
-          :items="actions"
-          @export-selected="openDialog(MODES.export)"
-          @tag-selected="openDialog(MODES.tag)"
-          @categorize-selected="openDialog(MODES.category)"
-          @delete-selected="openDialog(MODES.delete)"
-          @update-settings="openDialog(MODES.updateSettings)"
-          @change-owner="openDialog(MODES.changeOwner)"
-        />
-
-        <p
-          v-if="selected.length > 0"
-          class="text-caption my-auto ml-5"
-        >
-          {{ $t('general.selected-count', selected.length)
-          }}
-        </p>
-      </v-card-actions>
-      <div class="mx-2 clip-width">
-        <v-text-field
-          v-model="search"
-          variant="underlined"
-          :label="$t('search.search')"
-        />
+            </div>
+          </div>
+          <p
+            v-if="selectedOwnerHousehold"
+            class="m-0 flex items-center gap-2 text-sm text-muted-foreground"
+          >
+            <MdiIcon
+              :path="$globals.icons.household"
+              class="size-4"
+            />
+            {{ selectedOwnerHousehold.name }}
+          </p>
+        </template>
       </div>
-      <v-card>
-        <RecipeDataTable
-          v-model="selected"
-          :loading="loading"
-          :recipes="allRecipes"
-          :show-headers="headers"
-          :search="search"
-        />
-        <v-card-actions class="justify-end">
-          <BaseButton
-            color="info"
+    </BaseDialog>
+
+    <section class="flex flex-col gap-4">
+      <header>
+        <div class="flex items-baseline gap-3">
+          <h2 class="m-0 text-xl font-bold tracking-tight">
+            {{ $t('data-pages.recipes.recipe-data') }}
+          </h2>
+          <span class="text-sm text-muted-foreground tabular-nums">{{ allRecipes.length }}</span>
+        </div>
+        <p class="m-0 mt-1 max-w-[65ch] text-sm text-muted-foreground">
+          {{ $t('data-pages.recipes.recipe-data-description') }}
+        </p>
+      </header>
+      <RecipeDataTable
+        v-model="selected"
+        :loading="loading"
+        :recipes="allRecipes"
+        :show-headers="headers"
+        :bulk-actions="actions"
+        @bulk-action="onBulkAction"
+      >
+        <template #button-row>
+          <Button
+            variant="outline"
             @click="
               selectAll();
               openDialog(MODES.export);
             "
           >
-            <template #icon>
-              {{ $globals.icons.database }}
-            </template>
+            <MdiIcon
+              :path="$globals.icons.database"
+              class="size-4"
+            />
             {{ $t('general.export-all') }}
-          </BaseButton>
-        </v-card-actions>
-      </v-card>
+          </Button>
+        </template>
+      </RecipeDataTable>
     </section>
 
-    <section class="mt-10">
-      <!-- Data Table -->
-      <BaseCardSectionTitle
-        :icon="$globals.icons.database"
-        section
-        :title="$t('data-pages.recipes.data-exports')"
-      >
-        {{ $t('data-pages.recipes.data-exports-description') }}
-      </BaseCardSectionTitle>
-      <v-card-actions class="mt-n5 mb-1">
-        <BaseButton
-          delete
+    <section class="mt-12 flex flex-col gap-4">
+      <header class="flex flex-wrap items-end gap-3">
+        <div class="min-w-0 flex-1">
+          <h2 class="m-0 text-xl font-bold tracking-tight">
+            {{ $t('data-pages.recipes.data-exports') }}
+          </h2>
+          <p class="m-0 mt-1 max-w-[65ch] text-sm text-muted-foreground">
+            {{ $t('data-pages.recipes.data-exports-description') }}
+          </p>
+        </div>
+        <Button
+          variant="outline"
+          class="text-destructive hover:text-destructive"
+          :disabled="!groupExports.length"
           @click="purgeExportsDialog = true"
-        />
-      </v-card-actions>
-      <v-card>
-        <GroupExportData :exports="groupExports" />
-      </v-card>
+        >
+          <Trash2Icon class="size-4" />
+          {{ $t('data-pages.recipes.purge-exports') }}
+        </Button>
+      </header>
+      <GroupExportData :exports="groupExports" />
     </section>
-  </v-container>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { Trash2Icon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import SelectField from "~/components/ui/field/SelectField.vue";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import RecipeDataTable from "~/components/Domain/Recipe/RecipeDataTable.vue";
 import RecipeOrganizerSelector from "~/components/Domain/Recipe/RecipeOrganizerSelector.vue";
 import { useUserApi } from "~/composables/api";
@@ -247,7 +174,7 @@ import { useRecipes, allRecipes } from "~/composables/recipes";
 import type { RecipeSettings, RecipeSummary } from "~/lib/api/types/recipe";
 import GroupExportData from "~/components/Domain/Group/GroupExportData.vue";
 import type { GroupDataExport } from "~/lib/api/types/group";
-import type { MenuItem } from "~/components/global/BaseOverflowButton.vue";
+import type { BulkAction } from "~/components/global/CrudTable.vue";
 import RecipeSettingsSwitches from "~/components/Domain/Recipe/RecipeSettingsSwitches.vue";
 import { useUserStore } from "~/composables/store/use-user-store";
 import UserAvatar from "~/components/Domain/User/UserAvatar.vue";
@@ -276,7 +203,6 @@ useSeoMeta({
 
 const { refreshRecipes } = useRecipes(true, true, false, `householdId=${auth.user.value?.householdId || ""}`);
 const selected = ref<RecipeSummary[]>([]);
-const search = ref("");
 
 function resetAll() {
   selected.value = [];
@@ -297,19 +223,7 @@ const headers = reactive({
   dateAdded: false,
 });
 
-const headerLabels = {
-  id: i18n.t("general.id"),
-  owner: i18n.t("general.owner"),
-  tags: i18n.t("tag.tags"),
-  categories: i18n.t("recipe.categories"),
-  tools: i18n.t("tool.tools"),
-  recipeServings: i18n.t("recipe.recipe-servings"),
-  recipeYieldQuantity: i18n.t("recipe.recipe-yield"),
-  recipeYield: i18n.t("recipe.recipe-yield-text"),
-  dateAdded: i18n.t("general.date-added"),
-};
-
-const actions: MenuItem[] = [
+const actions: BulkAction[] = [
   {
     icon: $globals.icons.database,
     text: i18n.t("export.export"),
@@ -371,20 +285,32 @@ onMounted(async () => {
 // ===============================================================
 // All Recipes
 
+const BULK_MODES: Record<string, MODES> = {
+  "export-selected": MODES.export,
+  "tag-selected": MODES.tag,
+  "categorize-selected": MODES.category,
+  "update-settings": MODES.updateSettings,
+  "change-owner": MODES.changeOwner,
+  "delete-selected": MODES.delete,
+};
+
+function onBulkAction(event: string) {
+  const mode = BULK_MODES[event];
+  if (mode) {
+    openDialog(mode);
+  }
+}
+
 function selectAll() {
   selected.value = allRecipes.value;
 }
 
 async function exportSelected() {
   loading.value = true;
-  const { data } = await api.bulk.bulkExport({
+  await api.bulk.bulkExport({
     recipes: selected.value.map(x => x.slug),
     exportType: "json",
   });
-
-  if (data) {
-    console.log(data);
-  }
 
   resetAll();
   refreshExports();
@@ -525,12 +451,3 @@ const selectedOwnerHousehold = computed(() => {
   return households.value.find(h => h.id === owner.householdId);
 });
 </script>
-
-<style>
-.clip-width {
-  max-width: 400px;
-}
-.v-btn--disabled {
-  opacity: 0.5 !important;
-}
-</style>

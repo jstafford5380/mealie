@@ -10,8 +10,8 @@
       @submit="saveSubstitutions"
       @cancel="$emit('cancel')"
     >
-      <v-card-text>
-        <p class="text-body-2 pb-3">
+      <div class="px-6 pb-2">
+        <p class="m-0 mb-3 text-sm text-muted-foreground">
           {{ $t("data-pages.foods.substitution-dialog-text", { food: data.name }) }}
         </p>
         <RecipeIngredientSubstitutionEditor
@@ -23,23 +23,25 @@
         >
           <!-- spelled out rather than tooltipped: this has to read on a phone, where nothing hovers -->
           <template #after-row="{ index }">
-            <v-checkbox
+            <label
               v-if="substitutions[index]?.substituteFoodId"
-              :model-value="reverseChecked(index)"
-              :label="reverseLabel(index)"
-              density="compact"
-              hide-details
-              class="ml-2"
-              @update:model-value="setReverse(index, !!$event)"
-            />
+              class="ms-2 flex cursor-pointer items-center gap-2 py-1 text-sm text-muted-foreground"
+            >
+              <Checkbox
+                :model-value="reverseChecked(index)"
+                @update:model-value="setReverse(index, !!$event)"
+              />
+              {{ reverseLabel(index) }}
+            </label>
           </template>
         </RecipeIngredientSubstitutionEditor>
-      </v-card-text>
+      </div>
     </BaseDialog>
   </div>
 </template>
 
 <script setup lang="ts">
+import { Checkbox } from "~/components/ui/checkbox";
 import { whenever } from "@vueuse/core";
 import { useI18n } from "vue-i18n";
 import RecipeIngredientSubstitutionEditor from "~/components/Domain/Recipe/RecipeIngredientSubstitutionEditor.vue";

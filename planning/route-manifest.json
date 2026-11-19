@@ -1995,28 +1995,19 @@
       "document": "pages/group--data.md",
       "status": "reviewed",
       "components": [
-        "BaseOverflowButton",
-        "BasePageTitle",
+        "NuxtLink",
         "NuxtPage"
       ],
-      "dependencies": [
-        "frontend/app/components/global/BaseOverflowButton.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
-      ],
-      "vuetify": [
-        "v-container",
-        "v-img",
-        "v-scroll-x-transition"
-      ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [],
       "models": [],
-      "conditions": [],
+      "conditions": [
+        "groupIndex > 0"
+      ],
       "dynamicComponents": [],
       "vuetifyAPIs": [],
-      "componentClosure": [
-        "frontend/app/components/global/BaseOverflowButton.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
-      ]
+      "componentClosure": []
     },
     {
       "id": "group--data--categories",
@@ -2025,22 +2016,20 @@
       "document": "pages/group--data--categories.md",
       "status": "reviewed",
       "components": [
-        "BaseButton",
         "BaseDialog",
+        "Button",
         "CategoryOut",
+        "FilterSelect",
         "GroupDataPage",
+        "MdiIcon",
         "NuxtLink"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Group/GroupDataPage.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseDialog.vue"
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/ui/field/FilterSelect.vue"
       ],
-      "vuetify": [
-        "v-autocomplete",
-        "v-card-text",
-        "v-divider"
-      ],
+      "vuetify": [],
       "events": [
         "bulk-action: handleBulkAction",
         "click: mergeDialog = true",
@@ -2069,16 +2058,12 @@
         "frontend/app/components/Domain/Group/GroupDataPage.vue",
         "frontend/app/components/global/AutoForm.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/BaseOverflowButton.vue",
         "frontend/app/components/global/CrudTable.vue",
         "frontend/app/components/global/InputColor.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FilterSelect.vue",
         "frontend/app/components/ui/field/NumberInputField.vue",
         "frontend/app/components/ui/field/SelectField.vue",
         "frontend/app/components/ui/field/TextField.vue",
@@ -2095,8 +2080,11 @@
         "AutoFormItems",
         "BaseButton",
         "BaseDialog",
+        "Button",
+        "FilterSelect",
         "GroupDataPage",
         "IngredientFoodWithOnHand",
+        "MdiIcon",
         "MultiPurposeLabel",
         "NuxtLink",
         "RecipeDataAliasManagerDialog",
@@ -2108,21 +2096,10 @@
         "frontend/app/components/Domain/Recipe/RecipeDataSubstitutionManagerDialog.vue",
         "frontend/app/components/Domain/ShoppingList/MultiPurposeLabel.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseDialog.vue"
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/ui/field/FilterSelect.vue"
       ],
-      "vuetify": [
-        "v-alert",
-        "v-autocomplete",
-        "v-card",
-        "v-card-text",
-        "v-card-title",
-        "v-divider",
-        "v-icon",
-        "v-list-item",
-        "v-list-item-subtitle",
-        "v-list-item-title",
-        "v-virtual-scroll"
-      ],
+      "vuetify": [],
       "events": [
         "bulk-action: handleBulkAction",
         "cancel: aliasManagerDialog = false",
@@ -2162,6 +2139,7 @@
         "editForm.data",
         "foods && foods.length > 0",
         "item.label",
+        "item.onHand",
         "unusedFoodNamesRemaining > 0",
         "userGroup && item.recipeCount > 0"
       ],
@@ -2175,16 +2153,12 @@
         "frontend/app/components/Domain/ShoppingList/MultiPurposeLabel.vue",
         "frontend/app/components/global/AutoForm.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/BaseOverflowButton.vue",
         "frontend/app/components/global/CrudTable.vue",
         "frontend/app/components/global/InputColor.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FilterSelect.vue",
         "frontend/app/components/ui/field/NumberInputField.vue",
         "frontend/app/components/ui/field/SearchSelect.vue",
         "frontend/app/components/ui/field/SelectField.vue",
@@ -2215,23 +2189,21 @@
       "document": "pages/group--data--labels.md",
       "status": "reviewed",
       "components": [
-        "BaseButton",
         "BaseDialog",
+        "Button",
+        "FilterSelect",
         "GroupDataPage",
+        "MdiIcon",
         "MultiPurposeLabel",
         "MultiPurposeLabelOut"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Group/GroupDataPage.vue",
         "frontend/app/components/Domain/ShoppingList/MultiPurposeLabel.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseDialog.vue"
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/ui/field/FilterSelect.vue"
       ],
-      "vuetify": [
-        "v-autocomplete",
-        "v-card-text",
-        "v-divider"
-      ],
+      "vuetify": [],
       "events": [
         "bulk-action: handleBulkAction",
         "click: mergeDialog = true",
@@ -2263,16 +2235,12 @@
         "frontend/app/components/Domain/ShoppingList/MultiPurposeLabel.vue",
         "frontend/app/components/global/AutoForm.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/BaseOverflowButton.vue",
         "frontend/app/components/global/CrudTable.vue",
         "frontend/app/components/global/InputColor.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FilterSelect.vue",
         "frontend/app/components/ui/field/NumberInputField.vue",
         "frontend/app/components/ui/field/SelectField.vue",
         "frontend/app/components/ui/field/TextField.vue",
@@ -2307,13 +2275,8 @@
         "frontend/app/components/Domain/Group/GroupDataPage.vue",
         "frontend/app/components/global/AutoForm.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/BaseOverflowButton.vue",
         "frontend/app/components/global/CrudTable.vue",
         "frontend/app/components/global/InputColor.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
@@ -2330,18 +2293,19 @@
       "document": "pages/group--data--recipes.md",
       "status": "reviewed",
       "components": [
-        "BaseButton",
-        "BaseCardSectionTitle",
         "BaseDialog",
-        "BaseOverflowButton",
+        "Button",
         "GroupDataExport",
         "GroupExportData",
         "MODES",
+        "MdiIcon",
         "RecipeDataTable",
         "RecipeOrganizerSelector",
         "RecipeSettings",
         "RecipeSettingsSwitches",
         "RecipeSummary",
+        "SelectField",
+        "Trash2Icon",
         "UserAvatar"
       ],
       "dependencies": [
@@ -2350,47 +2314,22 @@
         "frontend/app/components/Domain/Recipe/RecipeOrganizerSelector.vue",
         "frontend/app/components/Domain/Recipe/RecipeSettingsSwitches.vue",
         "frontend/app/components/Domain/User/UserAvatar.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
-        "frontend/app/components/global/BaseOverflowButton.vue"
+        "frontend/app/components/ui/field/SelectField.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-checkbox",
-        "v-container",
-        "v-divider",
-        "v-icon",
-        "v-list-item",
-        "v-list-item-title",
-        "v-menu",
-        "v-select",
-        "v-text-field",
-        "v-virtual-scroll"
-      ],
+      "vuetify": [],
       "events": [
-        "categorize-selected: openDialog(MODES.category)",
-        "change-owner: openDialog(MODES.changeOwner)",
+        "bulk-action: onBulkAction",
         "click: \n              selectAll();\n              openDialog(MODES.export);\n            ",
         "click: purgeExportsDialog = true",
         "confirm: purgeExports()",
-        "delete-selected: openDialog(MODES.delete)",
         "delete: dialog.callback",
-        "export-selected: openDialog(MODES.export)",
-        "submit: dialog.callback",
-        "tag-selected: openDialog(MODES.tag)",
-        "update-settings: openDialog(MODES.updateSettings)"
+        "submit: dialog.callback"
       ],
       "models": [
         "dialog.state",
-        "headers[key]",
         "purgeExportsDialog",
         "recipeSettings",
-        "search",
         "selected",
         "selectedOwner",
         "toSetCategories",
@@ -2399,11 +2338,10 @@
       "conditions": [
         "dialog.mode == MODES.category",
         "dialog.mode == MODES.changeOwner",
-        "dialog.mode == MODES.delete",
-        "dialog.mode == MODES.export",
+        "dialog.mode == MODES.delete || dialog.mode == MODES.export",
         "dialog.mode == MODES.tag",
         "dialog.mode == MODES.updateSettings",
-        "selected.length > 0",
+        "selectedOwner",
         "selectedOwnerHousehold"
       ],
       "dynamicComponents": [],
@@ -2416,11 +2354,11 @@
         "frontend/app/components/Domain/Recipe/RecipeSettingsSwitches.vue",
         "frontend/app/components/Domain/User/UserAvatar.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseOverflowButton.vue",
+        "frontend/app/components/global/CrudTable.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
         "frontend/app/components/ui/field/TextField.vue"
       ]
     },
@@ -2431,22 +2369,20 @@
       "document": "pages/group--data--tags.md",
       "status": "reviewed",
       "components": [
-        "BaseButton",
         "BaseDialog",
+        "Button",
+        "FilterSelect",
         "GroupDataPage",
+        "MdiIcon",
         "NuxtLink",
         "TagOut"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Group/GroupDataPage.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseDialog.vue"
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/ui/field/FilterSelect.vue"
       ],
-      "vuetify": [
-        "v-autocomplete",
-        "v-card-text",
-        "v-divider"
-      ],
+      "vuetify": [],
       "events": [
         "bulk-action: handleBulkAction",
         "click: mergeDialog = true",
@@ -2475,16 +2411,12 @@
         "frontend/app/components/Domain/Group/GroupDataPage.vue",
         "frontend/app/components/global/AutoForm.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/BaseOverflowButton.vue",
         "frontend/app/components/global/CrudTable.vue",
         "frontend/app/components/global/InputColor.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FilterSelect.vue",
         "frontend/app/components/ui/field/NumberInputField.vue",
         "frontend/app/components/ui/field/SelectField.vue",
         "frontend/app/components/ui/field/TextField.vue",
@@ -2498,24 +2430,21 @@
       "document": "pages/group--data--tools.md",
       "status": "reviewed",
       "components": [
-        "BaseButton",
         "BaseDialog",
+        "Button",
+        "FilterSelect",
         "GroupDataPage",
+        "MdiIcon",
         "NuxtLink",
         "RecipeToolWithOnHand",
         "ToolOut"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Group/GroupDataPage.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseDialog.vue"
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/ui/field/FilterSelect.vue"
       ],
-      "vuetify": [
-        "v-autocomplete",
-        "v-card-text",
-        "v-divider",
-        "v-icon"
-      ],
+      "vuetify": [],
       "events": [
         "bulk-action: handleBulkAction",
         "click: mergeDialog = true",
@@ -2536,6 +2465,7 @@
       "conditions": [
         "canMerge && fromTool && toTool",
         "groupSlug && item.recipeCount > 0",
+        "item.onHand",
         "unusedToolNamesRemaining > 0"
       ],
       "dynamicComponents": [],
@@ -2544,16 +2474,12 @@
         "frontend/app/components/Domain/Group/GroupDataPage.vue",
         "frontend/app/components/global/AutoForm.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/BaseOverflowButton.vue",
         "frontend/app/components/global/CrudTable.vue",
         "frontend/app/components/global/InputColor.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FilterSelect.vue",
         "frontend/app/components/ui/field/NumberInputField.vue",
         "frontend/app/components/ui/field/SelectField.vue",
         "frontend/app/components/ui/field/TextField.vue",
@@ -2570,8 +2496,11 @@
         "AutoFormItems",
         "BaseButton",
         "BaseDialog",
+        "Button",
+        "FilterSelect",
         "GroupDataPage",
         "IngredientUnitOut",
+        "MdiIcon",
         "RecipeDataAliasManagerDialog",
         "i18n-t"
       ],
@@ -2579,16 +2508,10 @@
         "frontend/app/components/Domain/Group/GroupDataPage.vue",
         "frontend/app/components/Domain/Recipe/RecipeDataAliasManagerDialog.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseDialog.vue"
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/ui/field/FilterSelect.vue"
       ],
-      "vuetify": [
-        "v-alert",
-        "v-autocomplete",
-        "v-card-text",
-        "v-icon",
-        "v-list-item",
-        "v-list-item-subtitle"
-      ],
+      "vuetify": [],
       "events": [
         "bulk-action: handleBulkAction",
         "cancel: aliasManagerDialog = false",
@@ -2613,6 +2536,8 @@
       "conditions": [
         "canMerge && fromUnit && toUnit",
         "editForm.data",
+        "item.fraction",
+        "item.useAbbreviation",
         "unitStore && unitStore.length > 0"
       ],
       "dynamicComponents": [],
@@ -2622,16 +2547,12 @@
         "frontend/app/components/Domain/Recipe/RecipeDataAliasManagerDialog.vue",
         "frontend/app/components/global/AutoForm.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/BaseOverflowButton.vue",
         "frontend/app/components/global/CrudTable.vue",
         "frontend/app/components/global/InputColor.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FilterSelect.vue",
         "frontend/app/components/ui/field/NumberInputField.vue",
         "frontend/app/components/ui/field/SelectField.vue",
         "frontend/app/components/ui/field/TextField.vue",

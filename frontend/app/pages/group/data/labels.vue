@@ -9,33 +9,27 @@
       @confirm="mergeLabels"
       @close="resetMergeDialog"
     >
-      <v-card-text>
+      <div class="flex flex-col gap-3 px-6 pb-2 text-[15px]">
         <div>
           {{ $t("data-pages.labels.merge-dialog-text") }}
         </div>
-        <v-autocomplete
+        <FilterSelect
           v-model="fromLabel"
-          return-object
           :items="labelStore.store.value"
-          :custom-filter="normalizeFilter"
-          item-title="name"
           :label="$t('data-pages.labels.source-label')"
         />
-        <v-autocomplete
+        <FilterSelect
           v-model="toLabel"
-          return-object
           :items="labelStore.store.value"
-          :custom-filter="normalizeFilter"
-          item-title="name"
           :label="$t('data-pages.labels.target-label')"
         />
 
         <template v-if="canMerge && fromLabel && toLabel">
-          <div class="text-center">
+          <div class="rounded-control bg-muted px-3 py-2 text-center text-sm">
             {{ $t("data-pages.labels.merge-label-example", { label1: fromLabel.name, label2: toLabel.name }) }}
           </div>
         </template>
-      </v-card-text>
+      </div>
     </BaseDialog>
 
     <!-- Delete Unused Dialog -->
@@ -47,17 +41,17 @@
       can-confirm
       @confirm="confirmDeleteUnused"
     >
-      <v-card-text>
+      <div class="flex flex-col gap-3 px-6 pb-2 text-[15px]">
         {{ $t('data-pages.labels.delete-unused-confirm', { count: unusedLabelIds.length }, unusedLabelIds.length) }}
-        <ul style="margin: 0.5rem 0 0; padding-left: 1.25rem; font-size: 0.85rem; color: rgba(var(--v-theme-on-surface), 0.7); line-height: 1.8;">
+        <ul class="m-0 ps-5 text-sm leading-7 text-muted-foreground">
           <li v-for="name in unusedLabelNamesPreview" :key="name">
             {{ name }}
           </li>
         </ul>
-        <div v-if="unusedLabelNamesRemaining > 0" class="text-body-2 pl-2">
+        <div v-if="unusedLabelNamesRemaining > 0" class="text-sm text-muted-foreground">
           {{ $t('data-pages.delete-unused-more', { count: unusedLabelNamesRemaining }) }}
         </div>
-      </v-card-text>
+      </div>
     </BaseDialog>
 
     <GroupDataPage
@@ -94,34 +88,43 @@
       </template>
 
       <template #table-button-row>
-        <BaseButton @click="mergeDialog = true">
-          <template #icon>
-            {{ $globals.icons.externalLink }}
-          </template>
+        <Button
+          variant="outline"
+          @click="mergeDialog = true"
+        >
+          <MdiIcon
+            :path="$globals.icons.externalLink"
+            class="size-4"
+          />
           {{ $t("data-pages.combine") }}
-        </BaseButton>
+        </Button>
 
-        <v-divider vertical class="mx-2" />
-
-        <BaseButton color="error" :loading="loadingEmpty" @click="openDeleteUnusedDialog">
-          <template #icon>
-            {{ $globals.icons.broom }}
-          </template>
+        <Button
+          variant="outline"
+          :disabled="loadingEmpty"
+          @click="openDeleteUnusedDialog"
+        >
+          <MdiIcon
+            :path="$globals.icons.broom"
+            class="size-4"
+          />
           {{ $t("data-pages.delete-unused") }}
-        </BaseButton>
+        </Button>
       </template>
     </GroupDataPage>
   </div>
 </template>
 
 <script setup lang="ts">
+import FilterSelect from "~/components/ui/field/FilterSelect.vue";
+import { Button } from "~/components/ui/button";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { validators } from "~/composables/use-validators";
 import { useUserApi } from "~/composables/api";
 import MultiPurposeLabel from "~/components/Domain/ShoppingList/MultiPurposeLabel.vue";
 import { fieldTypes } from "~/composables/forms";
 import type { MultiPurposeLabelOut, MultiPurposeLabelSummary } from "~/lib/api/types/labels";
 import type { AutoFormItems } from "~/types/auto-forms";
-import { normalizeFilter } from "~/composables/use-utils";
 import { alert } from "~/composables/use-toast";
 import { useLabelStore } from "~/composables/store";
 import type { TableHeaders, TableConfig } from "~/components/global/CrudTable.vue";

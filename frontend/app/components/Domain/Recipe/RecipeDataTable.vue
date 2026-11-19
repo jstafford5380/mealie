@@ -1,23 +1,31 @@
 <template>
-  <v-data-table
-    v-model="selected"
-    item-key="id"
-    show-select
-    :sort-by="sortBy"
+  <CrudTable
+    v-model:selected="selected"
     :headers="headers"
-    :items="recipes"
-    :items-per-page="15"
-    class="elevation-0"
+    :table-config="{ hideColumns: true, canExport: false }"
+    :data="recipes"
+    :bulk-actions="bulkActions"
     :loading="loading"
-    :search="search"
-    return-object
+    :row-actions="false"
+    keep-selection
+    initial-sort="dateAdded"
+    initial-sort-desc
+    @bulk-action="(event, items) => $emit('bulk-action', event, items)"
   >
+    <template #button-row>
+      <slot name="button-row" />
+    </template>
+    <template #button-bottom>
+      <slot name="button-bottom" />
+    </template>
     <template #[`item.name`]="{ item }">
-      <a
-        :href="`/g/${groupSlug}/r/${item.slug}`"
-        style="color: inherit; text-decoration: inherit; "
+      <NuxtLink
+        :to="`/g/${groupSlug}/r/${item.slug}`"
+        class="font-medium text-foreground no-underline hover:text-primary hover:underline"
         @click="$emit('click')"
-      >{{ item.name }}</a>
+      >
+        {{ item.name }}
+      </NuxtLink>
     </template>
     <template #[`item.tags`]="{ item }">
       <RecipeChip
@@ -44,28 +52,26 @@
       />
     </template>
     <template #[`item.userId`]="{ item }">
-      <div class="d-flex align-center">
+      <span class="inline-flex items-center gap-2 whitespace-nowrap">
         <UserAvatar
           :user-id="item.userId"
           :tooltip="false"
-          size="40"
+          size="28"
         />
-        <div class="pl-2">
-          <span class="text-left">
-            {{ getMember(item.userId) }}
-          </span>
-        </div>
-      </div>
+        {{ getMember(item.userId) }}
+      </span>
     </template>
     <template #[`item.dateAdded`]="{ item }">
-      {{ item.dateAdded ? $d(new Date(item.dateAdded)) : '' }}
+      <span class="whitespace-nowrap">{{ item.dateAdded ? $d(new Date(item.dateAdded)) : '' }}</span>
     </template>
-  </v-data-table>
+  </CrudTable>
 </template>
 
 <script setup lang="ts">
 import UserAvatar from "../User/UserAvatar.vue";
 import RecipeChip from "./RecipeChips.vue";
+import CrudTable from "~/components/global/CrudTable.vue";
+import type { BulkAction, TableHeaders } from "~/components/global/CrudTable.vue";
 import type { CategoryOut, RecipeSummary, ToolOut } from "~/lib/api/types/recipe";
 import { useUserApi } from "~/composables/api";
 import type { UserSummary } from "~/lib/api/types/user";
@@ -86,12 +92,14 @@ interface ShowHeaders {
 interface Props {
   loading?: boolean;
   recipes?: RecipeSummary[];
+  /** Which columns start visible; the table's own menu changes them after that. */
   showHeaders?: ShowHeaders;
-  search?: string;
+  bulkActions?: BulkAction[];
 }
 const props = withDefaults(defineProps<Props>(), {
   loading: false,
   recipes: () => [],
+  bulkActions: () => [],
   showHeaders: () => ({
     id: true,
     owner: false,
@@ -106,7 +114,8 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 defineEmits<{
-  click: [];
+  "click": [];
+  "bulk-action": [event: string, items: RecipeSummary[]];
 }>();
 
 const selected = defineModel<RecipeSummary[]>({ default: () => [] });
@@ -116,44 +125,18 @@ const auth = useMealieAuth();
 const groupSlug = auth.user.value?.groupSlug;
 const router = useRouter();
 
-// Initialize sort state with default sorting by dateAdded descending
-const sortBy = ref([{ key: "dateAdded", order: "desc" as const }]);
-
-const headers = computed(() => {
-  const hdrs: Array<{ title: string; value: string; align?: "center" | "start" | "end"; sortable?: boolean }> = [];
-
-  if (props.showHeaders.id) {
-    hdrs.push({ title: i18n.t("general.id"), value: "id" });
-  }
-  if (props.showHeaders.owner) {
-    hdrs.push({ title: i18n.t("general.owner"), value: "userId", align: "center", sortable: true });
-  }
-  hdrs.push({ title: i18n.t("general.name"), value: "name", sortable: true });
-  if (props.showHeaders.categories) {
-    hdrs.push({ title: i18n.t("recipe.categories"), value: "recipeCategory", sortable: true });
-  }
-
-  if (props.showHeaders.tags) {
-    hdrs.push({ title: i18n.t("tag.tags"), value: "tags", sortable: true });
-  }
-  if (props.showHeaders.tools) {
-    hdrs.push({ title: i18n.t("tool.tools"), value: "tools", sortable: true });
-  }
-  if (props.showHeaders.recipeServings) {
-    hdrs.push({ title: i18n.t("recipe.servings"), value: "recipeServings", sortable: true });
-  }
-  if (props.showHeaders.recipeYieldQuantity) {
-    hdrs.push({ title: i18n.t("recipe.yield"), value: "recipeYieldQuantity", sortable: true });
-  }
-  if (props.showHeaders.recipeYield) {
-    hdrs.push({ title: i18n.t("recipe.yield-text"), value: "recipeYield", sortable: true });
-  }
-  if (props.showHeaders.dateAdded) {
-    hdrs.push({ title: i18n.t("general.date-added"), value: "dateAdded", sortable: true });
-  }
-
-  return hdrs;
-});
+const headers = computed<TableHeaders[]>(() => [
+  { text: i18n.t("general.id"), value: "id", show: props.showHeaders.id },
+  { text: i18n.t("general.owner"), value: "userId", show: props.showHeaders.owner, sortable: true },
+  { text: i18n.t("general.name"), value: "name", show: true, sortable: true },
+  { text: i18n.t("recipe.categories"), value: "recipeCategory", show: props.showHeaders.categories, sortable: true },
+  { text: i18n.t("tag.tags"), value: "tags", show: props.showHeaders.tags, sortable: true },
+  { text: i18n.t("tool.tools"), value: "tools", show: props.showHeaders.tools, sortable: true },
+  { text: i18n.t("recipe.servings"), value: "recipeServings", show: props.showHeaders.recipeServings, sortable: true },
+  { text: i18n.t("recipe.yield"), value: "recipeYieldQuantity", show: props.showHeaders.recipeYieldQuantity, sortable: true },
+  { text: i18n.t("recipe.yield-text"), value: "recipeYield", show: props.showHeaders.recipeYield, sortable: true },
+  { text: i18n.t("general.date-added"), value: "dateAdded", show: props.showHeaders.dateAdded, sortable: true },
+]);
 
 // ============
 // Group Members

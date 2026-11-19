@@ -9,37 +9,30 @@
       can-confirm
       @confirm="mergeUnits"
     >
-      <v-card-text>
+      <div class="flex flex-col gap-3 px-6 pb-2 text-[15px]">
         <i18n-t keypath="data-pages.units.combine-unit-description">
           <template #source-unit-will-be-deleted>
             <strong> {{ $t('data-pages.recipes.source-unit-will-be-deleted') }} </strong>
           </template>
         </i18n-t>
 
-        <v-autocomplete
+        <FilterSelect
           v-model="fromUnit"
-          return-object
           :items="unitStore"
-          :custom-filter="normalizeFilter"
-          item-title="name"
           :label="$t('data-pages.units.source-unit')"
-          class="mt-2"
         />
-        <v-autocomplete
+        <FilterSelect
           v-model="toUnit"
-          return-object
           :items="unitStore"
-          :custom-filter="normalizeFilter"
-          item-title="name"
           :label="$t('data-pages.units.target-unit')"
         />
 
         <template v-if="canMerge && fromUnit && toUnit">
-          <div class="text-center">
+          <div class="rounded-control bg-muted px-3 py-2 text-center text-sm">
             {{ $t('data-pages.units.merging-unit-into-unit', [fromUnit.name, toUnit.name]) }}
           </div>
         </template>
-      </v-card-text>
+      </div>
     </BaseDialog>
 
     <!-- Alias Sub-Dialog -->
@@ -61,37 +54,33 @@
       can-confirm
       @confirm="seedDatabase"
     >
-      <v-card-text>
+      <div class="flex flex-col gap-3 px-6 pb-2 text-[15px]">
         <div class="pb-2">
           {{ $t("data-pages.units.seed-dialog-text") }}
         </div>
-        <v-autocomplete
+        <FilterSelect
           v-model="locale"
           :items="locales"
-          item-title="name"
+          item-value="value"
+          item-key="value"
+          :clearable="false"
           :label="$t('data-pages.select-language')"
-          class="my-3"
-          hide-details
-          variant="outlined"
-          offset
         >
-          <template #item="{ item, props }">
-            <v-list-item v-bind="props">
-              <v-list-item-subtitle>
-                {{ item.raw.progress }}% {{ $t("language-dialog.translated") }}
-              </v-list-item-subtitle>
-            </v-list-item>
+          <template #item="{ item }">
+            <span class="flex items-baseline justify-between gap-3">
+              <span class="truncate">{{ item.name }}</span>
+              <span class="shrink-0 text-xs text-muted-foreground">{{ item.progress }}% {{ $t("language-dialog.translated") }}</span>
+            </span>
           </template>
-        </v-autocomplete>
+        </FilterSelect>
 
-        <v-alert
+        <p
           v-if="unitStore && unitStore.length > 0"
-          type="error"
-          class="mb-0 text-body-2"
+          class="m-0 rounded-control border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
         >
           {{ $t("data-pages.foods.seed-dialog-warning") }}
-        </v-alert>
-      </v-card-text>
+        </p>
+      </div>
     </BaseDialog>
 
     <GroupDataPage
@@ -111,24 +100,44 @@
       @bulk-action="handleBulkAction"
     >
       <template #table-button-row>
-        <BaseButton
-          :icon="$globals.icons.externalLink"
+        <Button
+          variant="outline"
           @click="mergeDialog = true"
         >
+          <MdiIcon
+            :path="$globals.icons.externalLink"
+            class="size-4"
+          />
           {{ $t('data-pages.combine') }}
-        </BaseButton>
+        </Button>
       </template>
 
       <template #[`item.useAbbreviation`]="{ item }">
-        <v-icon :color="item.useAbbreviation ? 'success' : undefined">
-          {{ item.useAbbreviation ? $globals.icons.check : $globals.icons.close }}
-        </v-icon>
+        <MdiIcon
+          v-if="item.useAbbreviation"
+          :path="$globals.icons.check"
+          class="size-5 text-primary"
+          :aria-label="$t('general.yes')"
+        />
+        <span
+          v-else
+          class="text-muted-foreground"
+          :aria-label="$t('general.no')"
+        >–</span>
       </template>
 
       <template #[`item.fraction`]="{ item }">
-        <v-icon :color="item.fraction ? 'success' : undefined">
-          {{ item.fraction ? $globals.icons.check : $globals.icons.close }}
-        </v-icon>
+        <MdiIcon
+          v-if="item.fraction"
+          :path="$globals.icons.check"
+          class="size-5 text-primary"
+          :aria-label="$t('general.yes')"
+        />
+        <span
+          v-else
+          class="text-muted-foreground"
+          :aria-label="$t('general.no')"
+        >–</span>
       </template>
 
       <template #[`item.createdAt`]="{ item }">
@@ -136,9 +145,16 @@
       </template>
 
       <template #table-button-bottom>
-        <BaseButton :icon="$globals.icons.database" @click="seedDialog = true">
+        <Button
+          variant="ghost"
+          @click="seedDialog = true"
+        >
+          <MdiIcon
+            :path="$globals.icons.database"
+            class="size-4"
+          />
           {{ $t('data-pages.seed') }}
-        </BaseButton>
+        </Button>
       </template>
 
       <template #edit-dialog-custom-action>
@@ -155,6 +171,9 @@
 </template>
 
 <script setup lang="ts">
+import { Button } from "~/components/ui/button";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+import FilterSelect from "~/components/ui/field/FilterSelect.vue";
 import type { LocaleObject } from "@nuxtjs/i18n";
 import RecipeDataAliasManagerDialog from "~/components/Domain/Recipe/RecipeDataAliasManagerDialog.vue";
 import { validators } from "~/composables/use-validators";
@@ -162,7 +181,6 @@ import { useUserApi } from "~/composables/api";
 import type { IngredientUnitCreate, IngredientUnitOut, IngredientUnitAlias } from "~/lib/api/types/recipe";
 import type { StandardizedUnitType } from "~/lib/api/types/non-generated";
 import { useLocales } from "~/composables/use-locales";
-import { normalizeFilter } from "~/composables/use-utils";
 import { useUnitStore } from "~/composables/store";
 import type { AutoFormItems } from "~/types/auto-forms";
 import type { TableHeaders, TableConfig } from "~/components/global/CrudTable.vue";

@@ -1,44 +1,27 @@
 <template>
-  <v-tooltip
+  <Avatar
     v-if="userId"
-    :disabled="!user || !tooltip"
-    location="end"
+    v-bind="$attrs"
+    :style="{ width: `${px}px`, height: `${px}px` }"
+    :title="tooltip && user ? user.fullName : undefined"
   >
-    <template #activator="{ props: tooltipProps }">
-      <v-avatar
-        v-if="list"
-        v-bind="{ ...tooltipProps, ...$attrs }"
-      >
-        <v-img
-          :src="imageURL"
-          :alt="userId"
-          @load="error = false"
-          @error="error = true"
-        />
-      </v-avatar>
-      <v-avatar
-        v-else
-        :size="size"
-        v-bind="{ ...tooltipProps, ...$attrs }"
-      >
-        <v-img
-          :src="imageURL"
-          :alt="userId"
-          @load="error = false"
-          @error="error = true"
-        />
-      </v-avatar>
-    </template>
-    <span v-if="user">
-      {{ user.fullName }}
-    </span>
-  </v-tooltip>
+    <AvatarImage
+      :src="imageURL"
+      :alt="user?.fullName || ''"
+    />
+    <AvatarFallback
+      class="bg-highlight font-bold text-highlight-foreground"
+      :style="{ fontSize: `${Math.max(10, Math.round(px * 0.36))}px` }"
+    >
+      {{ initials }}
+    </AvatarFallback>
+  </Avatar>
 </template>
 
 <script setup lang="ts">
+import { Avatar, AvatarFallback, AvatarImage } from "~/components/ui/avatar";
 import { useUserStore } from "~/composables/store/use-user-store";
 
-// the root element is the tooltip, so forward class/style/etc. to the avatar instead
 defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
@@ -60,13 +43,21 @@ const props = defineProps({
   },
 });
 
-const error = ref(false);
+// `list` avatars keep the old 40px list-item size
+const px = computed(() => (props.list ? 40 : Number(props.size) || 42));
 
 const auth = useMealieAuth();
 const { store: users } = useUserStore();
 const user = computed(() => {
   return users.value.find(user => user.id === props.userId);
 });
+
+const initials = computed(() => (user.value?.fullName || user.value?.username || "?")
+  .split(/\s+/)
+  .filter(Boolean)
+  .slice(0, 2)
+  .map(part => part[0]!.toUpperCase())
+  .join(""));
 
 const imageURL = computed(() => {
   // Note: auth.user is a ref now

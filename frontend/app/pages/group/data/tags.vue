@@ -10,33 +10,27 @@
       @confirm="mergeTags"
       @close="resetMergeDialog"
     >
-      <v-card-text>
+      <div class="flex flex-col gap-3 px-6 pb-2 text-[15px]">
         <div>
           {{ $t("data-pages.tags.merge-dialog-text") }}
         </div>
-        <v-autocomplete
+        <FilterSelect
           v-model="fromTag"
-          return-object
           :items="tagStore.store.value"
-          :custom-filter="normalizeFilter"
-          item-title="name"
           :label="$t('data-pages.tags.source-tag')"
         />
-        <v-autocomplete
+        <FilterSelect
           v-model="toTag"
-          return-object
           :items="tagStore.store.value"
-          :custom-filter="normalizeFilter"
-          item-title="name"
           :label="$t('data-pages.tags.target-tag')"
         />
 
         <template v-if="canMerge && fromTag && toTag">
-          <div class="text-center">
+          <div class="rounded-control bg-muted px-3 py-2 text-center text-sm">
             {{ $t("data-pages.tags.merge-tag-example", { tag1: fromTag.name, tag2: toTag.name }) }}
           </div>
         </template>
-      </v-card-text>
+      </div>
     </BaseDialog>
 
     <!-- Delete Unused Dialog -->
@@ -49,17 +43,17 @@
       can-confirm
       @confirm="confirmDeleteUnused"
     >
-      <v-card-text>
+      <div class="flex flex-col gap-3 px-6 pb-2 text-[15px]">
         {{ $t('data-pages.tags.delete-unused-confirm', { count: unusedTagIds.length }, unusedTagIds.length) }}
-        <ul style="margin: 0.5rem 0 0; padding-left: 1.25rem; font-size: 0.85rem; color: rgba(var(--v-theme-on-surface), 0.7); line-height: 1.8;">
+        <ul class="m-0 ps-5 text-sm leading-7 text-muted-foreground">
           <li v-for="name in unusedTagNamesPreview" :key="name">
             {{ name }}
           </li>
         </ul>
-        <div v-if="unusedTagNamesRemaining > 0" class="text-body-2 pl-2">
+        <div v-if="unusedTagNamesRemaining > 0" class="text-sm text-muted-foreground">
           {{ $t('data-pages.delete-unused-more', { count: unusedTagNamesRemaining }) }}
         </div>
-      </v-card-text>
+      </div>
     </BaseDialog>
 
     <GroupDataPage
@@ -84,32 +78,41 @@
       </template>
 
       <template #table-button-row>
-        <BaseButton @click="mergeDialog = true">
-          <template #icon>
-            {{ $globals.icons.externalLink }}
-          </template>
+        <Button
+          variant="outline"
+          @click="mergeDialog = true"
+        >
+          <MdiIcon
+            :path="$globals.icons.externalLink"
+            class="size-4"
+          />
           {{ $t("data-pages.combine") }}
-        </BaseButton>
+        </Button>
 
-        <v-divider vertical class="mx-2" />
-
-        <BaseButton color="error" :loading="loadingEmpty" @click="openDeleteUnusedDialog">
-          <template #icon>
-            {{ $globals.icons.broom }}
-          </template>
+        <Button
+          variant="outline"
+          :disabled="loadingEmpty"
+          @click="openDeleteUnusedDialog"
+        >
+          <MdiIcon
+            :path="$globals.icons.broom"
+            class="size-4"
+          />
           {{ $t("data-pages.delete-unused") }}
-        </BaseButton>
+        </Button>
       </template>
     </GroupDataPage>
   </div>
 </template>
 
 <script setup lang="ts">
+import FilterSelect from "~/components/ui/field/FilterSelect.vue";
+import { Button } from "~/components/ui/button";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { validators } from "~/composables/use-validators";
 import { useTagStore } from "~/composables/store";
 import { useUserApi } from "~/composables/api";
 import { fieldTypes } from "~/composables/forms";
-import { normalizeFilter } from "~/composables/use-utils";
 import { alert } from "~/composables/use-toast";
 import type { AutoFormItems } from "~/types/auto-forms";
 import type { TagOut } from "~/lib/api/types/recipe";
