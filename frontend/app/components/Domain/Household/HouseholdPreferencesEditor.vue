@@ -1,71 +1,63 @@
 <template>
-  <div v-if="preferences">
-    <BaseCardSectionTitle :title="$t('household.household-preferences')" />
-    <div class="mb-6">
-      <v-checkbox v-model="local.privateHousehold" hide-details density="compact" :label="$t('household.private-household')" color="primary" />
-      <div class="ml-8">
-        <p class="text-subtitle-2 my-0 py-0">
-          {{ $t("household.private-household-description") }}
-        </p>
-        <DocLink class="mt-2" link="/documentation/getting-started/faq/#how-do-private-groups-households-and-recipes-work" />
-      </div>
-    </div>
-    <div class="mb-6">
-      <v-checkbox v-model="local.lockRecipeEditsFromOtherHouseholds" hide-details density="compact" :label="$t('household.lock-recipe-edits-from-other-households')" color="primary" />
-      <div class="ml-8">
-        <p class="text-subtitle-2 my-0 py-0 d-flex align-center">
-          {{ $t("household.lock-recipe-edits-from-other-households-description") }}
-          <v-tooltip location="bottom">
-            <template #activator="{ props: tooltipProps }">
-              <v-icon v-bind="tooltipProps" size="small" class="ms-2">
-                {{ $globals.icons.informationOutline }}
-              </v-icon>
-            </template>
-            <span>{{ $t("household.lock-recipe-edits-from-other-households-admin-note") }}</span>
-          </v-tooltip>
-        </p>
-      </div>
-    </div>
-    <div class="mb-6">
-      <v-checkbox
-        v-model="local.showAnnouncements"
-        hide-details
-        density="compact"
-        color="primary"
-        :label="$t('announcements.show-announcements-from-mealie')"
+  <div
+    v-if="preferences"
+    class="flex flex-col gap-3 font-sans"
+  >
+    <div>
+      <CheckboxField
+        v-model="local.privateHousehold"
+        :label="$t('household.private-household')"
+        :hint="$t('household.private-household-description')"
       />
-      <div class="ml-8">
-        <p class="text-subtitle-2 my-0 py-0">
-          {{ $t("announcements.show-announcements-setting-description") }}
-        </p>
-      </div>
+      <DocLink
+        class="ms-7"
+        link="/documentation/getting-started/faq/#how-do-private-groups-households-and-recipes-work"
+      />
     </div>
-    <v-select
-      v-model="local.firstDayOfWeek"
-      :prepend-icon="$globals.icons.calendarWeekBegin"
-      :items="allDays"
-      item-title="name"
-      item-value="value"
-      :label="$t('settings.first-day-of-week')"
-      variant="underlined"
-      flat
+    <CheckboxField
+      v-model="local.lockRecipeEditsFromOtherHouseholds"
+      :label="$t('household.lock-recipe-edits-from-other-households')"
+      :hint="`${$t('household.lock-recipe-edits-from-other-households-description')} ${$t('household.lock-recipe-edits-from-other-households-admin-note')}`"
     />
-
-    <BaseCardSectionTitle class="mt-5" :title="$t('household.household-recipe-preferences')">
-      {{ $t("household.default-recipe-preferences-description") }}
-    </BaseCardSectionTitle>
-    <div class="preference-container">
-      <div v-for="p in recipePreferences" :key="p.key">
-        <v-checkbox v-model="local[p.key]" hide-details density="compact" :label="p.label" color="primary" />
-        <p class="ml-8 text-subtitle-2 my-0 py-0">
-          {{ p.description }}
-        </p>
-      </div>
+    <CheckboxField
+      v-model="local.showAnnouncements"
+      :label="$t('announcements.show-announcements-from-mealie')"
+      :hint="$t('announcements.show-announcements-setting-description')"
+    />
+    <div class="max-w-xs">
+      <SelectField
+        v-model="local.firstDayOfWeek"
+        :items="allDays"
+        item-title="name"
+        item-value="value"
+        :label="$t('settings.first-day-of-week')"
+      />
     </div>
+
+    <section class="mt-4 flex flex-col gap-3 border-t pt-5">
+      <header>
+        <h3 class="m-0 text-base font-semibold">
+          {{ $t("household.household-recipe-preferences") }}
+        </h3>
+        <p class="m-0 mt-1 text-sm text-muted-foreground">
+          {{ $t("household.default-recipe-preferences-description") }}
+        </p>
+      </header>
+      <CheckboxField
+        v-for="p in recipePreferences"
+        :key="p.key"
+        :model-value="!!local[p.key]"
+        :label="p.label"
+        :hint="p.description"
+        @update:model-value="(local as Record<string, unknown>)[p.key] = $event"
+      />
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
+import CheckboxField from "~/components/ui/field/CheckboxField.vue";
+import SelectField from "~/components/ui/field/SelectField.vue";
 import type { HouseholdPreferencesOut } from "~/lib/api/types/household";
 
 const preferences = defineModel<HouseholdPreferencesOut>({ required: true });
@@ -140,12 +132,3 @@ const allDays = [
   },
 ];
 </script>
-
-<style lang="css">
-.preference-container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  max-width: 600px;
-}
-</style>

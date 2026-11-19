@@ -14,6 +14,13 @@ Route: `/group`. Source: [index.vue](../../frontend/app/pages/group/index.vue).
 - Prompt editor has no explicit admin group ID here, so it uses current-group prompt endpoints. Its global/per-task saves are independent of both Update buttons.
 - Preserve model synchronization, refreshed provider choices, unsaved prompt drafts, and explicit permission boundaries.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Page title with an illustration; each section an outlined Vuetify card with an Update button below it. | Plain heading and description; each section is a panel with its title, fields and an Update button in its footer. |
+
+
 ## Screenshots
 
 ### Whole page with independent Update sections and prompt list
@@ -37,5 +44,5 @@ These additional cases remain for replacement validation. See the [handoff evide
 
 ## Shadcn Vue replacement checklist
 
-- [ ] Apply every shared group-settings task.
+- [x] Apply every shared group-settings task.
 - [ ] Preserve manager access, forced revalidation, four persistence boundaries (preferences, AI selections, provider CRUD, prompts), and current-group endpoint scope.

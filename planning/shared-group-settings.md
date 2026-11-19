@@ -38,9 +38,18 @@ Sources: [GroupPreferencesEditor](../frontend/app/components/Domain/Group/GroupP
 - Save Default resets that task; save Append/Override sends exact content and selected mode. Show success/error feedback and refresh only the saved task's draft, preserving unsaved changes in other tasks and the default-preview visibility.
 - Global and per-task saves are independent of the enclosing group Update button. Preserve loading state and failure recovery.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Preference checkboxes with indented subtitle text. | Checkboxes with their description as a hint underneath; the private-group Docs link sits under its hint. |
+| AI provider selects came first, then provider cards with a button group; a warning icon with a tooltip when no default was set. | Providers list first (Default badge, edit, delete, empty state), then the default/audio/image choices with descriptions, and a visible marigold note when no default is set. |
+| Prompts in Vuetify expansion panels with chips; mode as an outlined button toggle; Vuetify textareas and alerts. | Prompts in an accordion with System / Overridden / Appended pills; mode as a three-way segmented control; monospace textareas; system and default-changed notes as marigold callouts. |
+
+
 ## Shadcn Vue replacement checklist
 
-- [ ] Compose Checkbox, Combobox, Dialog/Sheet, Input, Number input, Accordion, key/value rows, Alert, Badge, ToggleGroup, Textarea, Tooltip, and feedback.
+- [x] Compose Checkbox, Combobox, Dialog/Sheet, Input, Number input, Accordion, key/value rows, Alert, Badge, ToggleGroup, Textarea, Tooltip, and feedback.
 - [ ] Preserve three separate persistence boundaries: enclosing preferences, provider CRUD, prompt saves.
 - [ ] Preserve URL-bound secret handling, redacted sentinels, stale-request guards, admin target scope, and unsaved task drafts.
 - [ ] Verify create/edit/test, image/audio capability messaging, empty-map semantics, and keyboard/focus behavior for nested controls.

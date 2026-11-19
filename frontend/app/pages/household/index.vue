@@ -1,42 +1,42 @@
 <template>
-  <v-container
+  <div
     v-if="household"
-    class="narrow-container"
+    class="mx-auto flex w-full max-w-[760px] flex-col px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8"
   >
-    <BasePageTitle class="mb-5">
-      <template #header>
-        <v-img
-          width="100%"
-          max-height="100"
-          max-width="100"
-          src="/svgs/manage-group-settings.svg"
-        />
-      </template>
-      <template #title>
+    <header class="mb-6">
+      <h1 class="m-0 text-[26px] font-bold tracking-tight sm:text-[32px]">
         {{ $t("profile.household-settings") }}
-      </template>
-      {{ $t("profile.household-description") }}
-    </BasePageTitle>
-    <v-form ref="refHouseholdEditForm" @submit.prevent="handleSubmit">
-      <v-card variant="outlined" style="border-color: lightgray;">
-        <v-card-text>
-          <HouseholdPreferencesEditor v-if="household.preferences" v-model="household.preferences" />
-        </v-card-text>
-      </v-card>
-      <div class="d-flex pa-2">
-        <BaseButton type="submit" edit class="ml-auto">
+      </h1>
+      <p class="m-0 mt-1 max-w-[65ch] text-[15px] text-muted-foreground">
+        {{ $t("profile.household-description") }}
+      </p>
+    </header>
+
+    <form
+      class="rounded-panel border bg-card p-5 sm:p-6"
+      @submit.prevent="handleSubmit"
+    >
+      <h2 class="m-0 mb-4 text-xl font-bold tracking-tight">
+        {{ $t('household.household-preferences') }}
+      </h2>
+      <HouseholdPreferencesEditor
+        v-if="household.preferences"
+        v-model="household.preferences"
+      />
+      <div class="mt-5 flex justify-end border-t pt-4">
+        <Button type="submit">
           {{ $t("general.update") }}
-        </BaseButton>
+        </Button>
       </div>
-    </v-form>
-  </v-container>
+    </form>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { Button } from "~/components/ui/button";
 import HouseholdPreferencesEditor from "~/components/Domain/Household/HouseholdPreferencesEditor.vue";
 import { useHouseholdSelf } from "~/composables/use-households";
 import { alert } from "~/composables/use-toast";
-import type { VForm } from "~/types/auto-forms";
 
 definePageMeta({
   middleware: ["auth", "can-manage-household-only"],
@@ -57,11 +57,8 @@ onMounted(() => {
   householdActions.refresh();
 });
 
-const refHouseholdEditForm = ref<VForm | null>(null);
-
 async function handleSubmit() {
-  if (!refHouseholdEditForm.value?.validate() || !household.value?.preferences) {
-    console.log(refHouseholdEditForm.value?.validate());
+  if (!household.value?.preferences) {
     return;
   }
 

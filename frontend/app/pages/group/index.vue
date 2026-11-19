@@ -1,70 +1,61 @@
 <template>
-  <v-container
+  <div
     v-if="group"
-    class="narrow-container"
+    class="mx-auto flex w-full max-w-[760px] flex-col gap-8 px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8"
   >
-    <BasePageTitle class="mb-5">
-      <template #header>
-        <v-img
-          width="100%"
-          max-height="100"
-          max-width="100"
-          src="/svgs/manage-group-settings.svg"
-        />
-      </template>
-      <template #title>
+    <header class="mb-6">
+      <h1 class="m-0 text-[26px] font-bold tracking-tight sm:text-[32px]">
         {{ $t("profile.group-settings") }}
-      </template>
-      {{ $t("profile.group-description") }}
-    </BasePageTitle>
+      </h1>
+      <p class="m-0 mt-1 max-w-[65ch] text-[15px] text-muted-foreground">
+        {{ $t("profile.group-description") }}
+      </p>
+    </header>
 
-    <div class="mb-10">
-      <v-form ref="refGroupPrefsEditForm" @submit.prevent="handlePrefsSubmit">
-        <v-card variant="outlined" style="border-color: lightgray;">
-          <v-card-text>
-            <GroupPreferencesEditor v-if="group.preferences" v-model="group.preferences" />
-          </v-card-text>
-        </v-card>
-        <div class="d-flex pa-2">
-          <BaseButton type="submit" edit class="ml-auto">
-            {{ $t("general.update") }}
-          </BaseButton>
-        </div>
-      </v-form>
-    </div>
+    <form
+      class="rounded-panel border bg-card p-5 sm:p-6"
+      @submit.prevent="handlePrefsSubmit"
+    >
+      <h2 class="m-0 mb-4 text-xl font-bold tracking-tight">
+        {{ $t('group.group-preferences') }}
+      </h2>
+      <GroupPreferencesEditor
+        v-if="group.preferences"
+        v-model="group.preferences"
+      />
+      <div class="mt-5 flex justify-end border-t pt-4">
+        <Button type="submit">
+          {{ $t("general.update") }}
+        </Button>
+      </div>
+    </form>
 
-    <div>
-      <v-form ref="refGroupAISettingsForm" @submit.prevent="handleAISettingsSubmit">
-        <v-card variant="outlined" style="border-color: lightgray;">
-          <v-card-text>
-            <GroupAIProviderSettingsEditor
-              v-if="group.aiProviderSettings"
-              v-model="group.aiProviderSettings"
-              @create="handleCreateProvider"
-              @update="handleUpdateProvider"
-              @delete="handleDeleteProvider"
-            />
-          </v-card-text>
-        </v-card>
-        <div class="d-flex pa-2">
-          <BaseButton type="submit" edit class="ml-auto">
-            {{ $t("general.update") }}
-          </BaseButton>
-        </div>
-      </v-form>
-    </div>
+    <form
+      class="rounded-panel border bg-card p-5 sm:p-6"
+      @submit.prevent="handleAISettingsSubmit"
+    >
+      <GroupAIProviderSettingsEditor
+        v-if="group.aiProviderSettings"
+        v-model="group.aiProviderSettings"
+        @create="handleCreateProvider"
+        @update="handleUpdateProvider"
+        @delete="handleDeleteProvider"
+      />
+      <div class="mt-5 flex justify-end border-t pt-4">
+        <Button type="submit">
+          {{ $t("general.update") }}
+        </Button>
+      </div>
+    </form>
 
-    <div class="mt-10">
-      <v-card variant="outlined" style="border-color: lightgray;">
-        <v-card-text>
-          <GroupAIPromptEditor />
-        </v-card-text>
-      </v-card>
-    </div>
-  </v-container>
+    <section class="rounded-panel border bg-card p-5 sm:p-6">
+      <GroupAIPromptEditor />
+    </section>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { Button } from "~/components/ui/button";
 import GroupPreferencesEditor from "~/components/Domain/Group/GroupPreferencesEditor.vue";
 import GroupAIProviderSettingsEditor from "~/components/Domain/Group/GroupAIProviderSettingsEditor.vue";
 import GroupAIPromptEditor from "~/components/Domain/Group/GroupAIPromptEditor.vue";
@@ -72,7 +63,6 @@ import { useGroupSelf } from "~/composables/use-groups";
 import { useAIProviders } from "~/composables/use-ai-providers";
 import { alert } from "~/composables/use-toast";
 import type { AIProviderCreate, AIProviderUpdate } from "~/lib/api/types/group";
-import type { VForm } from "~/types/auto-forms";
 
 definePageMeta({
   middleware: ["auth", "can-manage-only"],
@@ -93,11 +83,8 @@ onMounted(() => {
   groupActions.refresh();
 });
 
-const refGroupPrefsEditForm = ref<VForm | null>(null);
-const refGroupAISettingsForm = ref<VForm | null>(null);
-
 async function handlePrefsSubmit() {
-  if (!refGroupPrefsEditForm.value?.validate() || !group.value?.preferences) {
+  if (!group.value?.preferences) {
     return;
   }
 
@@ -111,7 +98,7 @@ async function handlePrefsSubmit() {
 }
 
 async function handleAISettingsSubmit() {
-  if (!refGroupAISettingsForm.value?.validate() || !group.value?.aiProviderSettings) {
+  if (!group.value?.aiProviderSettings) {
     return;
   }
 

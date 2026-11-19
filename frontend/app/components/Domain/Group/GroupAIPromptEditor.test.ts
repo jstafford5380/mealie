@@ -54,30 +54,14 @@ async function mountEditor(initial: AIPromptsOut = promptsOut()) {
       },
       stubs: {
         AppLoader: { template: "<div />" },
-        BaseCardSectionTitle: { template: "<div />" },
-        BaseButton: {
-          props: { disabled: Boolean, save: Boolean },
-          template: "<button type=\"button\" :class=\"{ save }\" :disabled=\"disabled\" @click=\"$emit('click')\" />",
-        },
-        VCardText: { template: "<div><slot /></div>" },
-        VCardSubtitle: { template: "<div><slot /></div>" },
-        VExpansionPanels: { template: "<div><slot /></div>" },
-        VExpansionPanel: { template: "<div><slot /></div>" },
-        VExpansionPanelTitle: { template: "<div><slot /></div>" },
-        VExpansionPanelText: { template: "<div><slot /></div>" },
-        VChip: { template: "<span><slot /></span>" },
-        VIcon: { template: "<span />" },
-        VAlert: { template: "<div><slot /></div>" },
-        VTextarea: {
-          props: ["modelValue", "readonly"],
-          template: "<textarea :value=\"modelValue\" :readonly=\"readonly\" @input=\"$emit('update:modelValue', $event.target.value)\" />",
-        },
-        VBtnToggle: {
-          template: "<div class=\"mode\" @click=\"e => e.target.dataset.value && $emit('update:modelValue', e.target.dataset.value)\"><slot /></div>",
-        },
-        VBtn: {
-          props: ["value"],
-          template: "<button type=\"button\" :data-value=\"value\" @click=\"$emit('click')\"><slot /></button>",
+        Accordion: { template: "<div><slot /></div>" },
+        AccordionItem: { template: "<div><slot /></div>" },
+        AccordionTrigger: { template: "<div><slot /></div>" },
+        AccordionContent: { template: "<div><slot /></div>" },
+        MdiIcon: { template: "<span />" },
+        Button: {
+          props: { disabled: Boolean },
+          template: "<button type=\"button\" :disabled=\"disabled\" @click=\"$emit('click')\"><slot /></button>",
         },
       },
     },
@@ -93,12 +77,11 @@ function textareas(wrapper: VueWrapper) {
 }
 
 async function selectMode(wrapper: VueWrapper, mode: string) {
-  await wrapper.find(`.mode button[data-value="${mode}"]`).trigger("click");
+  await wrapper.find(`[role="radiogroup"] button[data-value="${mode}"]`).trigger("click");
 }
 
-// The first save button belongs to the global instructions, the second to the prompt
 async function savePrompt(wrapper: VueWrapper) {
-  await wrapper.findAll("button.save")[1]!.trigger("click");
+  await wrapper.find("[data-testid=\"save-prompt\"]").trigger("click");
   await flushPromises();
 }
 
@@ -182,7 +165,7 @@ describe("groupAIPromptEditor", () => {
 
   test("global instructions are appended, and cleared by saving them empty", async () => {
     const wrapper = await mountEditor();
-    const saveGlobal = () => wrapper.findAll("button.save")[0]!.trigger("click");
+    const saveGlobal = () => wrapper.find("[data-testid=\"save-global\"]").trigger("click");
 
     await textareas(wrapper)[0]!.setValue("  Use metric units.  ");
     await saveGlobal();

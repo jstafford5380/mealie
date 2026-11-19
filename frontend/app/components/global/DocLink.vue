@@ -6,7 +6,7 @@
     :href="href"
     target="_blank"
     rel="noopener noreferrer"
-    class="h-7 gap-1.5 px-2.5 text-xs"
+    class="h-7 gap-1.5 px-2.5 text-xs text-foreground no-underline"
   >
     <MdiIcon
       :path="$globals.icons.folderOutline"

@@ -12,6 +12,13 @@ Route: `/household`. Source: [index.vue](../../frontend/app/pages/household/inde
 - Current form validation is invoked without awaiting its result; preserve intended validity checks when replacing the form.
 - Keep settings synchronization, descriptions, documentation, admin-exception tooltip, and the week-start relationship to meal planning.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Page title with an illustration; each section an outlined Vuetify card with an Update button below it. | Plain heading and description; each section is a panel with its title, fields and an Update button in its footer. |
+
+
 ## Screenshots
 
 ### All household manager preferences
@@ -31,5 +38,5 @@ These additional cases remain for replacement validation. See the [handoff evide
 
 ## Shadcn Vue replacement checklist
 
-- [ ] Apply every shared household-preference task.
+- [x] Apply every shared household-preference task.
 - [ ] Preserve manager permission, self API, refresh on entry, draft save boundary, and feedback.

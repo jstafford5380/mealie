@@ -315,35 +315,24 @@
       "source": "frontend/app/components/Domain/Group/GroupAIPromptEditor.vue",
       "name": "GroupAIPromptEditor",
       "components": [
+        "Accordion",
+        "AccordionContent",
+        "AccordionItem",
+        "AccordionTrigger",
         "AppLoader",
-        "BaseButton",
-        "BaseCardSectionTitle",
+        "Button",
+        "MdiIcon",
         "Record"
       ],
       "dependencies": [
-        "frontend/app/components/global/AppLoader.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue"
+        "frontend/app/components/global/AppLoader.vue"
       ],
-      "vuetify": [
-        "v-alert",
-        "v-btn",
-        "v-btn-toggle",
-        "v-card-subtitle",
-        "v-card-text",
-        "v-chip",
-        "v-expansion-panel",
-        "v-expansion-panel-text",
-        "v-expansion-panel-title",
-        "v-expansion-panels",
-        "v-icon",
-        "v-textarea"
-      ],
+      "vuetify": [],
       "events": [
         "click: drafts[prompt.name]!.showDefault = !drafts[prompt.name]!.showDefault",
         "click: saveGlobal",
         "click: savePrompt(prompt)",
-        "update:model-value: (mode: DraftMode) => setMode(prompt, mode)"
+        "click: setMode(prompt, mode.value)"
       ],
       "models": [
         "drafts[prompt.name]!.append",
@@ -523,17 +512,15 @@
       "source": "frontend/app/components/Domain/Group/GroupPreferencesEditor.vue",
       "name": "GroupPreferencesEditor",
       "components": [
-        "BaseCardSectionTitle",
+        "CheckboxField",
         "DocLink",
         "GroupPreferencesOut"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
-        "frontend/app/components/global/DocLink.vue"
+        "frontend/app/components/global/DocLink.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue"
       ],
-      "vuetify": [
-        "v-checkbox"
-      ],
+      "vuetify": [],
       "events": [],
       "models": [
         "local.privateGroup",
@@ -715,35 +702,31 @@
       "source": "frontend/app/components/Domain/Household/HouseholdPreferencesEditor.vue",
       "name": "HouseholdPreferencesEditor",
       "components": [
-        "BaseCardSectionTitle",
+        "CheckboxField",
         "DocLink",
-        "HouseholdPreferencesOut"
+        "HouseholdPreferencesOut",
+        "SelectField"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
-        "frontend/app/components/global/DocLink.vue"
+        "frontend/app/components/global/DocLink.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/SelectField.vue"
       ],
-      "vuetify": [
-        "v-checkbox",
-        "v-icon",
-        "v-select",
-        "v-tooltip"
+      "vuetify": [],
+      "events": [
+        "update:model-value: (local as Record<string, unknown>)[p.key] = $event"
       ],
-      "events": [],
       "models": [
         "local.firstDayOfWeek",
         "local.lockRecipeEditsFromOtherHouseholds",
         "local.privateHousehold",
-        "local.showAnnouncements",
-        "local[p.key]"
+        "local.showAnnouncements"
       ],
       "conditions": [
         "preferences"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "v-tooltip"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/Mealplan/MealPlanAddRecipeDialog.vue",

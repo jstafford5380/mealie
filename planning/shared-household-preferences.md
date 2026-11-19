@@ -13,8 +13,17 @@ Source: [HouseholdPreferencesEditor.vue](../frontend/app/components/Domain/House
 - Copy the supplied model into reactive local state, propagate changes to the parent, and sync refreshed parent data back.
 - The editor has no save button/API of its own; the enclosing page owns persistence.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Checkboxes with indented subtitles; the admin note for "lock recipe edits" hid in a tooltip. | Checkboxes with hints; the admin note is part of the hint, so it reads on phones. |
+| Underlined first-day-of-week select with a calendar icon. | A labelled select. |
+| Recipe defaults under a section title in a grid. | "Household recipe preferences" heading with its description, then one checkbox per default. |
+
+
 ## Shadcn Vue replacement checklist
 
-- [ ] Preserve eight checkboxes, seven day options, all descriptions/documentation, and administrator tooltip.
+- [x] Preserve eight checkboxes, seven day options, all descriptions/documentation, and administrator tooltip.
 - [ ] Use Checkbox, Select, Tooltip, semantic group headings, and responsive layout.
 - [ ] Verify persistence through each enclosing page and changed meal-plan week start after revisiting the planner.
