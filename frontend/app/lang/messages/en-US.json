@@ -196,7 +196,9 @@
     "more": "More",
     "remove": "Remove",
     "create-name": "Create “{name}”",
-    "drag-to-reorder": "Drag to reorder"
+    "drag-to-reorder": "Drag to reorder",
+    "success": "Success",
+    "failed": "Failed"
   },
   "group": {
     "create-group": "Create Group",
@@ -326,7 +328,11 @@
         "system-transcribe-audio": "Transcribes audio when your audio provider can't transcribe it directly."
       }
     },
-    "permissions-locked": "Admins have every permission, and you can't change your own."
+    "permissions-locked": "Admins have every permission, and you can't change your own.",
+    "no-reports-yet": "Nothing here yet.",
+    "report-succeeded": "succeeded",
+    "report-failed": "failed",
+    "report-show-error": "Show error"
   },
   "household": {
     "household": "Household",
@@ -492,7 +498,9 @@
     "recipekeeper": {
       "title": "Recipe Keeper",
       "description-long": "Mealie can import recipes from Recipe Keeper. Export your recipes in zip format, then upload the .zip file below."
-    }
+    },
+    "start-migration": "Start migration",
+    "expected-file-layout": "Expected file layout"
   },
   "new-recipe": {
     "bulk-add": "Bulk Add",

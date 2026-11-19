@@ -2605,32 +2605,21 @@
       "status": "reviewed",
       "components": [
         "AppButtonUpload",
-        "BaseButton",
-        "BaseCardSectionTitle",
-        "BaseOverflowButton",
-        "BasePageTitle",
+        "Button",
+        "Checkbox",
+        "GroupMigrationFileTree",
+        "LoaderCircleIcon",
         "ReportTable",
+        "SelectField",
         "i18n-t"
       ],
       "dependencies": [
+        "frontend/app/components/Domain/Group/GroupMigrationFileTree.vue",
         "frontend/app/components/global/AppButtonUpload.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
-        "frontend/app/components/global/BaseOverflowButton.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
-        "frontend/app/components/global/ReportTable.vue"
+        "frontend/app/components/global/ReportTable.vue",
+        "frontend/app/components/ui/field/SelectField.vue"
       ],
-      "vuetify": [
-        "v-card",
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-checkbox",
-        "v-container",
-        "v-icon",
-        "v-img",
-        "v-treeview"
-      ],
+      "vuetify": [],
       "events": [
         "click: startMigration",
         "delete: deleteReport",
@@ -2642,19 +2631,16 @@
       ],
       "conditions": [
         "content",
-        "content.tree && Array.isArray(content.tree)"
+        "content.tree && Array.isArray(content.tree)",
+        "state.loading"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ],
+      "vuetifyAPIs": [],
       "componentClosure": [
+        "frontend/app/components/Domain/Group/GroupMigrationFileTree.vue",
         "frontend/app/components/global/AppButtonUpload.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
-        "frontend/app/components/global/BaseOverflowButton.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
-        "frontend/app/components/global/ReportTable.vue"
+        "frontend/app/components/global/ReportTable.vue",
+        "frontend/app/components/ui/field/SelectField.vue"
       ]
     },
     {
@@ -2664,34 +2650,22 @@
       "document": "pages/group--reports--id.md",
       "status": "reviewed",
       "components": [
-        "BaseCardSectionTitle",
-        "BasePageTitle",
+        "ChevronLeftIcon",
+        "MdiIcon",
+        "NuxtLink",
         "ReportOut"
       ],
-      "dependencies": [
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
-      ],
-      "vuetify": [
-        "v-btn",
-        "v-card-text",
-        "v-container",
-        "v-data-table",
-        "v-icon",
-        "v-img"
-      ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
-        "item.exception",
+        "entry.exception",
         "report"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": [],
-      "componentClosure": [
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
-      ]
+      "componentClosure": []
     },
     {
       "id": "household--index",

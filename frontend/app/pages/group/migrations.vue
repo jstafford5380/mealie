@@ -1,101 +1,101 @@
 <template>
-  <v-container>
-    <BasePageTitle divider>
-      <template #header>
-        <v-img
-          width="100%"
-          max-height="200"
-          max-width="200"
-          class="mb-2"
-          src="/svgs/manage-data-migrations.svg"
-        />
-      </template>
-      <template #title>
+  <div class="mx-auto flex w-full max-w-[860px] flex-col gap-8 px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8">
+    <header>
+      <h1 class="m-0 text-[26px] font-bold tracking-tight sm:text-[32px]">
         {{ $t('migration.recipe-data-migrations') }}
-      </template>
-      {{ $t('migration.recipe-data-migrations-explanation') }}
-    </BasePageTitle>
-    <v-container :class="$vuetify.display.smAndDown ? 'px-0': ''">
-      <BaseCardSectionTitle :title="$t('migration.new-migration')" />
-      <v-card
-        variant="outlined"
-        :loading="state.loading"
-        style="border-color: lightgrey;"
-      >
-        <v-card-title> {{ $t('migration.choose-migration-type') }} </v-card-title>
-        <v-card-text
-          v-if="content"
-          class="pb-0"
-        >
-          <div class="mb-2">
-            <BaseOverflowButton
-              v-model="state.migrationType"
-              mode="model"
-              :items="items"
-            />
-          </div>
-          {{ content.text }}
-          <v-treeview
-            v-if="content.tree && Array.isArray(content.tree)"
-            :key="state.migrationType"
-            density="compact"
-            :items="content.tree"
-          >
-            <template #prepend="{ item }">
-              <v-icon> {{ item.icon }}</v-icon>
-            </template>
-          </v-treeview>
-        </v-card-text>
+      </h1>
+      <p class="m-0 mt-1 max-w-[65ch] text-[15px] text-muted-foreground">
+        {{ $t('migration.recipe-data-migrations-explanation') }}
+      </p>
+    </header>
 
-        <v-card-title class="mt-0">
-          {{ $t('general.upload-file') }}
-        </v-card-title>
-        <v-card-text>
+    <section class="rounded-panel border bg-card p-5 sm:p-6">
+      <h2 class="m-0 mb-4 text-xl font-bold tracking-tight">
+        {{ $t('migration.new-migration') }}
+      </h2>
+      <div class="max-w-sm">
+        <SelectField
+          v-model="state.migrationType"
+          :items="items"
+          item-title="text"
+          item-value="value"
+          :label="$t('migration.choose-migration-type')"
+        />
+      </div>
+      <template v-if="content">
+        <p class="m-0 mt-2 max-w-[70ch] text-[15px] whitespace-pre-line text-muted-foreground">
+          {{ content.text }}
+        </p>
+        <div
+          v-if="content.tree && Array.isArray(content.tree)"
+          class="mt-4 rounded-card border bg-muted/40 p-4"
+        >
+          <p class="m-0 mb-2 text-sm font-semibold">
+            {{ $t('migration.expected-file-layout') }}
+          </p>
+          <GroupMigrationFileTree
+            :key="state.migrationType"
+            :nodes="content.tree"
+          />
+        </div>
+      </template>
+
+      <div class="mt-6 flex flex-col gap-3 border-t pt-5">
+        <div class="flex flex-wrap items-center gap-3">
           <AppButtonUpload
             :accept="content.acceptedFileType || '.zip'"
-            class="mb-2"
             :post="false"
             file-name="file"
             :text-btn="false"
             @uploaded="setFileObject"
           />
-          {{ state.fileObject.name || $t('migration.no-file-selected') }}
-        </v-card-text>
+          <span
+            class="text-sm"
+            :class="state.fileObject.name ? 'font-semibold' : 'text-muted-foreground'"
+          >{{ state.fileObject.name || $t('migration.no-file-selected') }}</span>
+        </div>
+        <label class="flex w-fit cursor-pointer items-center gap-2 text-[15px]">
+          <Checkbox v-model="state.addMigrationTag" />
+          <span>
+            <i18n-t keypath="migration.tag-all-recipes">
+              <template #tag-name>
+                <b>{{ state.migrationType }}</b>
+              </template>
+            </i18n-t>
+          </span>
+        </label>
+        <Button
+          class="self-end"
+          :disabled="!state.fileObject.name || state.loading"
+          @click="startMigration"
+        >
+          <LoaderCircleIcon
+            v-if="state.loading"
+            class="size-4 animate-spin"
+          />
+          {{ $t("migration.start-migration") }}
+        </Button>
+      </div>
+    </section>
 
-        <v-card-text>
-          <v-checkbox v-model="state.addMigrationTag">
-            <template #label>
-              <i18n-t keypath="migration.tag-all-recipes">
-                <template #tag-name>
-                  <b class="mx-1"> {{ state.migrationType }} </b>
-                </template>
-              </i18n-t>
-            </template>
-          </v-checkbox>
-        </v-card-text>
-
-        <v-card-actions class="justify-end">
-          <BaseButton
-            :disabled="!state.fileObject.name"
-            submit
-            @click="startMigration"
-          >
-            {{ $t("general.submit") }}
-          </BaseButton>
-        </v-card-actions>
-      </v-card>
-    </v-container>
-    <v-container class="$vuetify.display.smAndDown ? 'px-0': ''">
-      <BaseCardSectionTitle :title="$t('migration.previous-migrations')" />
+    <section>
+      <h2 class="m-0 mb-3 text-base font-semibold">
+        {{ $t('migration.previous-migrations') }}
+      </h2>
       <ReportTable
         :items="state.reports"
         @delete="deleteReport"
       />
-    </v-container>
-  </v-container>
+    </section>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { LoaderCircleIcon } from "@lucide/vue";
+import GroupMigrationFileTree from "~/components/Domain/Group/GroupMigrationFileTree.vue";
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
+import SelectField from "~/components/ui/field/SelectField.vue";
 import type { ReportSummary } from "~/lib/api/types/reports";
 import type { MenuItem } from "~/components/global/BaseOverflowButton.vue";
 import { useUserApi } from "~/composables/api";
@@ -450,8 +450,6 @@ for (const key in _content) {
     });
   }
 }
-
-console.log(_content);
 
 function setFileObject(fileObject: File) {
   state.fileObject = fileObject;

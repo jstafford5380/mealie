@@ -22,6 +22,13 @@ Current-source notes: the three table headers are literal English strings.
 The page has no independent retry, refresh, report-delete action, or explicit missing-report error panel.
 Do not invent those as current functions, and do not move report deletion away from its list consumers without a deliberate design decision.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Illustration title, report name and a data table with expandable rows for errors. | A back link to migrations, the report name as the title, a succeeded/failed count, and one row per entry with a tick or cross, the message and time. Entries with an error get a "Show error" disclosure with the exception in a code block. |
+
+
 ## Screenshots
 
 ### Successful synthetic migration

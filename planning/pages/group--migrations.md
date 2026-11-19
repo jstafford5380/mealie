@@ -33,6 +33,14 @@ Keep the localized export instructions for every format. Trees are expandable ex
 | Tandoor Recipes | `tandoor` | `.zip` | Full export with nested numbered zip archives, each containing `image.jpeg` and `recipe.json`. |
 | DVO Cook'n X3 | `cookn` | `.zip` | DSV database files for brands, chapters, cookbooks, foods, ingredients, media, nutrients, recipes, units/equivalents, plus images. Preserve the complete sample tree from source. |
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Illustration title; an outlined card with an overflow button to pick the source, a Vuetify tree, an Upload button and a Submit button. | Plain heading; a "New migration" panel with a labelled source select, the source's explanation, the expected file layout as an indented tree, then the file picker, the tag option and a "Start migration" button. |
+| Previous migrations in a data table where clicking a row opened the report. | A list of reports (name, category and time, coloured status pill) that link to the report unless still in progress, each with a trash button; an empty state. |
+
+
 ## Screenshots
 
 ### Initial page and all supported formats

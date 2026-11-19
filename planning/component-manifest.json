@@ -509,6 +509,26 @@
       "vuetifyAPIs": []
     },
     {
+      "source": "frontend/app/components/Domain/Group/GroupMigrationFileTree.vue",
+      "name": "GroupMigrationFileTree",
+      "components": [
+        "GroupMigrationFileTree",
+        "MdiIcon"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Group/GroupMigrationFileTree.vue"
+      ],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "node.children && node.children.length",
+        "node.icon"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
       "source": "frontend/app/components/Domain/Group/GroupPreferencesEditor.vue",
       "name": "GroupPreferencesEditor",
       "components": [
@@ -5055,21 +5075,21 @@
       "source": "frontend/app/components/global/ReportTable.vue",
       "name": "ReportTable",
       "components": [
-        "ReportSummary"
+        "ReportSummary",
+        "Trash2Icon"
       ],
       "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-data-table",
-        "v-icon"
-      ],
+      "vuetify": [],
       "events": [
-        "click.stop: deleteReport(item.id)",
-        "click:row: ($event, { item }) => handleRowClick(item)"
+        "click: deleteReport(item.id)"
       ],
       "models": [],
-      "conditions": [],
-      "dynamicComponents": [],
+      "conditions": [
+        "items.length"
+      ],
+      "dynamicComponents": [
+        "item.status === 'in-progress' ? 'div' : NuxtLink"
+      ],
       "vuetifyAPIs": []
     },
     {
