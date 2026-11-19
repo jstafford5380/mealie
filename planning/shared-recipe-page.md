@@ -53,6 +53,19 @@ Edit mode opens in the same page frame as the reader. The ingredient, method, or
 
 The same row is used in the parser dialog, and the substitution editor (also shared with the food manager's substitution dialog) uses the same pickers.
 
+### Method editor (implemented)
+
+| Before | Now |
+| --- | --- |
+| Elevated instruction cards with a large summary field, up/down drag icon and a ⋮ button group; section titles as coloured bars. | Step cards: grip handle, the step number in the recipe serif, a summary box ("Step N" until named), a duration box, ⋮ and Delete. Section titles are heading-style inputs above the step that starts the section. |
+| Duration as a Vuetify number field with a label. | A compact "Minutes" box with a clock icon; the note about leftover seconds still appears when relevant. |
+| Linked ingredients and notes listed as plain lines under the text editor. | Linked ingredients show as chips and linked notes as marigold-edged chips under the step, with a "Link references" (or "Edit") button right there; the same action stays in the ⋮ menu. |
+| Link dialog with Vuetify checkboxes. | Same groups (Not linked yet / Linked to other step, by ingredient section, then Notes) as checkbox rows, with Cancel, Auto, Save and Next step. |
+| Merge above offered on the first step (doing nothing). Ctrl+Z only. | Merge above appears from the second step on; Ctrl+Z or ⌘+Z undoes the last merge. |
+| "Add" and "Bulk Add" buttons below the method. | "Bulk add" and "Add step" buttons inside the method section; an empty method says so. |
+| Bulk add dialog: textarea plus a list of utilities with play buttons. | Textarea, a "Clean up" row of labelled buttons (Trim whitespace, Remove first character, Split numbered lines; descriptions on hover), and a live line count. |
+| Image drop target: grey overlay with white text. | A dashed primary outline with "Drop image" while dragging; the upload shows a thin progress bar. |
+
 ## Page mode, draft, and save
 
 Source: [RecipePage](../frontend/app/components/Domain/Recipe/RecipePage/RecipePage.vue).
@@ -151,7 +164,7 @@ Sources: [parent editor](../frontend/app/components/Domain/Recipe/RecipePage/Rec
 
 ## Instruction edit, references, and display
 
-Source: [instructions](../frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageInstructions.vue).
+Source: [instructions](../frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeMethodEditor.vue).
 
 - View steps show Markdown summary or step number, duration, Markdown instructions, optional linked-note button, and completed/collapsed state.
 - Click a step to collapse/mark it complete; repeat to expand. Click a section header to collapse/expand its complete range until the next section.

@@ -1,23 +1,41 @@
 <template>
-  <v-number-input
+  <div
     v-if="isEditMode"
-    :model-value="inputMinutes"
-    class="step-duration"
-    :min="0"
-    :max="35791394"
-    :precision="0"
-    :hint="modelValue && modelValue % 60 ? $t('recipe.step-duration-saved', { duration: formattedDuration }) : undefined"
-    persistent-hint
-    :label="$t('recipe.step-duration-minutes')"
-    :placeholder="$t('recipe.step-duration-placeholder')"
-    density="compact"
-    inset
-    hide-details="auto"
-    @update:model-value="updateDuration"
-    @keypress="e => e.key === '-' && e.preventDefault()"
+    class="inline-flex flex-col gap-1 font-sans"
     @click.stop
-  />
-  <span v-else-if="modelValue" class="text-body-2">
+  >
+    <label
+      class="flex h-9 w-32 items-center gap-1.5 rounded-control border border-input bg-card ps-2.5 pe-2.5 text-muted-foreground focus-within:border-ring focus-within:ring-3 focus-within:ring-ring/25"
+      :title="$t('recipe.step-duration-minutes')"
+    >
+      <ClockIcon
+        class="size-4 shrink-0"
+        aria-hidden="true"
+      />
+      <input
+        type="number"
+        inputmode="numeric"
+        min="0"
+        max="35791394"
+        step="1"
+        :value="inputMinutes ?? ''"
+        :placeholder="$t('recipe.step-duration-placeholder')"
+        :aria-label="$t('recipe.step-duration-minutes')"
+        class="h-full w-0 min-w-0 flex-1 bg-transparent text-sm tabular-nums text-foreground outline-none [appearance:textfield] placeholder:text-muted-foreground/80 [&::-webkit-inner-spin-button]:appearance-none"
+        @keypress="e => e.key === '-' && e.preventDefault()"
+        @input="onInput"
+      >
+      <span class="text-xs">{{ $t("recipe.step-duration-unit") }}</span>
+    </label>
+    <span
+      v-if="modelValue && modelValue % 60"
+      class="max-w-64 text-xs text-muted-foreground"
+    >{{ $t('recipe.step-duration-saved', { duration: formattedDuration }) }}</span>
+  </div>
+  <span
+    v-else-if="modelValue"
+    class="text-sm"
+  >
     {{ formattedDuration }}
   </span>
 </template>
@@ -25,6 +43,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
 import { useI18n } from "vue-i18n";
+import { ClockIcon } from "@lucide/vue";
 
 const props = defineProps<{
   modelValue?: number | null;
@@ -50,6 +69,11 @@ watch(
   { immediate: true },
 );
 
+function onInput(event: Event) {
+  const raw = (event.target as HTMLInputElement).value;
+  updateDuration(raw === "" ? null : Math.min(35791394, Math.max(0, Math.floor(Number(raw)))));
+}
+
 function updateDuration(value: number | null) {
   if (value === inputMinutes.value) return;
   inputMinutes.value = value;
@@ -68,10 +92,3 @@ const formattedDuration = computed(() => {
   ].filter(Boolean).join(" ");
 });
 </script>
-
-<style scoped>
-/* Override the instruction title's larger input text only for this field. */
-.step-duration.v-text-field :deep(input) {
-  font-size: 1rem;
-}
-</style>

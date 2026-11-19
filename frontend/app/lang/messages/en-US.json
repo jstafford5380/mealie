@@ -492,7 +492,12 @@
     "import-by-url": "Import a recipe by URL",
     "create-manually": "Create a recipe manually",
     "add-food": "Add Food",
-    "add-recipe": "Add Recipe"
+    "add-recipe": "Add Recipe",
+    "trim-whitespace": "Trim whitespace",
+    "trim-prefix": "Remove first character",
+    "split-by-numbered-line": "Split numbered lines",
+    "clean-up": "Clean up",
+    "line-count": "{count} line | {count} lines"
   },
   "page": {
     "404-page-not-found": "404 Page not found",
@@ -774,7 +779,11 @@
     "add-extra": "Add extra",
     "use-recipe-instead": "Use a recipe instead",
     "use-food-instead": "Use a food instead",
-    "no-ingredients-yet": "No ingredients yet. Add one below, or paste a list with Bulk add."
+    "no-ingredients-yet": "No ingredients yet. Add one below, or paste a list with Bulk add.",
+    "step-duration-unit": "min",
+    "add-step": "Add step",
+    "no-steps-yet": "No steps yet. Add one below, or paste a list with Bulk add.",
+    "step-options": "Step options"
   },
   "recipe-finder": {
     "recipe-finder": "Recipe Finder",

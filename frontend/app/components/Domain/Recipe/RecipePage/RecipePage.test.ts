@@ -11,7 +11,7 @@ const mocks = vi.hoisted(() => ({ updateOne: vi.fn() }));
 vi.mock("../RecipeIngredients.vue", () => ({ default: { render: () => null } }));
 vi.mock("./RecipePageParts/RecipePageIngredientEditor.vue", () => ({ default: { render: () => null } }));
 vi.mock("./RecipePageParts/RecipePageIngredientToolsView.vue", () => ({ default: { render: () => null } }));
-vi.mock("./RecipePageParts/RecipePageInstructions.vue", () => ({ default: { render: () => null } }));
+vi.mock("./RecipePageParts/RecipeMethodEditor.vue", () => ({ default: { render: () => null } }));
 vi.mock("./RecipePageParts/RecipePageOrganizers.vue", () => ({ default: { render: () => null } }));
 vi.mock("./RecipePageParts/RecipeParseDialog/RecipePageParseDialog.vue", () => ({ default: { render: () => null } }));
 vi.mock("./RecipePageParts/RecipePageScale.vue", () => ({ default: { render: () => null } }));
@@ -25,7 +25,6 @@ vi.mock("./RecipePageParts/RecipeEditorSource.vue", () => ({ default: { render: 
 vi.mock("~/components/Domain/Recipe/RecipeAssets.vue", () => ({ default: { render: () => null } }));
 vi.mock("~/components/Domain/Recipe/RecipeNutrition.vue", () => ({ default: { render: () => null } }));
 vi.mock("~/components/Domain/Recipe/RecipePrintContainer.vue", () => ({ default: { render: () => null } }));
-vi.mock("~/components/Domain/Recipe/RecipeDialogBulkAdd.vue", () => ({ default: { render: () => null } }));
 vi.mock("~/components/Domain/Recipe/RecipeNotes.vue", () => ({ default: { render: () => null } }));
 
 vi.mock("~/composables/api", () => ({

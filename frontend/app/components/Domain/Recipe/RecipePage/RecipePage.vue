@@ -139,19 +139,12 @@
             id="editor-method"
             :title="$t('recipe.instructions')"
           >
-            <RecipePageInstructions
+            <RecipeMethodEditor
               v-model="recipe.recipeInstructions"
               v-model:assets="recipe.assets"
               :recipe="displayedRecipe"
               :scale="scale"
-              :ingredient-storage-key="ingredientStorageKey"
             />
-            <div class="mt-4 flex flex-wrap justify-end gap-2">
-              <RecipeDialogBulkAdd @bulk-data="addStep" />
-              <BaseButton @click="addStep()">
-                {{ $t("general.add") }}
-              </BaseButton>
-            </div>
           </RecipeEditorSection>
           <RecipeEditorSection
             id="editor-organize"
@@ -221,7 +214,6 @@ import { invoke, until, useMediaQuery } from "@vueuse/core";
 import type { RouteLocationNormalized } from "vue-router";
 import RecipePageIngredientEditor from "./RecipePageParts/RecipePageIngredientEditor.vue";
 import RecipePageIngredientToolsView from "./RecipePageParts/RecipePageIngredientToolsView.vue";
-import RecipePageInstructions from "./RecipePageParts/RecipePageInstructions.vue";
 import RecipePageOrganizers from "./RecipePageParts/RecipePageOrganizers.vue";
 import RecipePageParseDialog from "./RecipePageParts/RecipeParseDialog/RecipePageParseDialog.vue";
 import RecipePageScale from "./RecipePageParts/RecipePageScale.vue";
@@ -231,6 +223,7 @@ import RecipeEditorBar from "./RecipePageParts/RecipeEditorBar.vue";
 import RecipeEditorBasics from "./RecipePageParts/RecipeEditorBasics.vue";
 import RecipeEditorSection from "./RecipePageParts/RecipeEditorSection.vue";
 import RecipeEditorSource from "./RecipePageParts/RecipeEditorSource.vue";
+import RecipeMethodEditor from "./RecipePageParts/RecipeMethodEditor.vue";
 import RecipeAssets from "~/components/Domain/Recipe/RecipeAssets.vue";
 import RecipeNutrition from "~/components/Domain/Recipe/RecipeNutrition.vue";
 import RecipeSettingsSwitches from "~/components/Domain/Recipe/RecipeSettingsSwitches.vue";
@@ -245,11 +238,10 @@ import {
 } from "~/composables/recipe-page/shared-state";
 import { useCookModeQuery, type BooleanString } from "~/composables/recipe-page/use-cook-mode-query";
 import type { NoUndefinedField } from "~/lib/api/types/non-generated";
-import type { RecipeOut, CategoryOut, RecipeIngredient, RecipeStep, TagOut, ToolOut } from "~/lib/api/types/recipe";
+import type { RecipeOut, CategoryOut, RecipeIngredient, TagOut, ToolOut } from "~/lib/api/types/recipe";
 import { useRouteQuery } from "~/composables/use-router";
 import { useUserApi } from "~/composables/api";
-import { uuid4, deepCopy } from "~/composables/use-utils";
-import RecipeDialogBulkAdd from "~/components/Domain/Recipe/RecipeDialogBulkAdd.vue";
+import { deepCopy } from "~/composables/use-utils";
 import RecipeNotes from "~/components/Domain/Recipe/RecipeNotes.vue";
 import { useLoggedInState } from "~/composables/use-logged-in-state";
 import { useNavigationWarning } from "~/composables/use-navigation-warning";
@@ -503,39 +495,6 @@ const landscape = computed(() => {
 
   return false;
 });
-
-/** =============================================================
- * Bulk Step Editor
- * TODO: Move to RecipePageInstructions component
- */
-
-function addStep(steps: Array<string> | null = null) {
-  if (!recipe.value.recipeInstructions) {
-    return;
-  }
-
-  // New steps use the API's nullable fields, not the populated-view helper type.
-  const instructions: RecipeStep[] = recipe.value.recipeInstructions;
-
-  if (steps) {
-    const cleanedSteps = steps.map((step) => {
-      return { id: uuid4(), text: step, title: "", summary: "", ingredientReferences: [], noteReferences: [], durationSeconds: null };
-    });
-
-    instructions.push(...cleanedSteps);
-  }
-  else {
-    instructions.push({
-      id: uuid4(),
-      text: "",
-      title: "",
-      summary: "",
-      ingredientReferences: [],
-      noteReferences: [],
-      durationSeconds: null,
-    });
-  }
-}
 
 /** =============================================================
  * RecipeChip Clicked

@@ -1,21 +1,17 @@
 <template>
   <div
     ref="el"
-    :class="isOverDropZone ? 'over' : ''"
+    class="relative"
   >
+    <slot />
     <div
       v-if="isOverDropZone"
-      class="overlay"
-    />
-    <div
-      v-if="isOverDropZone"
-      class="absolute text-container"
+      class="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-control border-2 border-dashed border-primary bg-highlight/85 font-sans"
     >
-      <p class="text-center drop-text">
+      <p class="m-0 text-base font-semibold text-primary">
         {{ $t("recipe.drop-image") }}
       </p>
     </div>
-    <slot />
   </div>
 </template>
 
@@ -137,36 +133,3 @@ function onDrop(files: File[] | null, event: DragEvent) {
 
 const { isOverDropZone } = useDropZone(el, (files, event) => onDrop(files, event));
 </script>
-
-<style lang="css">
-.over {
-  background-color: #f0f0f0;
-}
-.overlay {
-  position: absolute;
-  filter: blur(2px);
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.309);
-}
-
-.text-container {
-  z-index: 10;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.drop-text {
-  color: white;
-  font-size: 1.5rem;
-  font-weight: bold;
-}
-</style>
