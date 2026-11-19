@@ -1,70 +1,79 @@
 <template>
-  <v-container class="elevation-3">
-    <v-row no-gutters>
-      <v-col cols="12">
-        <RecipeCardMobile
-          :name="recipe.name"
-          :description="recipe.description"
-          :slug="recipe.slug"
-          :rating="recipe.rating"
-          :image="recipe.image"
-          :recipe-id="recipe.id"
-        />
-      </v-col>
-      <div v-for="(organizer, idx) in missingOrganizers" :key="idx">
-        <v-col v-if="organizer.show" cols="12">
-          <div class="d-flex flex-row flex-wrap align-center pt-2">
-            <v-icon class="ma-0 pa-0" />
-            <v-card-text class="mr-0 my-0 pl-1 py-0 flex-grow-0" style="width: max-content">
-              {{ $t("recipe-finder.missing") }}:
-            </v-card-text>
-            <v-chip
-              v-for="item in organizer.items"
-              :key="item.item.id"
-              label
-              color="secondary custom-transparent"
-              class="mr-2 my-1 pl-1"
-              variant="flat"
-            >
-              <v-checkbox dark :ripple="false" hide-details @click="handleCheckbox(item)">
-                <template #label>
-                  {{ organizer.getLabel(item.item) }}
-                </template>
-              </v-checkbox>
-            </v-chip>
-          </div>
-        </v-col>
-      </div>
-      <!-- foods the recipe calls for that the user doesn't have, and what covers them. no
-           checkbox: the point is that nothing needs adding to the search -->
-      <v-col v-if="substitutedFoods?.length" cols="12">
-        <div class="d-flex flex-row flex-wrap align-center pt-2">
-          <v-icon class="ma-0 pa-0" />
-          <v-card-text class="mr-0 my-0 pl-1 py-0 flex-grow-0" style="width: max-content">
-            {{ $t("recipe-finder.substituting") }}:
-          </v-card-text>
-          <v-chip
-            v-for="(substituted, idx) in substitutedFoods"
-            :key="idx"
-            label
-            color="info custom-transparent"
-            class="mr-2 my-1"
-            variant="flat"
-            :prepend-icon="$globals.icons.swapHorizontal"
+  <article class="overflow-hidden rounded-card border bg-card font-sans">
+    <RecipeCardLineItem :recipe="recipe">
+      <template
+        v-if="recipe.description"
+        #subtitle
+      >
+        {{ recipe.description }}
+      </template>
+    </RecipeCardLineItem>
+    <div
+      v-if="missingOrganizers.some(o => o.show) || substitutedFoods?.length"
+      class="flex flex-col gap-2 border-t px-4 py-3"
+    >
+      <template
+        v-for="(organizer, idx) in missingOrganizers"
+        :key="idx"
+      >
+        <div
+          v-if="organizer.show"
+          class="flex flex-wrap items-center gap-1.5"
+        >
+          <span class="me-1 text-sm text-muted-foreground">{{ $t("recipe-finder.missing") }}:</span>
+          <!-- pressing one adds it to the search, as if you had it -->
+          <button
+            v-for="item in organizer.items"
+            :key="item.item.id"
+            type="button"
+            class="inline-flex h-7 items-center gap-1 rounded-full border px-2.5 text-[13px] font-semibold transition-colors disabled:opacity-60"
+            :class="item.selected ? 'border-primary bg-primary text-primary-foreground' : 'border-input bg-card hover:border-primary/60'"
+            :aria-pressed="item.selected"
+            :title="$t('recipe-finder.i-have-this')"
+            :disabled="disableCheckbox"
+            @click="handleCheckbox(item)"
           >
-            {{ $t("recipe-finder.substitute-for-food", {
-              substitute: foodLabel(substituted.substituteFood),
-              food: foodLabel(substituted.food),
-            }) }}
-          </v-chip>
+            <CheckIcon
+              v-if="item.selected"
+              class="size-3.5"
+            />
+            <PlusIcon
+              v-else
+              class="size-3.5"
+            />
+            {{ organizer.getLabel(item.item as any) }}
+          </button>
         </div>
-      </v-col>
-    </v-row>
-  </v-container>
+      </template>
+      <!-- what stands in for foods the user doesn't have; nothing to add here -->
+      <div
+        v-if="substitutedFoods?.length"
+        class="flex flex-wrap items-center gap-1.5"
+      >
+        <span class="me-1 text-sm text-muted-foreground">{{ $t("recipe-finder.substituting") }}:</span>
+        <span
+          v-for="(substituted, idx) in substitutedFoods"
+          :key="idx"
+          class="inline-flex h-7 items-center gap-1 rounded-full bg-subtle px-2.5 text-[13px] font-semibold text-subtle-foreground"
+        >
+          <MdiIcon
+            :path="$globals.icons.swapHorizontal"
+            class="size-3.5"
+          />
+          {{ $t("recipe-finder.substitute-for-food", {
+            substitute: foodLabel(substituted.substituteFood),
+            food: foodLabel(substituted.food),
+          }) }}
+        </span>
+      </div>
+    </div>
+  </article>
 </template>
 
 <script setup lang="ts">
-import RecipeCardMobile from "./RecipeCardMobile.vue";
+import { CheckIcon, PlusIcon } from "@lucide/vue";
+import RecipeCardLineItem from "./RecipeCardLineItem.vue";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import type {
   IngredientFoodOut,
   IngredientFoodSummary,

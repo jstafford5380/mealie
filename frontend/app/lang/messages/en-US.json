@@ -199,7 +199,8 @@
     "drag-to-reorder": "Drag to reorder",
     "success": "Success",
     "failed": "Failed",
-    "options-for": "Options for {name}"
+    "options-for": "Options for {name}",
+    "remove-item": "Remove {name}"
   },
   "group": {
     "create-group": "Create Group",
@@ -846,7 +847,8 @@
     "selected-tools": "Selected Tools",
     "other-filters": "Other Filters",
     "ready-to-make": "Ready to Make",
-    "almost-ready-to-make": "Almost Ready to Make"
+    "almost-ready-to-make": "Almost Ready to Make",
+    "i-have-this": "I have this: add it to the search"
   },
   "search": {
     "has-any": "Has Any",

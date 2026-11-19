@@ -1,418 +1,273 @@
 <template>
-  <v-container>
-    <BasePageTitle divider>
-      <template #header>
-        <v-img
-          width="100"
-          max-height="100"
-          max-width="100"
-          src="/svgs/manage-cookbooks.svg"
+  <div class="mx-auto w-full max-w-[1200px] px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8">
+    <BaseDialog
+      v-model="state.queryFilterMenu"
+      :title="$t('recipe-finder.other-filters')"
+      :icon="$globals.icons.filter"
+      width="100%"
+      max-width="1100px"
+      :submit-disabled="!state.queryFilterEditorValue"
+      can-confirm
+      @confirm="saveQueryFilter"
+    >
+      <div class="px-6 pb-2">
+        <QueryFilterBuilder
+          :key="state.queryFilterMenuKey"
+          :initial-query-filter="state.queryFilterJSON"
+          :field-defs="queryFilterBuilderFields"
+          @input="(value) => state.queryFilterEditorValue = value"
+          @input-j-s-o-n="(value) => state.queryFilterEditorValueJSON = value"
         />
-      </template>
-      <template #title>
-        {{ $t('recipe-finder.recipe-finder') }}
-      </template>
-
-      <template #content>
-        {{ $t('recipe-finder.recipe-finder-description') }}
-      </template>
-    </BasePageTitle>
-    <v-container v-if="state.ready">
-      <v-row>
-        <v-col :cols="useMobile ? 12 : 3">
-          <v-container class="ma-0 pa-0">
-            <v-row no-gutters>
-              <v-col
-                cols="12"
-                no-gutters
-                :class="attrs.searchFilter.colClass"
-              >
-                <SearchFilter
-                  v-if="foods"
-                  v-model="selectedFoods"
-                  :items="foods"
-                  :class="attrs.searchFilter.filterClass"
-                >
-                  <v-icon start>
-                    {{ $globals.icons.foods }}
-                  </v-icon>
-                  {{ $t("general.foods") }}
-                </SearchFilter>
-                <SearchFilter
-                  v-if="tools"
-                  v-model="selectedTools"
-                  :items="tools"
-                  :class="attrs.searchFilter.filterClass"
-                >
-                  <v-icon start>
-                    {{ $globals.icons.potSteam }}
-                  </v-icon>
-                  {{ $t("tool.tools") }}
-                </SearchFilter>
-                <div :class="attrs.searchFilter.filterClass">
-                  <v-badge
-                    :model-value="!!state.queryFilterJSON.parts && state.queryFilterJSON.parts.length > 0"
-                    size="small"
-                    color="primary"
-                    :content="(state.queryFilterJSON.parts || []).length"
-                  >
-                    <v-btn
-                      size="small"
-                      color="accent"
-                      dark
-                      @click="state.queryFilterMenu = !state.queryFilterMenu"
-                    >
-                      <v-icon start>
-                        {{ $globals.icons.filter }}
-                      </v-icon>
-                      {{ $t("recipe-finder.other-filters") }}
-                      <BaseDialog
-                        v-model="state.queryFilterMenu"
-                        :title="$t('recipe-finder.other-filters')"
-                        :icon="$globals.icons.filter"
-                        width="100%"
-                        max-width="1100px"
-                        :submit-disabled="!state.queryFilterEditorValue"
-                        can-confirm
-                        @confirm="saveQueryFilter"
-                      >
-                        <v-card-text>
-                          <QueryFilterBuilder
-                            :key="state.queryFilterMenuKey"
-                            :initial-query-filter="state.queryFilterJSON"
-                            :field-defs="queryFilterBuilderFields"
-                            @input="(value) => state.queryFilterEditorValue = value"
-                            @input-j-s-o-n="(value) => state.queryFilterEditorValueJSON = value"
-                          />
-                        </v-card-text>
-                        <template #custom-card-action>
-                          <BaseButton
-                            color="error"
-                            type="submit"
-                            @click="clearQueryFilter"
-                          >
-                            <template #icon>
-                              {{ $globals.icons.close }}
-                            </template>
-                            {{ $t("search.clear-selection") }}
-                          </BaseButton>
-                        </template>
-                      </BaseDialog>
-                    </v-btn>
-                  </v-badge>
-                </div>
-              </v-col>
-            </v-row>
-            <!-- Settings Menu -->
-            <v-row
-              no-gutters
-              class="mb-2"
-            >
-              <v-col
-                cols="12"
-                :class="attrs.settings.colClass"
-              >
-                <v-menu
-                  v-model="state.settingsMenu"
-                  offset-y
-                  nudge-bottom="3"
-                  :close-on-content-click="false"
-                >
-                  <template #activator="{ props }">
-                    <v-btn
-                      size="small"
-                      color="primary"
-                      dark
-                      v-bind="props"
-                    >
-                      <v-icon start>
-                        {{ $globals.icons.cog }}
-                      </v-icon>
-                      {{ $t("general.settings") }}
-                    </v-btn>
-                  </template>
-                  <v-card>
-                    <v-card-text>
-                      <div>
-                        <v-number-input
-                          v-model="maxMissingFoods"
-                          :precision="null"
-                          :min="0"
-                          inset
-                          hide-details
-                          :label="$t('recipe-finder.max-missing-ingredients')"
-                        />
-                        <v-number-input
-                          v-model="maxMissingTools"
-                          :precision="null"
-                          :min="0"
-                          inset
-                          hide-details
-                          :label="$t('recipe-finder.max-missing-tools')"
-                          class="mt-4"
-                        />
-                      </div>
-                      <div class="mt-1">
-                        <v-checkbox
-                          v-if="isOwnGroup"
-                          v-model="state.settings.includeFoodsOnHand"
-                          density="compact"
-                          hide-details
-                          class="my-auto"
-                          :label="$t('recipe-finder.include-ingredients-on-hand')"
-                        />
-                        <v-checkbox
-                          v-if="isOwnGroup"
-                          v-model="state.settings.includeToolsOnHand"
-                          density="compact"
-                          hide-details
-                          class="my-auto"
-                          :label="$t('recipe-finder.include-tools-on-hand')"
-                        />
-                        <v-checkbox
-                          v-model="state.settings.includeSubstitutions"
-                          density="compact"
-                          hide-details
-                          class="my-auto"
-                          :label="$t('recipe-finder.include-substitutions')"
-                        />
-                      </div>
-                    </v-card-text>
-                  </v-card>
-                </v-menu>
-              </v-col>
-            </v-row>
-            <v-row
-              no-gutters
-              class="my-2"
-            >
-              <v-col cols="12">
-                <v-divider />
-              </v-col>
-            </v-row>
-            <v-row
-              no-gutters
-              class="mt-5"
-            >
-              <v-card-title class="ma-0 pa-0">
-                {{ $t("recipe-finder.selected-ingredients") }}
-              </v-card-title>
-              <v-container
-                class="ma-0 pa-0"
-                style="max-height: 60vh; overflow-y: auto;"
-              >
-                <v-card-text
-                  v-if="!selectedFoods.length"
-                  class="ma-0 pa-0"
-                >
-                  {{ $t("recipe-finder.no-ingredients-selected") }}
-                </v-card-text>
-                <div v-if="useMobile">
-                  <v-row no-gutters>
-                    <v-col
-                      cols="12"
-                      class="d-flex flex-wrap justify-end"
-                    >
-                      <v-chip
-                        v-for="food in selectedFoods"
-                        :key="food.id"
-                        label
-                        class="ma-1"
-                        color="accent custom-transparent"
-                        closable
-                        variant="flat"
-                        @click:close="removeFood(food)"
-                      >
-                        <span class="text-hide-overflow">{{ food.pluralName || food.name }}</span>
-                      </v-chip>
-                    </v-col>
-                  </v-row>
-                </div>
-                <div v-else>
-                  <v-row
-                    v-for="food in selectedFoods"
-                    :key="food.id"
-                    no-gutters
-                    class="mb-1"
-                  >
-                    <v-col cols="12">
-                      <v-chip
-                        label
-                        color="accent custom-transparent"
-                        variant="flat"
-                        closable
-                        @click:close="removeFood(food)"
-                      >
-                        <span class="text-hide-overflow">{{ food.pluralName || food.name }}</span>
-                      </v-chip>
-                    </v-col>
-                  </v-row>
-                </div>
-              </v-container>
-            </v-row>
-            <v-row
-              v-if="selectedTools.length"
-              no-gutters
-              class="mt-5"
-            >
-              <v-card-title class="ma-0 pa-0">
-                {{ $t("recipe-finder.selected-tools") }}
-              </v-card-title>
-              <v-container class="ma-0 pa-0">
-                <div v-if="useMobile">
-                  <v-row no-gutters>
-                    <v-col
-                      cols="12"
-                      class="d-flex flex-wrap justify-end"
-                    >
-                      <v-chip
-                        v-for="tool in selectedTools"
-                        :key="tool.id"
-                        label
-                        class="ma-1"
-                        color="accent custom-transparent"
-                        closeable
-                        variant="flat"
-                        @click:close="removeTool(tool)"
-                      >
-                        <span class="text-hide-overflow">{{ tool.name }}</span>
-                      </v-chip>
-                    </v-col>
-                  </v-row>
-                </div>
-                <div v-else>
-                  <v-row
-                    v-for="tool in selectedTools"
-                    :key="tool.id"
-                    no-gutters
-                    class="mb-1"
-                  >
-                    <v-col cols="12">
-                      <v-chip
-                        label
-                        color="accent custom-transparent"
-                        closable
-                        variant="flat"
-                        @click:close="removeTool(tool)"
-                      >
-                        <span class="text-hide-overflow">{{ tool.name }}</span>
-                      </v-chip>
-                    </v-col>
-                  </v-row>
-                </div>
-              </v-container>
-            </v-row>
-          </v-container>
-        </v-col>
-        <v-col
-          :cols="useMobile ? 12 : 9"
-          :style="useMobile ? '' : 'max-height: 70vh; overflow-y: auto'"
+      </div>
+      <template #custom-card-action>
+        <Button
+          variant="ghost"
+          class="text-destructive hover:text-destructive"
+          @click="clearQueryFilter"
         >
-          <v-container
-            v-if="recipeSuggestions.readyToMake.length || recipeSuggestions.missingItems.length"
-            class="ma-0 pa-0"
+          {{ $t("search.clear-selection") }}
+        </Button>
+      </template>
+    </BaseDialog>
+
+    <header class="mb-6">
+      <h1 class="m-0 text-[26px] font-bold tracking-tight sm:text-[32px]">
+        {{ $t('recipe-finder.recipe-finder') }}
+      </h1>
+      <p class="m-0 mt-1 max-w-[65ch] text-[15px] text-muted-foreground">
+        {{ $t('recipe-finder.recipe-finder-description') }}
+      </p>
+    </header>
+
+    <div
+      v-if="state.ready"
+      class="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)] lg:items-start"
+    >
+      <!-- what you have -->
+      <aside class="flex flex-col gap-5 lg:sticky lg:top-20">
+        <div class="flex flex-wrap gap-2">
+          <SearchFilter
+            v-if="foods"
+            v-model="selectedFoods"
+            :items="foods"
           >
-            <v-row
-              v-if="recipeSuggestions.readyToMake.length"
-              density="compact"
+            <MdiIcon
+              :path="$globals.icons.foods"
+              class="size-4"
+            />
+            {{ $t("general.foods") }}
+          </SearchFilter>
+          <SearchFilter
+            v-if="tools"
+            v-model="selectedTools"
+            :items="tools"
+          >
+            <MdiIcon
+              :path="$globals.icons.potSteam"
+              class="size-4"
+            />
+            {{ $t("tool.tools") }}
+          </SearchFilter>
+          <button
+            type="button"
+            class="inline-flex h-9 items-center gap-2 rounded-full border px-3 text-sm font-medium transition-colors"
+            :class="otherFilterCount ? 'border-primary bg-highlight text-highlight-foreground' : 'border-input bg-card hover:bg-highlight/60'"
+            @click="state.queryFilterMenu = true"
+          >
+            <MdiIcon
+              :path="$globals.icons.filter"
+              class="size-4"
+            />
+            {{ $t("recipe-finder.other-filters") }}
+            <span
+              v-if="otherFilterCount"
+              class="inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-bold text-primary-foreground"
+            >{{ otherFilterCount }}</span>
+          </button>
+          <Popover v-model:open="state.settingsMenu">
+            <PopoverTrigger as-child>
+              <button
+                type="button"
+                class="inline-flex h-9 items-center gap-2 rounded-full border border-input bg-card px-3 text-sm font-medium hover:bg-highlight/60"
+              >
+                <SlidersHorizontalIcon class="size-4" />
+                {{ $t("general.settings") }}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              align="start"
+              class="w-[min(320px,calc(100vw-2rem))]"
             >
-              <v-col cols="12">
-                <v-card-title :class="attrs.title.class.readyToMake">
-                  {{ $t("recipe-finder.ready-to-make") }}
-                </v-card-title>
-              </v-col>
-              <v-col
-                v-for="(item, idx) in recipeSuggestions.readyToMake"
-                :key="`${idx}-ready`"
-                cols="12"
-              >
-                <v-lazy>
-                  <RecipeSuggestion
-                    :recipe="item.recipe"
-                    :missing-foods="item.missingFoods"
-                    :missing-tools="item.missingTools"
-                    :substituted-foods="item.substitutedFoods"
-                    :disable-checkbox="state.loading"
-                    @add-food="addFood"
-                    @remove-food="removeFood"
-                    @add-tool="addTool"
-                    @remove-tool="removeTool"
-                  />
-                </v-lazy>
-              </v-col>
-            </v-row>
-            <v-row
-              v-if="recipeSuggestions.missingItems.length"
-              density="compact"
+              <div class="flex flex-col gap-1">
+                <NumberInputField
+                  v-model="maxMissingFoods"
+                  :precision="null"
+                  :min="0"
+                  :label="$t('recipe-finder.max-missing-ingredients')"
+                />
+                <NumberInputField
+                  v-model="maxMissingTools"
+                  :precision="null"
+                  :min="0"
+                  :label="$t('recipe-finder.max-missing-tools')"
+                />
+                <CheckboxField
+                  v-if="isOwnGroup"
+                  v-model="state.settings.includeFoodsOnHand"
+                  :label="$t('recipe-finder.include-ingredients-on-hand')"
+                />
+                <CheckboxField
+                  v-if="isOwnGroup"
+                  v-model="state.settings.includeToolsOnHand"
+                  :label="$t('recipe-finder.include-tools-on-hand')"
+                />
+                <CheckboxField
+                  v-model="state.settings.includeSubstitutions"
+                  :label="$t('recipe-finder.include-substitutions')"
+                />
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <section>
+          <h2 class="m-0 mb-2 text-sm font-semibold">
+            {{ $t("recipe-finder.selected-ingredients") }}
+          </h2>
+          <p
+            v-if="!selectedFoods.length"
+            class="m-0 text-sm text-muted-foreground"
+          >
+            {{ $t("recipe-finder.no-ingredients-selected") }}
+          </p>
+          <div
+            v-else
+            class="flex max-h-[50vh] flex-wrap gap-1.5 overflow-y-auto"
+          >
+            <span
+              v-for="food in selectedFoods"
+              :key="food.id"
+              class="inline-flex h-8 max-w-full items-center gap-1 rounded-full bg-highlight ps-3 pe-1 text-sm font-semibold text-highlight-foreground"
             >
-              <v-col cols="12">
-                <v-card-title :class="attrs.title.class.missingItems">
-                  {{ $t("recipe-finder.almost-ready-to-make") }}
-                </v-card-title>
-              </v-col>
-              <v-col
-                v-for="(item, idx) in recipeSuggestions.missingItems"
-                :key="`${idx}-missing`"
-                cols="12"
+              <span class="truncate">{{ food.pluralName || food.name }}</span>
+              <button
+                type="button"
+                class="inline-flex size-6 items-center justify-center rounded-full hover:bg-background/40"
+                :aria-label="$t('general.remove-item', { name: food.pluralName || food.name })"
+                @click="removeFood(food)"
               >
-                <v-lazy>
-                  <RecipeSuggestion
-                    :recipe="item.recipe"
-                    :missing-foods="item.missingFoods"
-                    :missing-tools="item.missingTools"
-                    :substituted-foods="item.substitutedFoods"
-                    :disable-checkbox="state.loading"
-                    @add-food="addFood"
-                    @remove-food="removeFood"
-                    @add-tool="addTool"
-                    @remove-tool="removeTool"
-                  />
-                </v-lazy>
-              </v-col>
-            </v-row>
-          </v-container>
-          <v-container v-else-if="!state.recipesReady">
-            <v-row>
-              <v-col
-                cols="12"
-                class="d-flex justify-center"
+                <XIcon class="size-3.5" />
+              </button>
+            </span>
+          </div>
+        </section>
+        <section v-if="selectedTools.length">
+          <h2 class="m-0 mb-2 text-sm font-semibold">
+            {{ $t("recipe-finder.selected-tools") }}
+          </h2>
+          <div class="flex flex-wrap gap-1.5">
+            <span
+              v-for="tool in selectedTools"
+              :key="tool.id"
+              class="inline-flex h-8 max-w-full items-center gap-1 rounded-full bg-highlight ps-3 pe-1 text-sm font-semibold text-highlight-foreground"
+            >
+              <span class="truncate">{{ tool.name }}</span>
+              <button
+                type="button"
+                class="inline-flex size-6 items-center justify-center rounded-full hover:bg-background/40"
+                :aria-label="$t('general.remove-item', { name: tool.name })"
+                @click="removeTool(tool)"
               >
-                <AppLoader :waiting-text="$t('general.loading-recipes')" />
-              </v-col>
-            </v-row>
-          </v-container>
-          <v-container v-else>
-            <v-row>
-              <v-col
-                cols="12"
-                class="d-flex flex-column justify-center align-center ga-1"
-              >
-                <v-card-title class="ma-0 pa-0">
-                  {{ $t("recipe-finder.no-recipes-found") }}
-                </v-card-title>
-                <v-card-text class="ma-0 pa-0 text-center">
-                  {{ $t("recipe-finder.no-recipes-found-description") }}
-                </v-card-text>
-              </v-col>
-            </v-row>
-          </v-container>
-        </v-col>
-      </v-row>
-    </v-container>
-    <v-container v-else>
-      <v-row>
-        <v-col
-          cols="12"
-          class="d-flex justify-center"
+                <XIcon class="size-3.5" />
+              </button>
+            </span>
+          </div>
+        </section>
+      </aside>
+
+      <!-- what you can make -->
+      <div class="flex min-w-0 flex-col gap-6">
+        <template v-if="recipeSuggestions.readyToMake.length || recipeSuggestions.missingItems.length">
+          <section
+            v-if="recipeSuggestions.readyToMake.length"
+            class="flex flex-col gap-2"
+          >
+            <h2 class="m-0 text-lg font-bold">
+              {{ $t("recipe-finder.ready-to-make") }}
+              <span class="ms-1 text-sm font-normal text-muted-foreground tabular-nums">{{ recipeSuggestions.readyToMake.length }}</span>
+            </h2>
+            <RecipeSuggestion
+              v-for="(item, idx) in recipeSuggestions.readyToMake"
+              :key="`${idx}-ready`"
+              :recipe="item.recipe"
+              :missing-foods="item.missingFoods"
+              :missing-tools="item.missingTools"
+              :substituted-foods="item.substitutedFoods"
+              :disable-checkbox="state.loading"
+              @add-food="addFood"
+              @remove-food="removeFood"
+              @add-tool="addTool"
+              @remove-tool="removeTool"
+            />
+          </section>
+          <section
+            v-if="recipeSuggestions.missingItems.length"
+            class="flex flex-col gap-2"
+          >
+            <h2 class="m-0 text-lg font-bold">
+              {{ $t("recipe-finder.almost-ready-to-make") }}
+              <span class="ms-1 text-sm font-normal text-muted-foreground tabular-nums">{{ recipeSuggestions.missingItems.length }}</span>
+            </h2>
+            <RecipeSuggestion
+              v-for="(item, idx) in recipeSuggestions.missingItems"
+              :key="`${idx}-missing`"
+              :recipe="item.recipe"
+              :missing-foods="item.missingFoods"
+              :missing-tools="item.missingTools"
+              :substituted-foods="item.substitutedFoods"
+              :disable-checkbox="state.loading"
+              @add-food="addFood"
+              @remove-food="removeFood"
+              @add-tool="addTool"
+              @remove-tool="removeTool"
+            />
+          </section>
+        </template>
+        <div
+          v-else-if="!state.recipesReady"
+          class="flex justify-center py-10"
         >
           <AppLoader :waiting-text="$t('general.loading-recipes')" />
-        </v-col>
-      </v-row>
-    </v-container>
-  </v-container>
+        </div>
+        <div
+          v-else
+          class="rounded-card border border-dashed px-4 py-10 text-center"
+        >
+          <p class="m-0 font-semibold">
+            {{ $t("recipe-finder.no-recipes-found") }}
+          </p>
+          <p class="m-0 mt-1 text-sm text-muted-foreground">
+            {{ $t("recipe-finder.no-recipes-found-description") }}
+          </p>
+        </div>
+      </div>
+    </div>
+    <div
+      v-else
+      class="flex justify-center py-10"
+    >
+      <AppLoader :waiting-text="$t('general.loading-recipes')" />
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { SlidersHorizontalIcon, XIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import CheckboxField from "~/components/ui/field/CheckboxField.vue";
+import NumberInputField from "~/components/ui/field/NumberInputField.vue";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+import { Popover, PopoverContent, PopoverTrigger } from "~/components/ui/popover";
 import { watchDebounced } from "@vueuse/core";
 import { useUserApi } from "~/composables/api";
 import { usePublicExploreApi } from "~/composables/api/api-client";
@@ -432,7 +287,6 @@ interface RecipeSuggestions {
   missingItems: RecipeSuggestionResponseItem[];
 }
 
-const display = useDisplay();
 const i18n = useI18n();
 const auth = useMealieAuth();
 const route = useRoute();
@@ -440,8 +294,6 @@ const route = useRoute();
 useSeoMeta({
   title: i18n.t("recipe-finder.recipe-finder"),
 });
-
-const useMobile = computed(() => display.smAndDown.value);
 
 const groupSlug = computed(() => route.params.groupSlug as string || auth.user.value?.groupSlug || "");
 const { isOwnGroup } = useLoggedInState();
@@ -506,26 +358,10 @@ watch(
   },
 );
 
-const attrs = computed(() => {
-  return {
-    title: {
-      class: {
-        readyToMake: "ma-0 pa-0",
-        missingItems: recipeSuggestions.value.readyToMake.length ? "ma-0 pa-0 mt-5" : "ma-0 pa-0",
-      },
-    },
-    searchFilter: {
-      colClass: useMobile.value ? "d-flex flex-wrap justify-end" : "d-flex flex-wrap justify-start",
-      filterClass: useMobile.value ? "ml-4 mb-2" : "mr-4 mb-2",
-    },
-    settings: {
-      colClass: useMobile.value ? "d-flex flex-wrap justify-end" : "d-flex flex-wrap justify-start",
-    },
-  };
-});
+const otherFilterCount = computed(() => (state.queryFilterJSON.parts || []).length);
 
 const foodStore = isOwnGroup.value ? useFoodStore() : usePublicFoodStore(groupSlug.value);
-const foods = foodStore.store.value;
+const foods = computed(() => foodStore.store.value);
 const selectedFoods = ref<IngredientFoodOut[]>([]);
 function addFood(food: IngredientFoodOut) {
   selectedFoods.value = [...selectedFoods.value, food];
@@ -547,7 +383,7 @@ watch(
 );
 
 const toolStore = isOwnGroup.value ? useToolStore() : usePublicToolStore(groupSlug.value);
-const tools = toolStore.store.value;
+const tools = computed(() => toolStore.store.value);
 const selectedTools = ref<ToolOut[]>([]);
 function addTool(tool: ToolOut) {
   selectedTools.value = [...selectedTools.value, tool];

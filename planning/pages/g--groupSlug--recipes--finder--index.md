@@ -33,6 +33,15 @@ Route: `/g/:groupSlug/recipes/finder`. Sources: [page](../../frontend/app/pages/
 - Source assigns store arrays to plain constants before asynchronous refresh. A cold visit can retain stale empty choices; verify reactive store bindings during replacement.
 - Backend matches linked food IDs, not ingredient note text. Capture fixtures link lentils and carrots explicitly to the soup.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Illustration title; a left column of mixed buttons (Foods, Tools, an "Other Filters" button hosting its own dialog, a Settings menu) with selected items as stacked chips. | Heading and explanation; a sticky left column with four pill buttons (Foods, Tools, Other Filters with a count, Settings as a popover with labelled number fields and checkboxes), then the selected foods and tools as removable chips. Phones stack it above the results. |
+| Results in a 70vh scroll box of Vuetify cards. | Results flow with the page: "Ready to make" and "Almost ready to make" headings with counts, each recipe a bordered card with the recipe row, "Missing:" chips that add the item to your search when pressed (they show a tick when added), and substitution pills. |
+| Empty and loading states as card titles. | A dashed empty state and a centred loader. |
+| The food and tool lists were a one-time snapshot, so opening the finder directly could show no foods to pick. | The lists follow the stores and fill in once loaded. |
+
 ## Screenshots
 
 ![Empty finder](../screenshots/g--groupSlug--recipes--finder--index/01-empty-page.jpg)

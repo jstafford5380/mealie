@@ -3238,27 +3238,25 @@
       "source": "frontend/app/components/Domain/Recipe/RecipeSuggestion.vue",
       "name": "RecipeSuggestion",
       "components": [
+        "CheckIcon",
+        "MdiIcon",
+        "PlusIcon",
         "Props",
-        "RecipeCardMobile"
+        "RecipeCardLineItem"
       ],
       "dependencies": [
-        "frontend/app/components/Domain/Recipe/RecipeCardMobile.vue"
+        "frontend/app/components/Domain/Recipe/RecipeCardLineItem.vue"
       ],
-      "vuetify": [
-        "v-card-text",
-        "v-checkbox",
-        "v-chip",
-        "v-col",
-        "v-container",
-        "v-icon",
-        "v-row"
-      ],
+      "vuetify": [],
       "events": [
         "click: handleCheckbox(item)"
       ],
       "models": [],
       "conditions": [
+        "item.selected",
+        "missingOrganizers.some(o => o.show) || substitutedFoods?.length",
         "organizer.show",
+        "recipe.description",
         "substitutedFoods?.length"
       ],
       "dynamicComponents": [],
