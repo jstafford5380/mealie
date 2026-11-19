@@ -1,6 +1,6 @@
 # Shared recipe cards and paged sections
 
-Sources: [RecipeCardSection](../frontend/app/components/Domain/Recipe/RecipeCardSection.vue), [grid tile](../frontend/app/components/Domain/Recipe/RecipeTile.vue) (replaces the removed RecipeCard.vue), [list row](../frontend/app/components/Domain/Recipe/RecipeRow.vue), [compact card](../frontend/app/components/Domain/Recipe/RecipeCardMobile.vue), [favorite](../frontend/app/components/Domain/Recipe/RecipeFavoriteBadge.vue), [rating](../frontend/app/components/Domain/Recipe/RecipeCardRating.vue), [image](../frontend/app/components/Domain/Recipe/RecipeCardImage.vue), [chips](../frontend/app/components/Domain/Recipe/RecipeChips.vue).
+Sources: [RecipeCardSection](../frontend/app/components/Domain/Recipe/RecipeCardSection.vue), [grid tile](../frontend/app/components/Domain/Recipe/RecipeTile.vue) (replaces the removed RecipeCard.vue), [list row](../frontend/app/components/Domain/Recipe/RecipeRow.vue), [line item](../frontend/app/components/Domain/Recipe/RecipeCardLineItem.vue) (replaces the removed compact card, RecipeCardMobile.vue), [favorite](../frontend/app/components/Domain/Recipe/RecipeFavoriteBadge.vue), [rating](../frontend/app/components/Domain/Recipe/RecipeCardRating.vue), [chips](../frontend/app/components/Domain/Recipe/RecipeChips.vue).
 
 ## Functions to preserve
 
