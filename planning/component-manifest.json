@@ -1706,39 +1706,6 @@
       "vuetifyAPIs": []
     },
     {
-      "source": "frontend/app/components/Domain/Recipe/RecipeDialogSearch.vue",
-      "name": "RecipeDialogSearch",
-      "components": [
-        "RecipeCardMobile"
-      ],
-      "dependencies": [
-        "frontend/app/components/Domain/Recipe/RecipeCardMobile.vue"
-      ],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-card-actions",
-        "v-dialog",
-        "v-icon",
-        "v-text-field",
-        "v-toolbar"
-      ],
-      "events": [
-        "click: dialog = false"
-      ],
-      "models": [
-        "dialog",
-        "search.query.value"
-      ],
-      "conditions": [
-        "$vuetify.display.xs"
-      ],
-      "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ]
-    },
-    {
       "source": "frontend/app/components/Domain/Recipe/RecipeDialogShare.vue",
       "name": "RecipeDialogShare",
       "components": [
@@ -4295,61 +4262,13 @@
       "source": "frontend/app/components/Layout/DefaultLayout.vue",
       "name": "DefaultLayout",
       "components": [
-        "AppHeader",
-        "AppSidebar",
-        "NuxtPage",
-        "Record",
-        "SideBarLink",
-        "TheSnackbar"
+        "AppShell",
+        "NuxtPage"
       ],
       "dependencies": [
-        "frontend/app/components/Layout/LayoutParts/AppHeader.vue",
-        "frontend/app/components/Layout/LayoutParts/AppSidebar.vue",
-        "frontend/app/components/Layout/LayoutParts/TheSnackbar.vue"
+        "frontend/app/components/Layout/LayoutParts/AppShell.vue"
       ],
-      "vuetify": [
-        "v-app",
-        "v-btn",
-        "v-divider",
-        "v-icon",
-        "v-list",
-        "v-list-item",
-        "v-list-item-subtitle",
-        "v-list-item-title",
-        "v-main",
-        "v-menu",
-        "v-scroll-x-transition"
-      ],
-      "events": [
-        "click.stop: sidebar = !sidebar"
-      ],
-      "models": [
-        "sidebar"
-      ],
-      "conditions": [
-        "!item.hide",
-        "!item.restricted || isOwnGroup",
-        "isOwnGroup",
-        "item.insertDivider"
-      ],
-      "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify",
-        "useDisplay"
-      ]
-    },
-    {
-      "source": "frontend/app/components/Layout/LayoutParts/AppFooter.vue",
-      "name": "AppFooter",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-col",
-        "v-footer",
-        "v-icon",
-        "v-row"
-      ],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [],
@@ -4357,42 +4276,65 @@
       "vuetifyAPIs": []
     },
     {
-      "source": "frontend/app/components/Layout/LayoutParts/AppHeader.vue",
-      "name": "AppHeader",
+      "source": "frontend/app/components/Layout/LayoutParts/AppCommandSearch.vue",
+      "name": "AppCommandSearch",
       "components": [
-        "InstanceType",
-        "RecipeDialogSearch",
-        "RouterLink"
+        "Command",
+        "DialogContent",
+        "DialogOverlay",
+        "DialogPortal",
+        "DialogRoot",
+        "DialogTitle",
+        "HTMLElement",
+        "MdiIcon",
+        "SearchIcon",
+        "XIcon"
       ],
-      "dependencies": [
-        "frontend/app/components/Domain/Recipe/RecipeDialogSearch.vue"
-      ],
-      "vuetify": [
-        "v-app-bar",
-        "v-btn",
-        "v-icon",
-        "v-img",
-        "v-responsive",
-        "v-spacer",
-        "v-text-field",
-        "v-toolbar-title"
-      ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [
-        "click: $router.push(routerLink)",
-        "click: activateSearch",
-        "click: logout()"
+        "click: activate(command)",
+        "click: open = false",
+        "keydown: onKeydown",
+        "mousemove: activeIndex = index",
+        "open-auto-focus.prevent: ($event.target as HTMLElement)?.querySelector('input')?.focus()"
       ],
-      "models": [],
+      "models": [
+        "open",
+        "query"
+      ],
       "conditions": [
-        "!xs",
-        "$appInfo.brandingLogoUrl",
-        "loggedIn",
-        "menu"
+        "command.description",
+        "command.image",
+        "command.kind === 'recipe'",
+        "search.loading.value",
+        "searching && !search.loading.value && commands.length === 0"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "useDisplay"
-      ]
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Layout/LayoutParts/AppCreateMenu.vue",
+      "name": "AppCreateMenu",
+      "components": [
+        "Button",
+        "DropdownMenu",
+        "DropdownMenuContent",
+        "DropdownMenuItem",
+        "DropdownMenuTrigger",
+        "MdiIcon",
+        "NuxtLink",
+        "PlusIcon"
+      ],
+      "dependencies": [],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "variant === 'button'"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Layout/LayoutParts/AppScrollToTop.vue",
@@ -4415,60 +4357,186 @@
       "vuetifyAPIs": []
     },
     {
-      "source": "frontend/app/components/Layout/LayoutParts/AppSidebar.vue",
-      "name": "AppSidebar",
+      "source": "frontend/app/components/Layout/LayoutParts/AppShell.vue",
+      "name": "AppShell",
       "components": [
         "AnnouncementDialog",
+        "AppCommandSearch",
+        "AppShellBottomNav",
+        "AppShellSidebar",
+        "DialogContent",
+        "DialogOverlay",
+        "DialogPortal",
+        "DialogRoot",
+        "DialogTitle",
+        "Kbd",
         "LanguageDialog",
-        "UserAvatar"
+        "MdiIcon",
+        "MenuIcon",
+        "NuxtLink",
+        "PanelLeftOpenIcon",
+        "SearchIcon",
+        "TheSnackbar"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Announcement/AnnouncementDialog.vue",
-        "frontend/app/components/Domain/User/UserAvatar.vue",
+        "frontend/app/components/Layout/LayoutParts/AppCommandSearch.vue",
+        "frontend/app/components/Layout/LayoutParts/AppShellBottomNav.vue",
+        "frontend/app/components/Layout/LayoutParts/AppShellSidebar.vue",
+        "frontend/app/components/Layout/LayoutParts/TheSnackbar.vue",
         "frontend/app/components/global/LanguageDialog.vue"
       ],
       "vuetify": [
-        "v-badge",
-        "v-btn",
-        "v-divider",
-        "v-icon",
-        "v-list",
-        "v-list-group",
-        "v-list-item",
-        "v-list-item-subtitle",
-        "v-list-item-title",
-        "v-menu",
-        "v-navigation-drawer"
+        "v-app"
       ],
       "events": [
-        "click: () => showAnnouncementsDialog = !showAnnouncementsDialog",
-        "click: state.languageDialog=true",
-        "click: toggleDark"
+        "click: isDesktop ? (collapsed = false) : (sheetOpen = true)",
+        "click: searchOpen = true",
+        "collapse: collapsed = true",
+        "more: sheetOpen = true",
+        "open-announcements: openAnnouncements",
+        "open-language: openLanguage"
       ],
       "models": [
-        "modelValue",
-        "showAnnouncementsDialog",
-        "state.bottomSelected",
-        "state.dropDowns[nav.title]",
-        "state.languageDialog",
-        "state.secondarySelected"
+        "announcementsOpen",
+        "languageOpen",
+        "searchOpen",
+        "sheetOpen"
       ],
       "conditions": [
-        "!nav.restricted || isOwnGroup",
-        "canOrganize",
-        "isAdmin",
-        "isOwnGroup",
-        "loggedIn",
-        "loggedIn && announcementsEnabled",
-        "loggedIn && sessionUser",
-        "nav.children",
-        "secondaryLinks.length > 0",
-        "topLink"
+        "!isDesktop || collapsed",
+        "$appInfo.brandingLogoUrl",
+        "isDesktop",
+        "isDesktop && !collapsed",
+        "search",
+        "showBottomNav"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ]
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Layout/LayoutParts/AppShellBottomNav.vue",
+      "name": "AppShellBottomNav",
+      "components": [
+        "AppCreateMenu",
+        "MdiIcon",
+        "MenuIcon",
+        "NuxtLink"
+      ],
+      "dependencies": [
+        "frontend/app/components/Layout/LayoutParts/AppCreateMenu.vue"
+      ],
+      "vuetify": [],
+      "events": [
+        "click: emit('more')"
+      ],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Layout/LayoutParts/AppShellNavList.vue",
+      "name": "AppShellNavList",
+      "components": [
+        "AppShellNavList",
+        "ChevronRightIcon",
+        "Collapsible",
+        "CollapsibleContent",
+        "CollapsibleTrigger",
+        "MdiIcon",
+        "NuxtLink",
+        "Record"
+      ],
+      "dependencies": [
+        "frontend/app/components/Layout/LayoutParts/AppShellNavList.vue"
+      ],
+      "vuetify": [],
+      "events": [],
+      "models": [
+        "open[item.key]"
+      ],
+      "conditions": [
+        "item.children"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Layout/LayoutParts/AppShellSidebar.vue",
+      "name": "AppShellSidebar",
+      "components": [
+        "AppCreateMenu",
+        "AppShellNavList",
+        "AppUserMenu",
+        "ArrowLeftIcon",
+        "MdiIcon",
+        "NuxtLink",
+        "PanelLeftCloseIcon",
+        "ScrollArea"
+      ],
+      "dependencies": [
+        "frontend/app/components/Layout/LayoutParts/AppCreateMenu.vue",
+        "frontend/app/components/Layout/LayoutParts/AppShellNavList.vue",
+        "frontend/app/components/Layout/LayoutParts/AppUserMenu.vue"
+      ],
+      "vuetify": [],
+      "events": [
+        "click: emit('collapse')",
+        "click: emit('open-announcements')",
+        "open-language: emit('open-language')"
+      ],
+      "models": [],
+      "conditions": [
+        "$appInfo.brandingLogoUrl",
+        "admin",
+        "admin || createLinks?.length",
+        "collapsible",
+        "cookbooks?.length",
+        "createLinks?.length",
+        "loggedIn && announcementsEnabled",
+        "newAnnouncements.length",
+        "section.title"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Layout/LayoutParts/AppUserMenu.vue",
+      "name": "AppUserMenu",
+      "components": [
+        "Avatar",
+        "AvatarFallback",
+        "AvatarImage",
+        "Button",
+        "ChevronsUpDownIcon",
+        "DropdownMenu",
+        "DropdownMenuContent",
+        "DropdownMenuItem",
+        "DropdownMenuLabel",
+        "DropdownMenuSeparator",
+        "DropdownMenuTrigger",
+        "LogInIcon",
+        "MdiIcon",
+        "NuxtLink"
+      ],
+      "dependencies": [],
+      "vuetify": [],
+      "events": [
+        "select: emit('open-language')",
+        "select: isDark = !isDark",
+        "select: logout"
+      ],
+      "models": [],
+      "conditions": [
+        "isOwnGroup",
+        "loggedIn",
+        "loggedIn && user",
+        "user.admin",
+        "user.canOrganize"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Layout/LayoutParts/TheSnackbar.vue",
@@ -4508,27 +4576,25 @@
     {
       "source": "frontend/app/components/global/AppButtonCopy.vue",
       "name": "AppButtonCopy",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-icon",
-        "v-tooltip"
+      "components": [
+        "Button",
+        "MdiIcon",
+        "Tooltip",
+        "TooltipContent",
+        "TooltipProvider",
+        "TooltipTrigger"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [
         "click: textToClipboard()"
       ],
-      "models": [
-        "show"
-      ],
+      "models": [],
       "conditions": [
-        "!isSupported",
-        "!isSupported || copiedSuccess !== null"
+        "!isSupported"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "v-tooltip"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/global/AppButtonUpload.vue",
@@ -4595,9 +4661,7 @@
       "dependencies": [
         "frontend/app/components/global/BaseButton.vue"
       ],
-      "vuetify": [
-        "v-toolbar"
-      ],
+      "vuetify": [],
       "events": [
         "click: $router.go(-1)"
       ],
@@ -4610,31 +4674,31 @@
       "source": "frontend/app/components/global/AutoForm.vue",
       "name": "AutoForm",
       "components": [
+        "CheckboxField",
         "InputColor",
-        "Record"
+        "MdiIcon",
+        "NumberInputField",
+        "Record",
+        "SelectField",
+        "Separator",
+        "TextField",
+        "TextareaField",
+        "Tooltip",
+        "TooltipContent",
+        "TooltipProvider",
+        "TooltipTrigger"
       ],
       "dependencies": [
-        "frontend/app/components/global/InputColor.vue"
+        "frontend/app/components/global/InputColor.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/NumberInputField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ],
-      "vuetify": [
-        "v-card",
-        "v-card-text",
-        "v-card-title",
-        "v-checkbox",
-        "v-col",
-        "v-divider",
-        "v-form",
-        "v-icon",
-        "v-number-input",
-        "v-row",
-        "v-select",
-        "v-text-field",
-        "v-textarea",
-        "v-tooltip"
-      ],
+      "vuetify": [],
       "events": [],
       "models": [
-        "isValid",
         "model[inputField.varName]"
       ],
       "conditions": [
@@ -4649,9 +4713,7 @@
         "inputField.type === fieldTypes.TEXT_AREA"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "v-tooltip"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/global/BannerExperimental.vue",
@@ -4674,16 +4736,20 @@
     {
       "source": "frontend/app/components/global/BannerWarning.vue",
       "name": "BannerWarning",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-alert"
+      "components": [
+        "Alert",
+        "AlertDescription",
+        "AlertTitle",
+        "MdiIcon"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
         "$slots.default",
         "description",
+        "description || $slots.default",
         "title"
       ],
       "dynamicComponents": [],
@@ -4998,12 +5064,12 @@
     {
       "source": "frontend/app/components/global/ButtonLink.vue",
       "name": "ButtonLink",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-icon"
+      "components": [
+        "Button",
+        "MdiIcon"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
@@ -5089,12 +5155,12 @@
     {
       "source": "frontend/app/components/global/DocLink.vue",
       "name": "DocLink",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-icon"
+      "components": [
+        "Button",
+        "MdiIcon"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [],
@@ -5120,17 +5186,22 @@
     {
       "source": "frontend/app/components/global/HelpIcon.vue",
       "name": "HelpIcon",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-card-text",
-        "v-icon",
-        "v-menu"
+      "components": [
+        "Button",
+        "MdiIcon",
+        "Popover",
+        "PopoverContent",
+        "PopoverTrigger"
       ],
-      "events": [],
-      "models": [],
+      "dependencies": [],
+      "vuetify": [],
+      "events": [
+        "mouseenter: open = true",
+        "mouseleave: open = false"
+      ],
+      "models": [
+        "open"
+      ],
       "conditions": [],
       "dynamicComponents": [],
       "vuetifyAPIs": []
@@ -5173,19 +5244,21 @@
     {
       "source": "frontend/app/components/global/InputColor.vue",
       "name": "InputColor",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-card-text",
-        "v-color-picker",
-        "v-icon",
-        "v-menu",
-        "v-text-field"
+      "components": [
+        "MdiIcon",
+        "Popover",
+        "PopoverContent",
+        "PopoverTrigger",
+        "TextField"
       ],
+      "dependencies": [
+        "frontend/app/components/ui/field/TextField.vue"
+      ],
+      "vuetify": [],
       "events": [
-        "click: setRandomHex"
+        "click: modelValue = swatch",
+        "click: setRandomHex",
+        "input: modelValue = ($event.target as HTMLInputElement).value"
       ],
       "models": [
         "menu",
@@ -5345,19 +5418,17 @@
     {
       "source": "frontend/app/components/global/StatsCards.vue",
       "name": "StatsCards",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-avatar",
-        "v-card",
-        "v-card-subtitle",
-        "v-card-title",
-        "v-icon"
+      "components": [
+        "MdiIcon"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [],
-      "dynamicComponents": [],
+      "dynamicComponents": [
+        "to ? NuxtLink : 'div'"
+      ],
       "vuetifyAPIs": []
     },
     {
@@ -5408,11 +5479,11 @@
     {
       "source": "frontend/app/components/global/WakelockSwitch.vue",
       "name": "WakelockSwitch",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-switch"
+      "components": [
+        "Switch"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [],
       "models": [
         "wakeLock"
@@ -5421,9 +5492,7 @@
         "wakeIsSupported"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ]
+      "vuetifyAPIs": []
     }
   ]
 }

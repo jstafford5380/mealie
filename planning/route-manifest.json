@@ -360,7 +360,12 @@
         "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/InputColor.vue"
+        "frontend/app/components/global/InputColor.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/NumberInputField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ]
     },
     {
@@ -475,7 +480,12 @@
         "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/InputColor.vue"
+        "frontend/app/components/global/InputColor.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/NumberInputField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ]
     },
     {
@@ -540,7 +550,12 @@
         "frontend/app/components/global/AutoForm.vue",
         "frontend/app/components/global/BaseButton.vue",
         "frontend/app/components/global/BasePageTitle.vue",
-        "frontend/app/components/global/InputColor.vue"
+        "frontend/app/components/global/InputColor.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/NumberInputField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ]
     },
     {
@@ -590,7 +605,12 @@
         "frontend/app/components/global/AutoForm.vue",
         "frontend/app/components/global/BaseButton.vue",
         "frontend/app/components/global/BasePageTitle.vue",
-        "frontend/app/components/global/InputColor.vue"
+        "frontend/app/components/global/InputColor.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/NumberInputField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ]
     },
     {
@@ -740,7 +760,12 @@
         "frontend/app/components/global/BaseMenu.vue",
         "frontend/app/components/global/BaseMenuItems.vue",
         "frontend/app/components/global/InputColor.vue",
-        "frontend/app/components/global/LanguageDialog.vue"
+        "frontend/app/components/global/LanguageDialog.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/NumberInputField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ]
     },
     {
@@ -2048,7 +2073,12 @@
         "frontend/app/components/global/BaseMenuItems.vue",
         "frontend/app/components/global/BaseOverflowButton.vue",
         "frontend/app/components/global/CrudTable.vue",
-        "frontend/app/components/global/InputColor.vue"
+        "frontend/app/components/global/InputColor.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/NumberInputField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ]
     },
     {
@@ -2149,7 +2179,12 @@
         "frontend/app/components/global/BaseMenuItems.vue",
         "frontend/app/components/global/BaseOverflowButton.vue",
         "frontend/app/components/global/CrudTable.vue",
-        "frontend/app/components/global/InputColor.vue"
+        "frontend/app/components/global/InputColor.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/NumberInputField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ]
     },
     {
@@ -2231,7 +2266,12 @@
         "frontend/app/components/global/BaseMenuItems.vue",
         "frontend/app/components/global/BaseOverflowButton.vue",
         "frontend/app/components/global/CrudTable.vue",
-        "frontend/app/components/global/InputColor.vue"
+        "frontend/app/components/global/InputColor.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/NumberInputField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ]
     },
     {
@@ -2270,7 +2310,12 @@
         "frontend/app/components/global/BaseMenuItems.vue",
         "frontend/app/components/global/BaseOverflowButton.vue",
         "frontend/app/components/global/CrudTable.vue",
-        "frontend/app/components/global/InputColor.vue"
+        "frontend/app/components/global/InputColor.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/NumberInputField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ]
     },
     {
@@ -2431,7 +2476,12 @@
         "frontend/app/components/global/BaseMenuItems.vue",
         "frontend/app/components/global/BaseOverflowButton.vue",
         "frontend/app/components/global/CrudTable.vue",
-        "frontend/app/components/global/InputColor.vue"
+        "frontend/app/components/global/InputColor.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/NumberInputField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ]
     },
     {
@@ -2495,7 +2545,12 @@
         "frontend/app/components/global/BaseMenuItems.vue",
         "frontend/app/components/global/BaseOverflowButton.vue",
         "frontend/app/components/global/CrudTable.vue",
-        "frontend/app/components/global/InputColor.vue"
+        "frontend/app/components/global/InputColor.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/NumberInputField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ]
     },
     {
@@ -2568,7 +2623,12 @@
         "frontend/app/components/global/BaseMenuItems.vue",
         "frontend/app/components/global/BaseOverflowButton.vue",
         "frontend/app/components/global/CrudTable.vue",
-        "frontend/app/components/global/InputColor.vue"
+        "frontend/app/components/global/InputColor.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/NumberInputField.vue",
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue",
+        "frontend/app/components/ui/field/TextareaField.vue"
       ]
     },
     {

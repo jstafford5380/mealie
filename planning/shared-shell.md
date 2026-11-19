@@ -20,7 +20,7 @@ The menu button changes drawer visibility. Retain overlay dismissal, keyboard ac
 
 ## Header
 
-Source: [AppHeader.vue](../frontend/app/components/Layout/LayoutParts/AppHeader.vue).
+Source (replaced): [AppShell.vue](../frontend/app/components/Layout/LayoutParts/AppShell.vue). The original AppHeader.vue was removed; see Redesign below.
 
 - Link the logo and branding name to the route group, session group, or `/` fallback.
 - Use the configured branding logo when available; otherwise show the default icon.
@@ -35,7 +35,7 @@ Source: [AppHeader.vue](../frontend/app/components/Layout/LayoutParts/AppHeader.
 
 ## Sidebar and default navigation
 
-Source: [AppSidebar.vue](../frontend/app/components/Layout/LayoutParts/AppSidebar.vue).
+Source (replaced): [AppShellSidebar.vue](../frontend/app/components/Layout/LayoutParts/AppShellSidebar.vue), [navigation](../frontend/app/composables/use-app-navigation.ts). The original AppSidebar.vue was removed.
 
 - Show the authenticated user's avatar, full name, profile link, and own-group Favorite Recipes link.
 - Keep the active route and expanded navigation groups visually distinct.
@@ -74,7 +74,7 @@ Source: [AppSidebar.vue](../frontend/app/components/Layout/LayoutParts/AppSideba
 
 ## Global recipe-search dialog
 
-Source: [RecipeDialogSearch.vue](../frontend/app/components/Domain/Recipe/RecipeDialogSearch.vue),
+Source (replaced): [AppCommandSearch.vue](../frontend/app/components/Layout/LayoutParts/AppCommandSearch.vue) (the original RecipeDialogSearch.vue was removed),
 [search composable](../frontend/app/composables/recipes/use-recipe-search.ts).
 
 - Autofocus the search input and disable browser autocomplete for the query.
@@ -119,6 +119,24 @@ Source: [TheSnackbar.vue](../frontend/app/components/Layout/LayoutParts/TheSnack
 - Keep bottom loading notices independent of ordinary alerts.
 - Loading notices have no automatic timeout, show an indeterminate bar, and support dismissal.
 - Use accessible live announcements without moving focus away from the current task.
+
+## Redesign (implemented)
+
+The shell was redesigned rather than restyled. Every function above remains available to the user; these are the changes in how it is reached:
+
+| Before | Now |
+| --- | --- |
+| Orange app bar with logo, search field and Logout; navigation drawer toggled by a menu button. | Desktop (≥1024px): persistent sidebar with brand, Add Recipe, grouped navigation (Cook / Plan / Shop), cookbooks, announcements and a user menu. It can be collapsed; the choice is remembered. A slim top bar holds search. Below 1024px the menu button opens the same sidebar as a sheet. |
+| No phone-specific navigation. | Phones (<768px), members in their own group: bottom tab bar with Recipes, Plan, Add Recipe, Lists and More (opens the navigation sheet). |
+| Logout/Login in the app bar; Settings menu (language, theme, user settings, data management, admin) in the drawer footer; Favorite Recipes under the user's name. | One user menu at the bottom of the sidebar: user settings, favorite recipes, data management, admin settings, language, light/dark mode, logout. Public visitors get the same menu with language, theme and login. |
+| Search dialog with recipe cards; `/` shortcut. | Command palette: `/` or Cmd/Ctrl+K opens it; an empty query lists "Go to" navigation commands; results show thumbnail, name and description; arrow keys, Enter, IME guard, close-on-navigation and clear-on-close are unchanged. The unused selection mode was dropped. |
+| Active state only on exact routes. | A section stays highlighted on its sub-pages (a recipe highlights Recipes; meal-plan edit/settings highlight Meal Planner). |
+| Admin drawer had no way back except the logo. | Admin sidebar starts with "Back to Mealie". |
+| — | Skip-to-content link for keyboard users. |
+
+New en-US strings: `sidebar.section-cook/plan/shop`, `sidebar.more`, `sidebar.tab-lists`, `sidebar.back-to-app`, `sidebar.collapse-sidebar`, `sidebar.expand-sidebar`, `sidebar.open-navigation`, `sidebar.main-navigation`, `sidebar.skip-to-content`, `sidebar.go-to`, `announcements.unread`.
+
+Tests: [AppCommandSearch.test.ts](../frontend/app/components/Layout/LayoutParts/AppCommandSearch.test.ts) covers keyboard selection, Enter, IME, empty results, navigation commands, clearing and the `/` shortcut.
 
 ## Screenshots
 
@@ -179,10 +197,10 @@ Opening the sole unread welcome announcement marked it read in the isolated fixt
 
 ## Shadcn Vue replacement checklist
 
-- [ ] Replace application bars and drawers with a responsive, accessible shell and Sidebar/Sheet controls.
+- [x] Replace application bars and drawers with a responsive, accessible shell and Sidebar/Sheet controls.
 - [ ] Replace menus, lists, badges, dividers, dialogs, fields, and progress indicators.
-- [ ] Use Command/Dialog primitives for search while retaining all query, keyboard, and selection behavior.
-- [ ] Replace Snackbar with the shared toast implementation, including action callbacks and independent progress notices.
+- [x] Use Command/Dialog primitives for search while retaining all query and keyboard behavior (selection mode had no consumer and was dropped).
+- [x] Replace Snackbar with the shared toast implementation, including action callbacks and independent progress notices.
 - [ ] Replace Vuetify display/theme APIs, injected `$vuetify`, utility classes, and print-specific assumptions.
-- [ ] Preserve route context, public/own-group distinctions, role filtering, theme state, and locale state.
-- [ ] Add accessible names to icon-only controls and retain focus restoration and Escape behavior.
+- [x] Preserve route context, public/own-group distinctions, role filtering, theme state, and locale state.
+- [x] Add accessible names to icon-only controls and retain focus restoration and Escape behavior.

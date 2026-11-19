@@ -26,12 +26,12 @@ Source contracts and visual references are reviewed for redesign. Runtime parity
 
 ## Replacement order
 
-- [ ] Establish Shadcn Vue, Tailwind, theme tokens, icon usage, and accessible interaction rules.
+- [x] Establish Shadcn Vue, Tailwind, theme tokens, icon usage, and accessible interaction rules.
 - [ ] Replace shared primitives before their page consumers: buttons, fields, cards, alerts, separators, badges, and loaders.
 - [ ] Replace forms, validation, comboboxes, selects, file inputs, and date controls.
 - [ ] Replace dialogs, confirmation flows, menus, popovers, tooltips, tabs, accordions, drawers, and toasts.
 - [ ] Replace data tables, pagination, filtering, bulk actions, and responsive list views.
-- [ ] Replace the application shell and permission-aware navigation.
+- [x] Replace the application shell and permission-aware navigation.
 - [ ] Replace each page against its own function and state checklist.
 - [ ] Preserve specialized functionality: drag and drop, image crop, Markdown, JSON, wake lock, durations, and print styles.
 - [ ] Verify recipe and shopping-list workflows across page boundaries.

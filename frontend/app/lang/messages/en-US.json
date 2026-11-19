@@ -905,7 +905,19 @@
     "maintenance": "Maintenance",
     "parser": "Parser",
     "developer": "Developer",
-    "cookbook": "Cookbook"
+    "cookbook": "Cookbook",
+    "section-cook": "Cook",
+    "section-plan": "Plan",
+    "section-shop": "Shop",
+    "more": "More",
+    "back-to-app": "Back to Mealie",
+    "collapse-sidebar": "Collapse sidebar",
+    "expand-sidebar": "Expand sidebar",
+    "open-navigation": "Open navigation",
+    "skip-to-content": "Skip to content",
+    "go-to": "Go to",
+    "main-navigation": "Main navigation",
+    "tab-lists": "Lists"
   },
   "tag": {
     "tags": "Tags",
@@ -1361,6 +1373,7 @@
     "all-announcements": "All announcements",
     "mark-all-as-read": "Mark All as Read",
     "show-announcements-from-mealie": "Show announcements from Mealie",
-    "show-announcements-setting-description": "Whether or not you want to allow users to see announcements from Mealie. When enabled users can still opt-out from seeing them in their user settings"
+    "show-announcements-setting-description": "Whether or not you want to allow users to see announcements from Mealie. When enabled users can still opt-out from seeing them in their user settings",
+    "unread": "unread"
   }
 }
