@@ -1,39 +1,51 @@
 <template>
-  <v-btn
-    :color="color || btnAttrs.color"
-    :size="small ? 'small' : 'default'"
-    :x-small="xSmall"
-    :loading="loading"
-    :disabled="disabled"
-    :variant="disabled ? 'tonal' : btnStyle.outlined ? 'outlined' : btnStyle.text ? 'text' : 'elevated'"
-    :to="to"
-    v-bind="$attrs"
+  <Button
+    :as="tag"
+    :to="to || undefined"
+    :type="tag === 'button' ? (($attrs.type as string) || 'button') : undefined"
+    :variant="variant"
+    :size="buttonSize"
+    :disabled="tag === 'button' ? (disabled || loading) : undefined"
+    :aria-disabled="tag !== 'button' && (disabled || loading) ? 'true' : undefined"
+    :aria-busy="loading ? 'true' : undefined"
+    :class="cn(
+      block && 'w-full',
+      tag !== 'button' && (disabled || loading) && 'pointer-events-none opacity-50',
+      colorClass,
+    )"
+    v-bind="passthroughAttrs"
     @click="download ? downloadFile() : undefined"
   >
-    <v-icon
-      v-if="!iconRight"
-      start
-    >
-      <slot name="icon">
-        {{ icon || btnAttrs.icon }}
-      </slot>
-    </v-icon>
+    <Spinner
+      v-if="loading"
+      class="size-4"
+      :label="$t('general.loading')"
+    />
+    <MdiIcon
+      v-else-if="!iconRight && iconPath"
+      :path="iconPath"
+      class="size-[18px]"
+    />
     <slot name="default">
       {{ text || btnAttrs.text }}
     </slot>
-    <v-icon
-      v-if="iconRight"
-      end
-    >
-      <slot name="icon">
-        {{ icon || btnAttrs.icon }}
-      </slot>
-    </v-icon>
-  </v-btn>
+    <MdiIcon
+      v-if="iconRight && iconPath && !loading"
+      :path="iconPath"
+      class="size-[18px]"
+    />
+  </Button>
 </template>
 
 <script setup lang="ts">
+import type { ButtonVariants } from "~/components/ui/button";
+import { Button } from "~/components/ui/button";
+import { MdiIcon, slotText } from "~/components/ui/mdi-icon";
+import { Spinner } from "~/components/ui/spinner";
 import { useUserApi } from "~/composables/api";
+import { cn } from "~/lib/utils";
+
+defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
   cancel: {
@@ -111,8 +123,19 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  /** Vuetify-compatible attributes still used by callers. */
+  block: {
+    type: Boolean,
+    default: false,
+  },
+  size: {
+    type: String,
+    default: null,
+  },
 });
 
+const attrs = useAttrs();
+const slots = useSlots();
 const i18n = useI18n();
 const { $globals } = useNuxtApp();
 
@@ -176,21 +199,76 @@ const btnAttrs = computed(() => {
   return buttonOptions.create;
 });
 
-const buttonStyles = {
-  defaults: { text: false, outlined: false },
-  secondary: { text: false, outlined: true },
-  minor: { text: true, outlined: false },
-};
+const iconPath = computed(() => slotText(slots.icon) || props.icon || btnAttrs.value.icon);
 
-const btnStyle = computed(() => {
-  if (props.secondary) {
-    return buttonStyles.secondary;
+const tag = computed(() => {
+  if (props.to) {
+    return resolveComponent("NuxtLink");
   }
-  if (props.minor || props.cancel) {
-    return buttonStyles.minor;
+  if (attrs.href) {
+    return "a";
   }
-  return buttonStyles.defaults;
+  return "button";
 });
+
+/**
+ * Maps the legacy Vuetify colour names to the new button hierarchy:
+ * success/primary (and any submit button) are the main action, info is a neutral outlined action,
+ * error is destructive, warning is outlined with warning text, grey is quiet.
+ */
+type Variant = NonNullable<ButtonVariants["variant"]>;
+const colorName = computed(() => (props.color || btnAttrs.value.color || "success").toLowerCase());
+
+const variant = computed<Variant>(() => {
+  if (props.minor || props.cancel) {
+    return "ghost";
+  }
+  const name = colorName.value;
+  const destructive = name === "error" || name === "red";
+  if (props.secondary) {
+    return "outline";
+  }
+  if (destructive) {
+    return "destructive";
+  }
+  if (name === "success" || name === "primary" || attrs.type === "submit") {
+    return "default";
+  }
+  return "outline";
+});
+
+const colorClass = computed(() => {
+  const name = colorName.value;
+  if (variant.value === "outline" && (name === "error" || name === "red")) {
+    return "text-destructive";
+  }
+  if (variant.value === "outline" && name === "warning") {
+    return "text-brand-strong";
+  }
+  if (variant.value === "ghost" && (name === "error" || name === "red")) {
+    return "text-destructive";
+  }
+  return undefined;
+});
+
+const buttonSize = computed<ButtonVariants["size"]>(() => {
+  if (props.xSmall || props.size === "x-small") {
+    return "xs";
+  }
+  if (props.small || props.size === "small") {
+    return "sm";
+  }
+  if (props.size === "large" || props.size === "x-large") {
+    return "lg";
+  }
+  return "default";
+});
+
+// Vuetify-only attributes have no meaning here; everything else (listeners, class, style, aria) passes through.
+const VUETIFY_ONLY = new Set(["rounded", "flat", "variant", "elevation", "density", "type"]);
+const passthroughAttrs = computed(() => Object.fromEntries(
+  Object.entries(attrs).filter(([key]) => !VUETIFY_ONLY.has(key)),
+));
 
 const api = useUserApi();
 function downloadFile() {

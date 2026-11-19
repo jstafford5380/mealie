@@ -1,32 +1,33 @@
 <template>
   <div
-    class="mx-auto my-3 justify-center"
-    style="display: flex;"
+    data-slot="app-loader"
+    role="status"
+    aria-live="polite"
+    class="mx-auto my-3 flex flex-col items-center justify-center gap-3 text-center"
   >
-    <div class="text-center">
-      <v-progress-circular
-        :width="size.width"
-        :size="size.size"
-        color="primary-lighten-2"
-        indeterminate
-      >
-        <v-icon
-          :size="size.icon"
-          color="primary-lighten-2"
-        >
-          {{ $globals.icons.primary }}
-        </v-icon>
-      </v-progress-circular>
-      <div :class="large ? 'text-title-large mt-5' : 'text-body-large mt-3'">
-        <slot>
-          {{ (small || tiny) ? "" : waitingTextCalculated }}
-        </slot>
-      </div>
+    <Loader2Icon
+      aria-hidden="true"
+      class="animate-spin text-primary motion-reduce:animate-none"
+      :class="sizeClass"
+    />
+    <div
+      class="text-muted-foreground"
+      :class="large ? 'text-lg' : 'text-[15px]'"
+    >
+      <slot>
+        {{ (small || tiny) ? "" : waitingTextCalculated }}
+      </slot>
+      <span
+        v-if="(small || tiny) && !$slots.default"
+        class="sr-only"
+      >{{ waitingTextCalculated }}</span>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { Loader2Icon } from "@lucide/vue";
+
 const props = defineProps({
   loading: {
     type: Boolean,
@@ -54,33 +55,17 @@ const props = defineProps({
   },
 });
 
-const size = computed(() => {
+const sizeClass = computed(() => {
   if (props.tiny) {
-    return {
-      width: 2,
-      icon: 0,
-      size: 25,
-    };
+    return "size-5";
   }
   if (props.small) {
-    return {
-      width: 2,
-      icon: 30,
-      size: 50,
-    };
+    return "size-8";
   }
-  else if (props.large) {
-    return {
-      width: 4,
-      icon: 120,
-      size: 200,
-    };
+  if (props.large) {
+    return "size-16";
   }
-  return {
-    width: 3,
-    icon: 75,
-    size: 125,
-  };
+  return "size-11";
 });
 
 const i18n = useI18n();

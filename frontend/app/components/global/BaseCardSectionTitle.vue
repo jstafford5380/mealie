@@ -1,40 +1,40 @@
 <template>
-  <v-card
-    color="background"
-    flat
-    class="pb-2"
-    :class="{
-      'mt-8': section,
-    }"
+  <div
+    data-slot="card-section-title"
+    class="flex flex-col pb-3"
+    :class="{ 'mt-8': section }"
   >
-    <v-card-title :class="`text-title-${size} pl-0 py-0 d-flex align-center`" style="font-weight: normal;">
+    <component
+      :is="size === 'large' ? 'h2' : 'h3'"
+      class="flex items-center gap-2 font-semibold tracking-tight text-foreground"
+      :class="titleClass"
+    >
       <slot name="prepend-title" />
-      <v-icon
+      <MdiIcon
         v-if="icon"
-        size="small"
-        start
-      >
-        {{ icon }}
-      </v-icon>
+        :path="icon"
+        class="size-5 text-muted-foreground"
+      />
       {{ title }}
       <slot name="append-title" />
-    </v-card-title>
-    <v-card-text
+    </component>
+    <p
       v-if="$slots.default"
-      class="pt-2 pl-0"
+      class="mt-1.5 mb-0 max-w-[70ch] text-[15px] leading-relaxed text-muted-foreground"
     >
-      <p class="pb-0 mb-0">
-        <slot />
-      </p>
-    </v-card-text>
-    <v-divider class="mt-1 mb-3" />
-  </v-card>
+      <slot />
+    </p>
+    <Separator class="mt-3" />
+  </div>
 </template>
 
 <script setup lang="ts">
+import { MdiIcon } from "~/components/ui/mdi-icon";
+import { Separator } from "~/components/ui/separator";
+
 type Size = "large" | "medium" | "small";
 
-defineProps({
+const props = defineProps({
   title: {
     type: String,
     required: true,
@@ -51,5 +51,16 @@ defineProps({
     type: Boolean,
     default: false,
   },
+});
+
+const titleClass = computed(() => {
+  switch (props.size) {
+    case "small":
+      return "text-base";
+    case "medium":
+      return "text-lg";
+    default:
+      return "text-xl";
+  }
 });
 </script>

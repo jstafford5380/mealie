@@ -1,72 +1,134 @@
 <template>
-  <div class="text-center">
-    <v-snackbar
-      v-model="toastAlert.open"
-      location="top"
-      :color="toastAlert.color"
-      :timeout="toastAlert.timeout ?? 2000"
+  <Toaster
+    position="top-center"
+    :close-button="true"
+    :visible-toasts="3"
+    :toast-options="toastOptions"
+  />
+  <Transition
+    enter-active-class="transition duration-200 ease-out motion-reduce:transition-none"
+    enter-from-class="translate-y-4 opacity-0"
+    leave-active-class="transition duration-150 ease-in motion-reduce:transition-none"
+    leave-to-class="translate-y-4 opacity-0"
+  >
+    <div
+      v-if="toastLoading.open"
+      data-slot="loading-notice"
+      role="status"
+      aria-live="polite"
+      class="fixed inset-x-0 bottom-4 z-[2500] mx-auto flex w-[min(28rem,calc(100%-2rem))] items-center gap-3 rounded-card border bg-popover px-4 py-3 font-sans text-popover-foreground shadow-lg"
     >
-      <v-icon
-        v-if="icon"
-        dark
-        start
-        :icon="icon"
-      />
-
-      {{ toastAlert.title }}
-      {{ toastAlert.text }}
-
-      <template #actions>
-        <v-btn
-          variant="text"
-          @click="() => {
-            toastAlert.action?.onClick();
-            toastAlert.open = false
-          }"
+      <div class="flex min-w-0 flex-1 flex-col gap-2">
+        <span class="text-sm font-medium">
+          <template v-if="toastLoading.title">{{ toastLoading.title }} </template>{{ toastLoading.text }}
+        </span>
+        <div
+          class="relative h-1.5 w-full overflow-hidden rounded-full bg-primary/20"
+          aria-hidden="true"
         >
-          {{ toastAlert.action?.message ?? $t('general.close') }}
-        </v-btn>
-      </template>
-    </v-snackbar>
-    <v-snackbar
-      v-model="toastLoading.open"
-      content-class="py-2"
-      density="compact"
-      location="bottom"
-      :timeout="-1"
-      :color="toastLoading.color"
-    >
-      <div
-        class="d-flex flex-column align-center justify-start"
+          <div class="loading-notice-bar absolute inset-y-0 w-1/3 rounded-full bg-primary motion-reduce:w-full motion-reduce:animate-none" />
+        </div>
+      </div>
+      <button
+        type="button"
+        class="inline-flex size-9 shrink-0 items-center justify-center rounded-item text-muted-foreground hover:bg-highlight hover:text-highlight-foreground focus-visible:outline-2"
+        :aria-label="$t('general.close')"
         @click="toastLoading.open = false"
       >
-        <div class="mb-2 mt-0 text-subtitle-1 text-center">
-          {{ toastLoading.text }}
-        </div>
-        <v-progress-linear
-          indeterminate
-          color="white-darken-2"
-        />
-      </div>
-    </v-snackbar>
-  </div>
+        <XIcon class="size-4" />
+      </button>
+    </div>
+  </Transition>
 </template>
 
 <script setup lang="ts">
-import { useNuxtApp } from "#app";
+import { XIcon } from "@lucide/vue";
+import { toast } from "vue-sonner";
+import { Toaster } from "~/components/ui/sonner";
 import { toastAlert, toastLoading } from "~/composables/use-toast";
 
-const { $globals } = useNuxtApp();
-const icon = computed(() => {
+const i18n = useI18n();
+const DEFAULT_TIMEOUT = 2000;
+
+const toastOptions = {
+  classes: {
+    toast: "font-sans !rounded-card !gap-3 !text-[15px]",
+    description: "!text-muted-foreground",
+    actionButton: "!bg-primary !text-primary-foreground !font-semibold !rounded-item",
+    error: "[&_[data-icon]]:text-destructive",
+    success: "[&_[data-icon]]:text-primary",
+    warning: "[&_[data-icon]]:text-brand-strong",
+    info: "[&_[data-icon]]:text-muted-foreground",
+  },
+};
+let activeId: string | number | undefined;
+
+function show() {
+  if (activeId !== undefined) {
+    toast.dismiss(activeId);
+  }
+  const message = toastAlert.title || toastAlert.text;
+  const description = toastAlert.title ? toastAlert.text : undefined;
+  const action = toastAlert.action;
+  const options = {
+    description,
+    duration: toastAlert.timeout ?? DEFAULT_TIMEOUT,
+    action: action
+      ? {
+          label: action.message ?? i18n.t("general.close"),
+          onClick: () => {
+            action.onClick();
+            toastAlert.open = false;
+          },
+        }
+      : undefined,
+    onDismiss: () => {
+      toastAlert.open = false;
+    },
+    onAutoClose: () => {
+      toastAlert.open = false;
+    },
+  };
   switch (toastAlert.color) {
     case "error":
-      return $globals.icons.alertOutline;
+      activeId = toast.error(message, options);
+      break;
     case "success":
-      return $globals.icons.checkBold;
-    case "info":
-      return $globals.icons.informationOutline;
+      activeId = toast.success(message, options);
+      break;
+    case "warning":
+      activeId = toast.warning(message, options);
+      break;
     default:
-      return $globals.icons.alertOutline;
+      activeId = toast.info(message, options);
   }
-});
+}
+
+watch(
+  () => [toastAlert.open, toastAlert.seq] as const,
+  ([open]) => {
+    if (open) {
+      show();
+    }
+    else if (activeId !== undefined) {
+      toast.dismiss(activeId);
+      activeId = undefined;
+    }
+  },
+);
 </script>
+
+<style scoped>
+.loading-notice-bar {
+  animation: loading-notice 1.4s ease-in-out infinite;
+}
+
+@keyframes loading-notice {
+  0% {
+    left: -33%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+</style>

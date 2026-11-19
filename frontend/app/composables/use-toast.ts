@@ -1,5 +1,7 @@
 interface Toast {
   open: boolean;
+  /** Increments on every show, so a repeated identical message is shown again. */
+  seq?: number;
   text: string;
   title: string | null;
   color: string;
@@ -26,6 +28,7 @@ export const toastLoading = reactive<Toast>({
 
 function setToast(toast: Toast, text: string, title: string | null, color: string, options?: Partial<Toast>) {
   toast.open = true;
+  toast.seq = (toast.seq ?? 0) + 1;
   toast.text = text;
   toast.title = title;
   toast.color = color;
