@@ -960,7 +960,21 @@
     "changes-not-saved": "Some changes couldn't be saved. They stay on this device and will be sent again.",
     "more-options": "More options",
     "fewer-options": "Fewer options",
-    "save-as-new-food": "Save \"{text}\" as a new food"
+    "save-as-new-food": "Save \"{text}\" as a new food",
+    "items-left": "Nothing left to get | {count} left to get | {count} left to get",
+    "list-actions": "List actions",
+    "list-is-empty": "This list is empty. Add an item above.",
+    "decrease-recipe": "Fewer of {recipe}",
+    "increase-recipe": "More of {recipe}",
+    "got-item": "Got {item}",
+    "put-back-item": "Put back {item}",
+    "for-recipes": "For {recipes}",
+    "add-item-placeholder": "Add an item, like 2 lemons",
+    "show-household-lists": "Show everyone's lists",
+    "no-lists-yet": "No shopping lists yet. Start one for your next shop.",
+    "someone-elses-list": "Someone else's list",
+    "list-options": "Options for {name}",
+    "delete-list-confirm": "Delete \"{name}\" and everything on it? This can't be undone."
   },
   "sidebar": {
     "backups": "Backups",

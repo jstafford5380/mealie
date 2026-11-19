@@ -1,122 +1,99 @@
 <template>
-  <div style="overflow-x: hidden;">
-    <v-container
-      v-if="!edit"
-      class="ml-2 pa-0"
-      :style="{
-        transform: `translateX(${isRtl ? -swiping : swiping}px)`,
-        transition: swiping === 0 ? 'transform 0.2s ease' : 'none',
-        opacity: swiping >= SWIPE_THRESHOLD ? 0.5 : 1,
-      }"
-    >
-      <v-row
+  <div class="overflow-hidden font-sans">
+    <template v-if="!edit">
+      <div
         ref="swipeRowRef"
-        v-touch="{ move: onSwipeMove, start: onSwipeStart, end: onSwipeEnd }"
-        style="touch-action: pan-y;"
-        no-gutters
-        class="flex-nowrap align-center"
+        class="group/item relative flex min-h-14 items-start gap-3 px-3 py-2 [touch-action:pan-y]"
+        :style="{
+          transform: `translateX(${isRtl ? -swiping : swiping}px)`,
+          transition: swiping === 0 ? 'transform 0.2s ease' : 'none',
+          opacity: swiping >= SWIPE_THRESHOLD ? 0.5 : 1,
+        }"
+        @touchstart.passive="onSwipeStart({ originalEvent: $event })"
+        @touchmove="onSwipeMove({ originalEvent: $event })"
+        @touchend="onSwipeEnd"
+        @touchcancel="resetSwipe"
       >
-        <!-- the text takes every pixel the action buttons don't, so a long name only wraps
-             once the row is genuinely full rather than at an arbitrary half-way point -->
-        <v-col class="flex-grow-1 flex-shrink-1" style="min-width: 0;">
-          <div class="d-flex align-center flex-nowrap">
-            <v-checkbox
-              :model-value="listItem.checked"
-              hide-details
-              density="compact"
-              class="mt-0 flex-shrink-0"
-              color="null"
-              @click="toggleChecked"
-            />
-            <div
-              class="ml-2 text-truncate shopping-list-item__text"
-              :class="listItem.checked ? 'strike-through' : ''"
-              style="min-width: 0;"
-            >
-              <RecipeIngredientListItem :ingredient="listItem" />
-            </div>
-          </div>
-        </v-col>
-        <v-col
-          cols="auto"
-          class="text-right flex-shrink-0"
+        <button
+          type="button"
+          role="checkbox"
+          :aria-checked="listItem.checked"
+          :aria-label="listItem.checked ? $t('shopping-list.put-back-item', { item: itemName }) : $t('shopping-list.got-item', { item: itemName })"
+          class="mt-1 inline-flex size-[26px] shrink-0 items-center justify-center rounded-full border-2 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+          :class="listItem.checked ? 'border-primary bg-primary text-primary-foreground' : 'border-muted-foreground/60 bg-card hover:border-primary'"
+          @click="toggleChecked"
         >
-          <div
-            v-if="!listItem.checked"
-            style="min-width: 72px"
+          <CheckIcon
+            v-if="listItem.checked"
+            class="size-4 stroke-[3]"
+          />
+        </button>
+        <div class="min-w-0 flex-1 py-0.5">
+          <RecipeIngredientListItem
+            :ingredient="listItem"
+            :class="listItem.checked && 'text-muted-foreground [&_.ing-inline]:line-through'"
+          />
+          <button
+            v-if="!listItem.checked && recipeList.length"
+            type="button"
+            class="mt-0.5 block max-w-full truncate text-left text-[13px] text-muted-foreground hover:text-primary"
+            :aria-expanded="displayRecipeRefs"
+            @click="displayRecipeRefs = !displayRecipeRefs"
           >
-            <v-menu
-              offset-x
-              start
-              min-width="125px"
-            >
-              <template #activator="{ props: hoverProps }">
-                <v-tooltip
-                  v-if="recipeList && recipeList.length"
-                  open-delay="200"
-                  transition="slide-x-reverse-transition"
-                  density="compact"
-                  location="end"
-                  content-class="text-caption"
-                >
-                  <template #activator="{ props: tooltipProps }">
-                    <v-btn
-                      size="small"
-                      variant="text"
-                      class="ml-2"
-                      icon
-                      v-bind="tooltipProps"
-                      @click="displayRecipeRefs = !displayRecipeRefs"
-                    >
-                      <v-icon>
-                        {{ $globals.icons.silverwareForkKnife }}
-                      </v-icon>
-                    </v-btn>
-                  </template>
-                  <span>Toggle Recipes</span>
-                </v-tooltip>
-                <v-btn
-                  size="small"
-                  variant="text"
-                  class="ml-2"
-                  icon
-                  @click="$emit('edit')"
-                >
-                  <v-icon>
-                    {{ $globals.icons.edit }}
-                  </v-icon>
-                </v-btn>
-                <v-btn
-                  size="small"
-                  variant="text"
-                  class="handle"
-                  icon
-                  v-bind="hoverProps"
-                >
-                  <v-icon>
-                    {{ $globals.icons.arrowUpDown }}
-                  </v-icon>
-                </v-btn>
-              </template>
-              <v-list density="compact">
-                <v-list-item
-                  v-for="action in contextMenu"
-                  :key="action.event"
-                  density="compact"
-                  @click="$emit(action.event as any)"
-                >
-                  <v-list-item-title>
-                    {{ action.text }}
-                  </v-list-item-title>
-                </v-list-item>
-              </v-list>
-            </v-menu>
+            {{ $t('shopping-list.for-recipes', { recipes: recipeList.map(r => r.name).join(', ') }) }}
+          </button>
+          <div
+            v-if="listItem.checked"
+            class="mt-0.5 text-xs italic text-muted-foreground"
+          >
+            {{ $t("shopping-list.completed-on", {
+              date: listItem.updatedAt ? $d(new Date(listItem.updatedAt)) : '',
+            }) }}
           </div>
-        </v-col>
-      </v-row>
-      <v-container
-        v-if="!listItem.checked && recipeList && recipeList.length && displayRecipeRefs"
-        class="pa-0"
+        </div>
+        <div
+          v-if="!listItem.checked"
+          class="flex shrink-0 items-center"
+        >
+          <button
+            type="button"
+            class="inline-flex size-10 items-center justify-center rounded-full text-muted-foreground hover:bg-highlight hover:text-foreground"
+            :aria-label="`${$t('general.edit')}: ${itemName}`"
+            :title="$t('general.edit')"
+            @click="$emit('edit')"
+          >
+            <PencilIcon class="size-4" />
+          </button>
+          <DropdownMenu :modal="false">
+            <DropdownMenuTrigger as-child>
+              <button
+                type="button"
+                class="handle inline-flex size-10 cursor-grab touch-none items-center justify-center rounded-full text-muted-foreground hover:bg-highlight hover:text-foreground active:cursor-grabbing"
+                :aria-label="`${$t('general.actions')}: ${itemName}`"
+              >
+                <GripVerticalIcon class="size-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              class="min-w-40"
+            >
+              <DropdownMenuItem @select="$emit('edit')">
+                {{ $t('general.edit') }}
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                variant="destructive"
+                @select="$emit('delete')"
+              >
+                {{ $t('general.delete') }}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+      <div
+        v-if="!listItem.checked && recipeList.length && displayRecipeRefs"
+        class="px-3 pb-2 ps-12"
       >
         <RecipeList
           :recipes="recipeList"
@@ -124,31 +101,17 @@
           :disabled="isOffline"
           :tile="true"
         />
-      </v-container>
-      <v-row
-        v-if="listItem.checked"
-        no-gutters
-        class="mb-2"
-      >
-        <v-col cols="auto">
-          <div class="text-caption font-weight-light font-italic">
-            {{ $t("shopping-list.completed-on", {
-              date: listItem.updatedAt ? $d(new Date(listItem.updatedAt)) : '',
-            }) }}
-          </div>
-        </v-col>
-      </v-row>
-    </v-container>
+      </div>
+    </template>
     <div
-      v-if="edit"
-      class="mb-4"
+      v-else
+      class="p-2"
     >
       <ShoppingListItemEditor
         v-model="localListItem"
         :labels="labels"
         :units="units"
         :foods="foods"
-        class="ma-2"
         @save="save"
         @cancel="$emit('view')"
         @delete="$emit('delete')"
@@ -158,6 +121,13 @@
 </template>
 
 <script setup lang="ts">
+import { CheckIcon, GripVerticalIcon, PencilIcon } from "@lucide/vue";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu";
 import { useOnline } from "@vueuse/core";
 import RecipeIngredientListItem from "../Recipe/RecipeIngredientListItem.vue";
 import ShoppingListItemEditor from "./ShoppingListItemEditor.vue";
@@ -199,10 +169,10 @@ const emit = defineEmits<{
 const SWIPE_THRESHOLD = 50;
 
 const { isRtl } = useRtl();
-const swipeRowRef = ref<InstanceType<typeof import("vuetify/components").VRow> | null>(null);
+const swipeRowRef = ref<HTMLElement | null>(null);
 
 onMounted(() => {
-  const el = swipeRowRef.value?.$el as HTMLElement | undefined;
+  const el = swipeRowRef.value;
   if (!el) return;
   el.addEventListener(
     "touchmove",
@@ -214,16 +184,9 @@ onMounted(() => {
     { passive: false },
   );
 });
-const i18n = useI18n();
 const displayRecipeRefs = ref(false);
 const online = useOnline();
 const isOffline = computed(() => online.value === false);
-
-type actions = { text: string; event: string };
-const contextMenu = ref<actions[]>([
-  { text: i18n.t("general.edit") as string, event: "edit" },
-  { text: i18n.t("general.delete") as string, event: "delete" },
-]);
 
 // copy prop value so a refresh doesn't interrupt the user
 const localListItem = ref(Object.assign({}, model.value));
@@ -308,6 +271,8 @@ const swiping = computed(() => {
   return Math.max(0, Math.min(deltaX, 100));
 });
 
+const itemName = computed(() => listItem.value.food?.name || listItem.value.note || listItem.value.display || "");
+
 const recipeList = computed<RecipeSummary[]>(() => {
   const ret: RecipeSummary[] = [];
   if (!listItem.value.recipeReferences) return ret;
@@ -318,31 +283,3 @@ const recipeList = computed<RecipeSummary[]>(() => {
   return ret;
 });
 </script>
-
-<style lang="css">
-.strike-through {
-  text-decoration: line-through !important;
-}
-
-/* The text box must take the whole column, not shrink to its content: the "half the row" rule
-   below is measured against this box, and a content-sized box would make "1 pound butter"
-   wrap because "1 pound" alone is more than half of it. */
-.shopping-list-item__text {
-  flex: 1 1 auto;
-}
-
-/* The ingredient text is a wrapping flex row (quantity, unit, name, note). Left alone, a long
-   name is one unbreakable flex item, so it jumps to a new line and leaves the quantity sitting
-   on a line of its own. Let the name shrink and wrap in place instead, unless less than half
-   the row is left for it. The note keeps its own full-width line. */
-.shopping-list-item__text .ingredient-item > .text-bold {
-  flex: 1 1 0;
-  min-width: 50%;
-}
-
-/* ...and when it does wrap, the quantity and unit stay on its first line instead of floating
-   half-way down the block */
-.shopping-list-item__text .ingredient-item {
-  align-items: baseline;
-}
-</style>

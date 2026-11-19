@@ -19,6 +19,17 @@ Route: `/shopping-lists`. Source: [index.vue](../../frontend/app/pages/shopping-
 - Delete opens an explicit confirmation. Confirm deletes the target and refreshes choices; Cancel retains it.
 - No list deletion or ownership change was confirmed in these captures.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Page title with a large cart illustration and a divider. | Plain "Shopping Lists" heading with a New List button beside it. |
+| "Show All" checkbox. | "Show everyone's lists" switch. |
+| List cards with separate Owner and Delete icon buttons. | Each list is a row (cart icon, name, "Someone else's list" when it isn't yours, chevron) with a "…" menu holding Change owner and Delete. |
+| Delete asked "Are you sure you want to delete this item?". | Delete names the list and says it can't be undone. |
+| "No Shopping Lists Found" as a page title. | An empty state that explains there are no lists yet, with a New List button. |
+| Create and owner dialogs were bottom sheets. | They use the standard dialog (full-screen on phones). |
+
 ## Screenshots
 
 ![List overview](../screenshots/shopping-lists--index/01-overview.jpg)
@@ -35,5 +46,5 @@ These additional cases remain for replacement validation. See the [handoff evide
 
 ## Shadcn Vue replacement checklist
 
-- [ ] Use linked Cards, Checkbox, Buttons, Dialog/Sheet, Input, and owner Select.
-- [ ] Preserve current-user filtering, redirect override, name validation, full-list owner updates, and deletion review.
+- [x] Use linked Cards, Checkbox, Buttons, Dialog/Sheet, Input, and owner Select.
+- [x] Preserve current-user filtering, redirect override, name validation, full-list owner updates, and deletion review.

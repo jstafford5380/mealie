@@ -1,27 +1,26 @@
 <template>
-  <v-list :class="attrs.class.list">
-    <v-sheet
+  <ul
+    class="m-0 grid list-none grid-cols-1 gap-2 p-0 font-sans"
+    :class="tile && 'sm:grid-cols-2'"
+  >
+    <li
       v-for="recipe, index in recipes"
       :key="recipe.id || recipe.slug"
-      :elevation="2"
-      :class="attrs.class.sheet"
-      :style="attrs.style.sheet"
+      class="min-w-0 overflow-hidden rounded-card border bg-card"
     >
       <RecipeCardLineItem
         :recipe="recipe"
         :disable-link="disabled"
-        :class="attrs.class.listItem"
       >
         <template
           v-if="showDescription || (listItem && listItemDescriptions[index])"
           #subtitle
         >
-          <div v-if="showDescription">
-            {{ recipe.description }}
-          </div>
-          <template v-if="listItem && listItemDescriptions[index]">
-            <SafeInlineHtml :html="listItemDescriptions[index]" />
-          </template>
+          <span v-if="showDescription">{{ recipe.description }}</span>
+          <SafeInlineHtml
+            v-if="listItem && listItemDescriptions[index]"
+            :html="listItemDescriptions[index]"
+          />
         </template>
         <template #append>
           <slot
@@ -30,8 +29,8 @@
           />
         </template>
       </RecipeCardLineItem>
-    </v-sheet>
-  </v-list>
+    </li>
+  </ul>
 </template>
 
 <script setup lang="ts">
@@ -55,34 +54,6 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const { frac } = useFraction();
-const display = useDisplay();
-
-// Determine if we should show tiles based on screen size and number of recipes
-const shouldShowTiles = computed(() => {
-  return props.tile && display.smAndUp.value;
-});
-
-const attrs = computed(() => {
-  const tileClasses = shouldShowTiles.value ? "d-flex flex-wrap" : "bg-transparent";
-  const sheetClasses = shouldShowTiles.value
-    ? "flex-grow-0 flex-shrink-0 mb-2 me-3"
-    : props.tile ? "mb-2 mx-2" : "mb-1";
-  const sheetStyle = shouldShowTiles.value
-    ? { flexBasis: "calc(50% - 12px)", width: "calc(50% - 12px)" }
-    : {};
-
-  return {
-    class: {
-      list: tileClasses,
-      sheet: sheetClasses,
-      listItem: "px-4 py-2",
-    },
-    style: {
-      sheet: sheetStyle,
-    },
-  };
-});
-
 const listItemDescriptions = computed<string[]>(() => {
   if (
     props.recipes.length === 1 // we don't need to specify details if there's only one recipe ref

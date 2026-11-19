@@ -1,24 +1,21 @@
 <template>
-  <v-navigation-drawer
+  <!-- Docked above the bottom tab bar; it grows upward when "more options" opens, and its
+       Save button scrolls with the options instead of falling below the screen. -->
+  <div
     ref="target"
-    permanent
-    rounded="t-xl"
-    location="bottom"
-    class="pa-4 pt-2 mb-0"
-    width="300"
-    rail-width="85"
-    :rail="!showDetails"
-    elevation="4"
+    class="fixed inset-x-3 z-[950] max-h-[calc(100dvh-9rem)] overflow-y-auto rounded-panel bg-background/95 p-1 shadow-lg backdrop-blur"
+    :style="{ bottom: 'calc(5.25rem + env(safe-area-inset-bottom))' }"
   >
     <ShoppingListQuickAdd
       v-model="listItem"
       v-model:details="showDetails"
+      suggestions-above
       :foods="foods"
       :labels="labels"
       :units="units"
       @save="$emit('save')"
     />
-  </v-navigation-drawer>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -56,5 +53,5 @@ const showDetails = ref(false);
 const target = ref();
 // Autocomplete menus are teleported outside the drawer, so selecting an item
 // would otherwise register as an outside click and collapse the form
-onClickOutside(target, () => showDetails.value = false, { ignore: [".v-overlay-container"] });
+onClickOutside(target, () => showDetails.value = false, { ignore: [".v-overlay-container", "[data-reka-popper-content-wrapper]", "[role=listbox]"] });
 </script>

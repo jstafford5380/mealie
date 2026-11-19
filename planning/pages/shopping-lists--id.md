@@ -37,6 +37,21 @@ Sources: [quick add](../../frontend/app/components/Domain/ShoppingList/ShoppingL
 - Clamp swipe displacement to 100px and dim after threshold. Reverse direction for RTL. Preserve a checkbox alternative.
 - Item recipe button toggles attributed recipe links. Below the list, show linked recipe descriptions, quantity, plus/minus, and offline-disabled navigation.
 
+## Redesign (implemented)
+
+Changes users will notice:
+
+| Before | Now |
+| --- | --- |
+| Vuetify toolbar with the list name, an "All Lists" button and a three-dot menu; a separate mobile title. | One header everywhere: back arrow to all lists, the name, a "N left to get" count, a search toggle and a "…" menu (Check all, Copy as text, Copy as Markdown, Reorder labels, Manage labels). |
+| Label groups were expansion panels with tag icons. | Each label is a heading with its colour dot and a collapse chevron above a single card of rows. |
+| Square checkboxes; a separate "recipe" icon button on each row. | Round check buttons; "For {recipe}" under the item opens the recipe links. Edit (pencil) and the grip handle stay; the grip opens Edit/Delete and still drags. |
+| Checked items in an expansion panel; Uncheck All and Delete Checked were icon buttons in its header. | "N items checked" heading that opens the list, with Uncheck all and Delete checked as labelled buttons beside it. |
+| Desktop quick add was a Vuetify combobox; More Options was a separate tooltip button below. | One add field with food suggestions, a sliders button for more options and an Add button. Nothing is picked until the arrow keys highlight a suggestion, so Enter never chooses a fuzzy match. |
+| Phone add form was a bottom drawer whose Save button fell off the screen. | The add field docks above the bottom tab bar and grows upward for more options, scrolling inside itself so Save is always reachable. |
+| Linked recipes in elevated Vuetify sheets with +/- icons. | Linked recipes as bordered rows with a thumbnail, description and a − count + stepper. |
+| Label colours drawn as Vuetify chips. | Label chips are pills that pick dark or light text for the label colour. |
+
 ## Screenshots
 
 ![Initial recipe ingredients and linked recipe](../screenshots/shopping-lists--id/01-recipe-ingredients.jpg)
@@ -58,7 +73,7 @@ Sources: [quick add](../../frontend/app/components/Domain/ShoppingList/ShoppingL
 ![Empty list](../screenshots/shopping-lists--id/17-empty-list.jpg)
 ![Mobile empty list with expanded drawer](../screenshots/shopping-lists--id/18-mobile-empty-drawer-clipping.jpg)
 
-The mobile drawer's Save button clips below the 390×844 viewport. Scrolling inside the drawer did not expose it. Preserve the action in the replacement while fixing its reachability; this is a baseline defect, not an intended layout.
+The mobile drawer's Save button clipped below the 390×844 viewport in the baseline. Fixed in the redesign: the docked add bar scrolls internally and Save stayed visible at 375×812.
 
 ## Migration validation
 
@@ -68,6 +83,6 @@ The mobile drawer's Save button clips below the 390×844 viewport. Scrolling ins
 
 ## Shadcn Vue replacement checklist
 
-- [ ] Use Accordion, Checkbox, Combobox/Command, Input/Textarea, Dialog/Sheet, DropdownMenu, sortable rows, Toast with Undo, and Switch.
-- [ ] Preserve quick add, full item editor, mobile drawer, labels, recipe attribution, search, clipboard formats, and bulk reviews.
+- [x] Use Accordion, Checkbox, Combobox/Command, Input/Textarea, Dialog/Sheet, DropdownMenu, sortable rows, Toast with Undo, and Switch.
+- [x] Preserve quick add, full item editor, mobile drawer, labels, recipe attribution, search, clipboard formats, and bulk reviews.
 - [ ] Preserve optimistic queue semantics, offline feedback, poll lifecycle, touch/RTL behavior, and wake-lock lifecycle.

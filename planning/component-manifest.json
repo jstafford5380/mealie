@@ -2047,10 +2047,7 @@
         "frontend/app/components/Domain/Recipe/RecipeCardLineItem.vue",
         "frontend/app/components/global/SafeInlineHtml.vue"
       ],
-      "vuetify": [
-        "v-list",
-        "v-sheet"
-      ],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
@@ -2059,9 +2056,7 @@
         "showDescription || (listItem && listItemDescriptions[index])"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "useDisplay"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/Recipe/RecipeNotes.vue",
@@ -3635,9 +3630,7 @@
       "name": "MultiPurposeLabel",
       "components": [],
       "dependencies": [],
-      "vuetify": [
-        "v-chip"
-      ],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [],
@@ -3648,14 +3641,11 @@
       "source": "frontend/app/components/Domain/ShoppingList/MultiPurposeLabelSection.vue",
       "name": "MultiPurposeLabelSection",
       "components": [
+        "GripVerticalIcon",
         "ShoppingListMultiPurposeLabelOut"
       ],
       "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-icon",
-        "v-menu"
-      ],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [],
@@ -3672,9 +3662,7 @@
       "dependencies": [
         "frontend/app/components/Domain/ShoppingList/ShoppingListQuickAdd.vue"
       ],
-      "vuetify": [
-        "v-navigation-drawer"
-      ],
+      "vuetify": [],
       "events": [
         "save: $emit('save')"
       ],
@@ -3690,7 +3678,14 @@
       "source": "frontend/app/components/Domain/ShoppingList/ShoppingListItem.vue",
       "name": "ShoppingListItem",
       "components": [
-        "InstanceType",
+        "CheckIcon",
+        "DropdownMenu",
+        "DropdownMenuContent",
+        "DropdownMenuItem",
+        "DropdownMenuTrigger",
+        "GripVerticalIcon",
+        "HTMLElement",
+        "PencilIcon",
         "RecipeIngredientListItem",
         "RecipeList",
         "RecipeSummary",
@@ -3702,27 +3697,20 @@
         "frontend/app/components/Domain/Recipe/RecipeList.vue",
         "frontend/app/components/Domain/ShoppingList/ShoppingListItemEditor.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-checkbox",
-        "v-col",
-        "v-container",
-        "v-icon",
-        "v-list",
-        "v-list-item",
-        "v-list-item-title",
-        "v-menu",
-        "v-row",
-        "v-tooltip"
-      ],
+      "vuetify": [],
       "events": [
         "cancel: $emit('view')",
         "click: $emit('edit')",
-        "click: $emit(action.event as any)",
         "click: displayRecipeRefs = !displayRecipeRefs",
         "click: toggleChecked",
         "delete: $emit('delete')",
-        "save: save"
+        "save: save",
+        "select: $emit('delete')",
+        "select: $emit('edit')",
+        "touchcancel: resetSwipe",
+        "touchend: onSwipeEnd",
+        "touchmove: onSwipeMove({ originalEvent: $event })",
+        "touchstart.passive: onSwipeStart({ originalEvent: $event })"
       ],
       "models": [
         "localListItem"
@@ -3730,36 +3718,30 @@
       "conditions": [
         "!edit",
         "!listItem.checked",
-        "!listItem.checked && recipeList && recipeList.length && displayRecipeRefs",
-        "edit",
-        "listItem.checked",
-        "recipeList && recipeList.length"
+        "!listItem.checked && recipeList.length",
+        "!listItem.checked && recipeList.length && displayRecipeRefs",
+        "listItem.checked"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "v-tooltip"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/ShoppingList/ShoppingListItemDetails.vue",
       "name": "ShoppingListItemDetails",
       "components": [
-        "BaseButton",
+        "Button",
         "InputLabelType",
+        "MdiIcon",
         "ShoppingListItemOut"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseButton.vue",
         "frontend/app/components/global/InputLabelType.vue"
       ],
-      "vuetify": [
-        "v-number-input",
-        "v-spacer",
-        "v-textarea"
-      ],
+      "vuetify": [],
       "events": [
         "click: assignLabelToFood",
         "create: createAssignUnit",
+        "input: listItem.quantity = Math.max(0, Number(($event.target as HTMLInputElement).value) || 0)",
         "keydown.enter.prevent: emit('save')",
         "keypress: handleNoteKeyPress"
       ],
@@ -3767,7 +3749,6 @@
         "listItem.label",
         "listItem.labelId!",
         "listItem.note",
-        "listItem.quantity",
         "listItem.unit",
         "listItem.unitId!"
       ],
@@ -3775,32 +3756,28 @@
         "listItem.labelId && listItem.food && listItem.labelId !== listItem.food.labelId"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "useDisplay"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/ShoppingList/ShoppingListItemEditor.vue",
       "name": "ShoppingListItemEditor",
       "components": [
-        "BaseButtonGroup",
+        "Button",
         "InputLabelType",
         "ShoppingListItemDetails",
-        "ShoppingListItemOut"
+        "ShoppingListItemOut",
+        "Trash2Icon"
       ],
       "dependencies": [
         "frontend/app/components/Domain/ShoppingList/ShoppingListItemDetails.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
         "frontend/app/components/global/InputLabelType.vue"
       ],
-      "vuetify": [
-        "v-card",
-        "v-card-actions"
-      ],
+      "vuetify": [],
       "events": [
-        "cancel: $emit('cancel')",
+        "click: $emit('cancel')",
+        "click: $emit('delete')",
+        "click: $emit('save')",
         "create: createAssignFood",
-        "delete: $emit('delete')",
         "save: $emit('save')"
       ],
       "models": [
@@ -3816,44 +3793,47 @@
       "source": "frontend/app/components/Domain/ShoppingList/ShoppingListQuickAdd.vue",
       "name": "ShoppingListQuickAdd",
       "components": [
-        "BaseButton",
+        "Button",
+        "HTMLInputElement",
         "IngredientFoodOut",
+        "MdiIcon",
         "ShoppingListItemDetails",
-        "ShoppingListItemOut"
+        "ShoppingListItemOut",
+        "SlidersHorizontalIcon",
+        "XIcon"
       ],
       "dependencies": [
-        "frontend/app/components/Domain/ShoppingList/ShoppingListItemDetails.vue",
-        "frontend/app/components/global/BaseButton.vue"
+        "frontend/app/components/Domain/ShoppingList/ShoppingListItemDetails.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-combobox",
-        "v-spacer",
-        "v-tooltip"
-      ],
+      "vuetify": [],
       "events": [
-        "click.stop: toggleDetails",
+        "blur: closeSoon",
         "click: createFoodAndSubmit",
+        "click: search = ''; inputRef?.focus()",
+        "click: showDetails = !showDetails",
         "click: submit()",
-        "keyup.enter: submit()",
+        "input: highlighted = -1; suggestionsOpen = true",
+        "keydown.down.prevent: move(1)",
+        "keydown.enter.prevent: onEnter",
+        "keydown.escape: suggestionsOpen = false",
+        "keydown.up.prevent: move(-1)",
+        "mousedown.prevent: pick(food)",
+        "mousemove: highlighted = index",
         "save: submit()",
-        "update:model-value: onSelect"
+        "submit.prevent: submit()"
       ],
       "models": [
         "listItem",
-        "search",
-        "selected",
-        "tooltipOpen"
+        "search"
       ],
       "conditions": [
+        "pickedFood",
+        "search",
         "search?.trim() && !pickedFood && !resolveFood(search, foods)",
         "showDetails"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "useDisplay",
-        "v-tooltip"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/User/UserAvatar.vue",
@@ -5012,26 +4992,22 @@
       "source": "frontend/app/components/global/InputLabelType.vue",
       "name": "InputLabelType",
       "components": [
-        "BaseButton",
-        "HTMLInputElement",
-        "MultiPurposeLabelSummary"
+        "MultiPurposeLabelSummary",
+        "SearchSelect"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseButton.vue"
+        "frontend/app/components/ui/field/SearchSelect.vue"
       ],
-      "vuetify": [
-        "v-autocomplete"
-      ],
+      "vuetify": [],
       "events": [
-        "click: emitCreate",
-        "keyup.enter: emitCreate"
+        "create: emitCreate"
       ],
       "models": [
         "itemVal",
         "searchInput"
       ],
       "conditions": [
-        "create"
+        "label"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": []

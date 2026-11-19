@@ -1,75 +1,127 @@
 <template>
-  <div class="d-flex flex-column ga-3">
-    <v-combobox
-      ref="inputRef"
-      v-model="selected"
-      v-model:search="search"
-      :items="search ? filteredFoods : []"
-      :item-title="foodName"
-      return-object
-      :custom-filter="() => true"
-      :menu-props="{ location: menuDirection }"
-      :label="$t('shopping-list.add-item')"
-      :prepend-inner-icon="$globals.icons.foods"
-      menu-icon=""
-      variant="solo-filled"
-      rounded
-      clearable
-      hide-details
-      hide-no-data
-      autocapitalize="none"
-      @update:model-value="onSelect"
-      @keyup.enter="submit()"
+  <div class="flex flex-col gap-3 font-sans">
+    <form
+      class="relative flex items-center gap-2 rounded-card border bg-card p-1.5 shadow-sm focus-within:border-ring"
+      @submit.prevent="submit()"
     >
-      <template #append-inner>
-        <v-tooltip
-          v-model="tooltipOpen"
-          :text="tooltipText"
-          location="top"
-        >
-          <template #activator="{ props: tooltipProps }">
-            <v-btn
-              v-bind="tooltipProps"
-              :icon="$globals.icons.chevronDown"
-              :class="{ 'quick-add-toggle--open': showDetails }"
-              :aria-label="$t('shopping-list.more-options')"
-              :aria-expanded="showDetails"
-              variant="text"
-              size="small"
-              @click.stop="toggleDetails"
-            />
-          </template>
-        </v-tooltip>
-      </template>
-    </v-combobox>
+      <MdiIcon
+        :path="$globals.icons.foods"
+        class="ms-2 size-5 shrink-0 text-muted-foreground"
+      />
+      <input
+        ref="inputRef"
+        v-model="search"
+        type="text"
+        role="combobox"
+        autocomplete="off"
+        autocapitalize="none"
+        :aria-label="$t('shopping-list.add-item')"
+        :placeholder="$t('shopping-list.add-item-placeholder')"
+        :aria-expanded="suggestionsOpen"
+        :aria-controls="listId"
+        :aria-activedescendant="highlighted >= 0 ? `${listId}-${highlighted}` : undefined"
+        class="h-11 min-w-0 flex-1 bg-transparent px-1 text-base outline-none placeholder:text-muted-foreground/80"
+        @input="highlighted = -1; suggestionsOpen = true"
+        @keydown.down.prevent="move(1)"
+        @keydown.up.prevent="move(-1)"
+        @keydown.escape="suggestionsOpen = false"
+        @keydown.enter.prevent="onEnter"
+        @blur="closeSoon"
+      >
+      <button
+        v-if="search"
+        type="button"
+        class="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-highlight"
+        :aria-label="$t('general.clear')"
+        @click="search = ''; inputRef?.focus()"
+      >
+        <XIcon class="size-4" />
+      </button>
+      <button
+        type="button"
+        class="inline-flex size-10 shrink-0 items-center justify-center rounded-control text-muted-foreground transition-colors hover:bg-highlight hover:text-foreground"
+        :class="showDetails && 'bg-highlight text-foreground'"
+        :aria-label="showDetails ? $t('shopping-list.fewer-options') : $t('shopping-list.more-options')"
+        :title="showDetails ? $t('shopping-list.fewer-options') : $t('shopping-list.more-options')"
+        :aria-expanded="showDetails"
+        @click="showDetails = !showDetails"
+      >
+        <SlidersHorizontalIcon class="size-4" />
+      </button>
+      <Button
+        type="submit"
+        class="shrink-0"
+      >
+        {{ $t('general.add') }}
+      </Button>
 
-    <template v-if="showDetails">
+      <ul
+        v-show="suggestionsOpen && search.trim() && suggestions.length"
+        :id="listId"
+        role="listbox"
+        class="absolute inset-x-0 z-[1100] m-0 max-h-64 list-none overflow-y-auto rounded-card border bg-popover p-1 shadow-md"
+        :class="suggestionsAbove ? 'bottom-full mb-2' : 'top-full mt-2'"
+      >
+        <li
+          v-for="(food, index) in suggestions"
+          :id="`${listId}-${index}`"
+          :key="food.id"
+          role="option"
+          :aria-selected="index === highlighted"
+          class="flex min-h-10 cursor-pointer items-center rounded-item px-3 text-[15px]"
+          :class="index === highlighted ? 'bg-highlight text-highlight-foreground' : 'hover:bg-highlight/60'"
+          @mousedown.prevent="pick(food)"
+          @mousemove="highlighted = index"
+        >
+          {{ foodName(food) }}
+        </li>
+      </ul>
+    </form>
+
+    <div
+      v-if="showDetails"
+      class="flex flex-col gap-3 rounded-card border bg-card p-3"
+    >
+      <p
+        v-if="pickedFood"
+        class="m-0 text-sm"
+      >
+        <span class="text-muted-foreground">{{ $t('shopping-list.food') }}:</span>
+        <span class="font-semibold"> {{ foodName(pickedFood) }}</span>
+      </p>
       <ShoppingListItemDetails
         v-model="listItem"
         :labels="labels"
         :units="units"
         @save="submit()"
       />
-      <div class="d-flex flex-wrap align-center ga-3">
-        <BaseButton
+      <div class="flex flex-wrap items-center gap-2">
+        <Button
           v-if="search?.trim() && !pickedFood && !resolveFood(search, foods)"
-          size="small"
-          color="info"
-          :icon="$globals.icons.foods"
-          :text="$t('shopping-list.save-as-new-food', { text: search.trim() })"
+          variant="outline"
           @click="createFoodAndSubmit"
-        />
-        <v-spacer />
-        <BaseButton
-          save
+        >
+          <MdiIcon
+            :path="$globals.icons.foods"
+            class="size-4"
+          />
+          {{ $t('shopping-list.save-as-new-food', { text: search.trim() }) }}
+        </Button>
+        <Button
+          class="ms-auto"
           @click="submit()"
-        />
+        >
+          {{ $t('general.save') }}
+        </Button>
       </div>
-    </template>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { SlidersHorizontalIcon, XIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { useFoodName, useFoodPlurality } from "~/composables/recipes/use-recipe-ingredients";
 import { resolveFood, useShoppingListItemEditor } from "~/composables/shopping-list-page/use-shopping-list-item-editor";
 import { useSearch } from "~/composables/use-search";
@@ -82,6 +134,11 @@ const listItem = defineModel<ShoppingListItemOut>({ required: true });
 const showDetails = defineModel<boolean>("details", { default: false });
 
 const props = defineProps({
+  /** Open the suggestions above the field (the phone drawer sits at the bottom). */
+  suggestionsAbove: {
+    type: Boolean,
+    default: false,
+  },
   foods: {
     type: Array as () => IngredientFoodOut[],
     required: true,
@@ -98,47 +155,67 @@ const props = defineProps({
 
 const emit = defineEmits<{ (e: "save"): void }>();
 
-const i18n = useI18n();
-
 const { createAssignFood } = useShoppingListItemEditor(listItem);
 
-const { smAndDown } = useDisplay();
-const menuDirection = computed(() => smAndDown.value ? "top" : "bottom");
+const inputRef = ref<HTMLInputElement | null>(null);
+const selected = ref<IngredientFoodOut | null>(null);
+const listId = `quick-add-${useId()}`;
+const suggestionsOpen = ref(false);
+// Nothing is highlighted until the arrow keys move there, so Enter never picks a fuzzy match on its own
+const highlighted = ref(-1);
 
-const inputRef = ref<{ focus: () => void } | null>(null);
-const selected = ref<IngredientFoodOut | string | null>(null);
-const tooltipOpen = ref(false);
-const tooltipText = ref("");
-
-// The wording is fixed when the tooltip opens, and the tooltip hides on toggle, so the text never
-// changes while it's visible or fading out; the next hover shows the new wording
-watch(tooltipOpen, (open) => {
-  if (open) {
-    tooltipText.value = showDetails.value ? i18n.t("shopping-list.fewer-options") : i18n.t("shopping-list.more-options");
-  }
-});
-
-function toggleDetails() {
-  showDetails.value = !showDetails.value;
-  tooltipOpen.value = false;
-}
 const { search, filtered: filteredFoods } = useSearch(computed(() => props.foods));
 
 // Show suggestions the way the list will display the new item (no quantity or unit)
 const { shouldPluralizeFood } = useFoodPlurality();
 const usePlural = computed(() => shouldPluralizeFood({ quantity: 0 }));
-function foodName(food: IngredientFoodOut | string) {
-  return typeof food === "string" ? food : useFoodName(food, usePlural.value);
+function foodName(food: IngredientFoodOut) {
+  return useFoodName(food, usePlural.value);
 }
 
-// Picking a suggestion is an explicit choice of that food; typing only updates the model with a string
-const pickedFood = computed(() => selected.value && typeof selected.value === "object" ? selected.value : undefined);
+const suggestions = computed(() => (search.value?.trim() ? filteredFoods.value.slice(0, 30) : []));
+
+// Picking a suggestion is an explicit choice of that food; typing changes the text, which drops the choice
+const pickedFood = computed(() => selected.value ?? undefined);
+watch(search, (value) => {
+  if (selected.value && value !== foodName(selected.value)) {
+    selected.value = null;
+  }
+});
+
+function move(step: number) {
+  suggestionsOpen.value = true;
+  const count = suggestions.value.length;
+  if (!count) {
+    return;
+  }
+  highlighted.value = highlighted.value + step < -1 ? count - 1 : (highlighted.value + step) % count;
+}
+
+function closeSoon() {
+  setTimeout(() => {
+    suggestionsOpen.value = false;
+  }, 120);
+}
 
 // With the options open, picking a food only fills it in so the other fields can still be set before saving
-function onSelect() {
-  if (pickedFood.value && !showDetails.value) {
+function pick(food: IngredientFoodOut) {
+  selected.value = food;
+  search.value = foodName(food);
+  suggestionsOpen.value = false;
+  highlighted.value = -1;
+  if (!showDetails.value) {
     submit();
   }
+}
+
+function onEnter() {
+  const food = highlighted.value >= 0 ? suggestions.value[highlighted.value] : undefined;
+  if (food && suggestionsOpen.value) {
+    pick(food);
+    return;
+  }
+  submit();
 }
 
 // Free text is a food only on an exact match; anything else is kept verbatim as a note,
@@ -163,6 +240,8 @@ function submit(createdFood?: IngredientFoodOut) {
 
   selected.value = null;
   search.value = "";
+  suggestionsOpen.value = false;
+  highlighted.value = -1;
   inputRef.value?.focus();
 }
 
@@ -173,9 +252,3 @@ async function createFoodAndSubmit() {
   }
 }
 </script>
-
-<style scoped>
-.quick-add-toggle--open {
-  transform: rotate(180deg);
-}
-</style>

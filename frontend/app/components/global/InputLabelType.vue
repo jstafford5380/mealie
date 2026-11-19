@@ -1,37 +1,25 @@
 <template>
-  <v-autocomplete
-    ref="autocompleteRef"
-    v-model="itemVal"
-    v-bind="$attrs"
-    v-model:search="searchInput"
-    item-title="name"
-    return-object
-    :items="filteredItems"
-    :prepend-inner-icon="icon || $globals.icons.tags"
-    rounded="4px"
-    :custom-filter="() => true"
-    color="primary"
-    auto-select-first
-    clearable
-    hide-details
-    @keyup.enter="emitCreate"
-  >
-    <template
-      v-if="create"
-      #append-item
-    >
-      <div class="px-2">
-        <BaseButton
-          block
-          size="small"
-          @click="emitCreate"
-        />
-      </div>
-    </template>
-  </v-autocomplete>
+  <div class="flex min-w-0 flex-col gap-1.5 font-sans">
+    <span
+      v-if="label"
+      :id="labelId"
+      class="text-sm font-semibold"
+    >{{ label }}</span>
+    <SearchSelect
+      v-model="itemVal"
+      v-model:search="searchInput"
+      :items="filteredItems"
+      :placeholder="placeholder || label"
+      :aria-label="label"
+      :creatable="create"
+      :autofocus="autofocus"
+      @create="emitCreate"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
+import SearchSelect from "~/components/ui/field/SearchSelect.vue";
 import type { MultiPurposeLabelSummary } from "~/lib/api/types/labels";
 import type { IngredientFoodOut, IngredientUnitOut } from "~/lib/api/types/recipe";
 import { useSearch } from "~/composables/use-search";
@@ -56,13 +44,25 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  label: {
+    type: String,
+    default: "",
+  },
+  placeholder: {
+    type: String,
+    default: "",
+  },
+  autofocus: {
+    type: Boolean,
+    default: false,
+  },
 });
+
+const labelId = `label-${useId()}`;
 
 const emit = defineEmits<{
   (e: "create", val: string): void;
 }>();
-
-const autocompleteRef = ref<HTMLInputElement>();
 
 // Use the search composable
 const { search: searchInput, filtered: filteredItems } = useSearch(computed(() => props.items));
@@ -74,17 +74,18 @@ const itemVal = computed({
     }
     return modelValue.value;
   },
-  set: (val) => {
+  set: (val: MultiPurposeLabelSummary | IngredientFoodOut | IngredientUnitOut | null | undefined) => {
     itemId.value = val?.id ?? null;
-    modelValue.value = val;
+    modelValue.value = val ?? null;
   },
 });
 
-function emitCreate() {
-  if (props.items.some(item => item.name === searchInput.value)) {
+function emitCreate(name?: string) {
+  const value = (name ?? searchInput.value).trim();
+  if (!value || props.items.some(item => item.name === value)) {
     return;
   }
-  emit("create", searchInput.value);
-  autocompleteRef.value?.blur();
+  emit("create", value);
+  searchInput.value = "";
 }
 </script>
