@@ -1,4 +1,5 @@
 import { fileURLToPath } from "node:url";
+import tailwindcss from "@tailwindcss/vite";
 import { defineNuxtConfig } from "nuxt/config";
 
 const AUTH_TOKEN = "mealie.access_token";
@@ -20,6 +21,8 @@ export default defineNuxtConfig({
     {
       path: "~/components",
       pathPrefix: false,
+      // Shadcn Vue primitives are imported explicitly from "~/components/ui/<name>".
+      ignore: ["ui/**"],
     },
   ],
   devtools: {
@@ -51,9 +54,17 @@ export default defineNuxtConfig({
           content: "Mealie is a recipe management app for your kitchen.",
         },
       ],
+      style: [
+        {
+          // Cascade layer order for Vuetify/Tailwind coexistence. It must be the first
+          // stylesheet in the document, before Vuetify and Tailwind declare their layers.
+          innerHTML: "@layer theme, base, vuetify-core, vuetify-components, vuetify-overrides, components, vuetify-utilities, utilities, vuetify-final;",
+          tagPriority: "critical",
+        },
+      ],
       script: [
         {
-          innerHTML: `(function(){try{var d=localStorage.getItem('vueuse-color-scheme');var m=d==='dark'||(d!=='light'&&matchMedia('(prefers-color-scheme:dark)').matches);document.documentElement.style.backgroundColor=m?'#1E1E1E':'#FFFFFF'}catch(e){}})()`,
+          innerHTML: `(function(){try{var d=localStorage.getItem('vueuse-color-scheme');var m=d==='dark'||(d!=='light'&&matchMedia('(prefers-color-scheme:dark)').matches);document.documentElement.classList.toggle('dark',m);document.documentElement.style.backgroundColor=m?'#1E1E1E':'#FFFFFF'}catch(e){}})()`,
           type: "text/javascript",
         },
       ],
@@ -73,7 +84,7 @@ export default defineNuxtConfig({
     viewTransition: true,
   },
 
-  css: ["~/assets/main.css", "~/assets/style-overrides.scss"],
+  css: ["~/assets/tailwind.css", "~/assets/main.css", "~/assets/style-overrides.scss"],
 
   runtimeConfig: {
     sessionPassword: process.env.SESSION_PASSWORD || "password-with-at-least-32-characters",
@@ -87,17 +98,17 @@ export default defineNuxtConfig({
       useDark: Boolean(process.env.THEME_USE_DARK) || false,
       themes: {
         dark: {
-          primary: process.env.THEME_DARK_PRIMARY || "#E58325",
+          primary: process.env.THEME_DARK_PRIMARY || "#5FAE87",
           accent: process.env.THEME_DARK_ACCENT || "#007A99",
           secondary: process.env.THEME_DARK_SECONDARY || "#973542",
           success: process.env.THEME_DARK_SUCCESS || "#43A047",
           info: process.env.THEME_DARK_INFO || "#1976d2",
           warning: process.env.THEME_DARK_WARNING || "#FF6D00",
           error: process.env.THEME_DARK_ERROR || "#EF5350",
-          background: "#1E1E1E",
+          background: "#141816",
         },
         light: {
-          primary: process.env.THEME_LIGHT_PRIMARY || "#E58325",
+          primary: process.env.THEME_LIGHT_PRIMARY || "#2E6A4F",
           accent: process.env.THEME_LIGHT_ACCENT || "#007A99",
           secondary: process.env.THEME_LIGHT_SECONDARY || "#973542",
           success: process.env.THEME_LIGHT_SUCCESS || "#43A047",
@@ -131,6 +142,7 @@ export default defineNuxtConfig({
   },
 
   vite: {
+    plugins: [tailwindcss()],
     server: {
       fs: {
         // app/lang/locales/*.ts import the seeded unit names from mealie/, which is outside
