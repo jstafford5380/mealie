@@ -13,6 +13,13 @@ Route: `/admin/manage/users/create`. Source: [create.vue](../../frontend/app/pag
 - Captured validation shows the group/household errors. AutoForm renders its own form structure, so separately verify all shared field rules participate in the outer submit validation; do not assume the screenshot proves every rule fires.
 - No account was submitted, and no new password was entered during cataloging. The Administrator screenshot shows draft control dependencies only.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Illustration title, back toolbar, filled group/household selects. | Back link and title; one panel with labelled group and household selects (household waits for a group), the form and a "New user" button. |
+
+
 ## Screenshots
 
 ### Empty form and validation

@@ -1,143 +1,139 @@
 <template>
-  <v-container
+  <div
     v-if="user"
-    class="narrow-container"
+    class="mx-auto flex w-full max-w-[760px] flex-col px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8"
   >
-    <BasePageTitle>
-      <template #header>
-        <v-img
-          width="100%"
-          max-height="125"
-          max-width="125"
-          src="/svgs/manage-profile.svg"
-        />
-      </template>
-      <template #title>
-        {{ $t("user.admin-user-management") }}
-      </template>
-      {{ $t("user.changes-reflected-immediately") }}
-    </BasePageTitle>
-    <AppToolbar back />
-    <v-form
+    <NuxtLink
+      to="/admin/manage/users"
+      class="mb-3 inline-flex w-fit items-center gap-1 text-sm font-semibold text-muted-foreground no-underline hover:text-foreground"
+    >
+      <ChevronLeftIcon class="size-4 rtl:rotate-180" />
+      {{ $t('user.user-management') }}
+    </NuxtLink>
+    <header class="mb-6">
+      <h1 class="m-0 text-[26px] font-bold tracking-tight sm:text-[32px]">
+        {{ user.fullName || $t('user.admin-user-management') }}
+      </h1>
+      <p class="m-0 mt-1 text-[15px] text-muted-foreground">
+        {{ $t('user.changes-reflected-immediately') }}
+      </p>
+    </header>
+    <FieldScope
       v-if="!userError"
       ref="refNewUserForm"
-      @submit.prevent="handleSubmit"
     >
-      <v-card
-        variant="outlined"
-        style="border-color: lightgrey;"
+      <form
+        class="flex flex-col gap-6"
+        @submit.prevent="handleSubmit"
       >
-        <v-sheet class="pt-4">
-          <v-card-text>
-            <div class="d-flex">
-              <p> {{ $t("user.user-id-with-value", { id: user.id }) }}</p>
-            </div>
-            <!-- This is disabled since we can't properly handle changing the user's group in most scenarios -->
-
-            <v-row>
-              <v-col cols="6">
-                <v-select
-                  v-if="groups"
-                  v-model="user.group"
-                  disabled
-                  :items="groups"
-                  variant="solo-filled"
-                  flat
-                  item-title="name"
-                  item-value="name"
-                  :return-object="false"
-                  :label="$t('group.user-group')"
-                  :rules="[validators.required]"
-                />
-              </v-col>
-              <v-col cols="6">
-                <v-select
-                  v-if="households"
-                  v-model="user.household"
-                  :items="households"
-                  variant="solo-filled"
-                  flat
-                  item-title="name"
-                  item-value="name"
-                  :return-object="false"
-                  :label="$t('household.user-household')"
-                  :rules="[validators.required]"
-                />
-              </v-col>
-            </v-row>
-            <div class="d-flex py-2 pr-2">
-              <BaseButton
-                type="button"
-                :loading="generatingToken"
-                create
-                @click.prevent="handlePasswordReset"
-              >
-                {{ $t("user.generate-password-reset-link") }}
-              </BaseButton>
-            </div>
-
-            <div
-              v-if="resetUrl"
-              class="mb-2"
-            >
-              <v-card-text>
-                <p class="text-center pb-0">
-                  {{ resetUrl }}
-                </p>
-              </v-card-text>
-              <v-card-actions
-                class="align-center pt-0"
-                style="gap: 4px"
-              >
-                <BaseButton
-                  cancel
-                  @click="resetUrl = ''"
-                >
-                  {{ $t("general.close") }}
-                </BaseButton>
-                <v-spacer />
-                <BaseButton
-                  v-if="user.email"
-                  color="info"
-                  class="mr-1"
-                  @click="sendResetEmail"
-                >
-                  <template #icon>
-                    {{ $globals.icons.email }}
-                  </template>
-                  {{ $t("user.email") }}
-                </BaseButton>
-                <AppButtonCopy
-                  :icon="false"
-                  color="info"
-                  :copy-text="resetUrl"
-                />
-              </v-card-actions>
-            </div>
-
-            <AutoForm
-              v-model="user"
-              :items="userForm"
-              update-mode
-              :disabled-fields="disabledFields"
+        <section class="rounded-panel border bg-card p-5 sm:p-6">
+          <p class="m-0 mb-3 font-mono text-xs text-muted-foreground">
+            {{ $t("user.user-id-with-value", { id: user.id }) }}
+          </p>
+          <!-- Group can't be changed here: moving a user between groups isn't handled safely -->
+          <div class="grid gap-x-4 sm:grid-cols-2">
+            <SelectField
+              v-if="groups"
+              v-model="user.group"
+              disabled
+              :items="groups"
+              item-title="name"
+              item-value="name"
+              :label="$t('group.user-group')"
             />
-          </v-card-text>
-        </v-sheet>
-      </v-card>
-      <div class="d-flex pa-2">
-        <BaseButton
-          type="submit"
-          edit
-          class="ml-auto"
-        >
-          {{ $t("general.update") }}
-        </BaseButton>
-      </div>
-    </v-form>
-  </v-container>
+            <SelectField
+              v-if="households"
+              v-model="user.household"
+              :items="households"
+              item-title="name"
+              item-value="name"
+              :label="$t('household.user-household')"
+              :rules="[validators.required]"
+            />
+          </div>
+          <AutoForm
+            v-model="user"
+            class="px-0!"
+            :items="userForm"
+            update-mode
+            :disabled-fields="disabledFields"
+          />
+          <div class="mt-4 flex justify-end border-t pt-4">
+            <Button type="submit">
+              {{ $t("general.update") }}
+            </Button>
+          </div>
+        </section>
+
+        <section class="rounded-panel border bg-card p-5 sm:p-6">
+          <h2 class="m-0 mb-1 text-xl font-bold tracking-tight">
+            {{ $t("user.reset-password") }}
+          </h2>
+          <p class="m-0 mb-4 text-sm text-muted-foreground">
+            {{ $t("user.reset-link-explained") }}
+          </p>
+          <Button
+            v-if="!resetUrl"
+            type="button"
+            variant="outline"
+            :disabled="generatingToken"
+            @click.prevent="handlePasswordReset"
+          >
+            <LoaderCircleIcon
+              v-if="generatingToken"
+              class="size-4 animate-spin"
+            />
+            {{ $t("user.generate-password-reset-link") }}
+          </Button>
+          <div
+            v-else
+            class="flex flex-col gap-3"
+          >
+            <input
+              :value="resetUrl"
+              readonly
+              :aria-label="$t('user.reset-password')"
+              class="h-10 w-full rounded-control border border-input bg-muted px-3 font-mono text-[13px] outline-none"
+              @focus="($event.target as HTMLInputElement).select()"
+            >
+            <div class="flex flex-wrap justify-end gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                @click="resetUrl = ''"
+              >
+                {{ $t("general.done") }}
+              </Button>
+              <Button
+                v-if="user.email"
+                type="button"
+                variant="outline"
+                @click="sendResetEmail"
+              >
+                <MdiIcon
+                  :path="$globals.icons.email"
+                  class="size-4"
+                />
+                {{ $t("user.email") }}
+              </Button>
+              <AppButtonCopy
+                :icon="false"
+                :copy-text="resetUrl"
+              />
+            </div>
+          </div>
+        </section>
+      </form>
+    </FieldScope>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { LoaderCircleIcon, ChevronLeftIcon } from "@lucide/vue";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+import { Button } from "~/components/ui/button";
+import FieldScope from "~/components/ui/field/FieldScope.vue";
+import SelectField from "~/components/ui/field/SelectField.vue";
 import { useAdminApi, useUserApi } from "~/composables/api";
 import { useGroups } from "~/composables/use-groups";
 import { useAdminHouseholds } from "~/composables/use-households";
@@ -161,7 +157,7 @@ const userId = route.params.id as string;
 // ==============================================
 // New User Form
 
-const refNewUserForm = ref<VForm | null>(null);
+const refNewUserForm = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 
 const adminApi = useAdminApi();
 

@@ -1,126 +1,103 @@
 <template>
-  <v-container fluid>
+  <div class="mx-auto flex w-full max-w-[900px] flex-col px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8">
     <BaseDialog
       v-model="createDialog"
-      bottom-sheet
       :title="$t('household.create-household')"
       :icon="$globals.icons.household"
+      can-submit
+      :submit-text="$t('general.create')"
+      @submit="handleCreateSubmit"
     >
-      <template #activator />
-      <v-card-text>
-        <v-form ref="refNewHouseholdForm" @keydown.enter.prevent="handleCreateSubmit">
-          <v-select
+      <FieldScope ref="refNewHouseholdForm">
+        <div class="px-6 pb-2">
+          <SelectField
             v-if="groups"
             v-model="createHouseholdForm.data.groupId"
             :items="groups"
             item-title="name"
             item-value="id"
-            variant="filled"
             :label="$t('household.household-group')"
             :rules="[validators.required]"
           />
           <AutoForm
             v-model="createHouseholdForm.data"
+            class="px-0!"
             :update-mode="updateMode"
             :items="createHouseholdForm.items"
           />
-        </v-form>
-      </v-card-text>
-      <template #custom-card-action>
-        <BaseButton
-          type="submit"
-          @click="handleCreateSubmit"
-        >
-          {{ $t("general.create") }}
-        </BaseButton>
-      </template>
+        </div>
+      </FieldScope>
     </BaseDialog>
 
     <BaseDialog
       v-model="confirmDialog"
-      bottom-sheet
       :title="$t('general.confirm')"
       :icon="$globals.icons.alertCircle"
       color="error"
       can-confirm
       @confirm="deleteHousehold(deleteTarget)"
     >
-      <template #activator />
-      <v-card-text>
+      <p class="m-0 px-6 pb-2 text-[15px]">
         {{ $t("general.confirm-delete-generic") }}
-      </v-card-text>
+      </p>
     </BaseDialog>
+    <header class="mb-5 flex flex-wrap items-center gap-3">
+      <h1 class="m-0 flex-1 text-[26px] font-bold tracking-tight sm:text-[32px]">
+        {{ $t('household.household-management') }}
+      </h1>
+      <Button @click="openDialog">
+        <PlusIcon class="size-4" />
+        {{ $t('household.create-household') }}
+      </Button>
+    </header>
 
-    <BaseCardSectionTitle :title="$t('household.household-management')" />
-    <section>
-      <v-toolbar
-        flat
-        color="transparent"
-        class="justify-between"
+    <ul class="m-0 flex list-none flex-col divide-y rounded-card border bg-card p-0">
+      <li
+        v-for="item in households || []"
+        :key="item.id"
+        class="flex items-center gap-2 pe-1.5"
       >
-        <BaseButton @click="openDialog">
-          {{ $t("general.create") }}
-        </BaseButton>
-      </v-toolbar>
-
-      <v-data-table
-        v-if="headers && households"
-        :headers="headers"
-        :items="households"
-        item-key="id"
-        class="elevation-0"
-        :items-per-page="-1"
-        hide-default-footer
-        disable-pagination
-        :search="search"
-        @click:row="($event, { item }) => handleRowClick(item)"
-      >
-        <template #[`item.users`]="{ item }">
-          {{ item.users?.length }}
-        </template>
-        <template #[`item.group`]="{ item }">
-          {{ item.group }}
-        </template>
-        <template #[`item.webhookEnable`]="{ item }">
-          {{ item.webhooks!.length > 0 ? $t("general.yes") : $t("general.no") }}
-        </template>
-        <template #[`item.actions`]="{ item }">
-          <v-tooltip
-            location="bottom"
-            :disabled="!(item && item.users!.length > 0)"
-          >
-            <template #activator="{ props }">
-              <div v-bind="props">
-                <v-btn
-                  :disabled="item && item.users!.length > 0"
-                  class="mr-1"
-                  icon
-                  color="error"
-                  variant="text"
-                  @click.stop="confirmDialog = true; deleteTarget = item.id"
-                >
-                  <v-icon>
-                    {{ $globals.icons.delete }}
-                  </v-icon>
-                </v-btn>
-              </div>
-            </template>
-            <span>{{ $t("admin.household-delete-note") }}</span>
-          </v-tooltip>
-        </template>
-      </v-data-table>
-      <v-divider />
-    </section>
-  </v-container>
+        <NuxtLink
+          :to="`/admin/manage/households/${item.id}`"
+          class="flex min-w-0 flex-1 items-center gap-3 py-3 ps-4 text-foreground no-underline hover:text-primary"
+        >
+          <span class="inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-subtle text-subtle-foreground">
+            <MdiIcon
+              :path="$globals.icons.household"
+              class="size-[18px]"
+            />
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block truncate font-semibold">{{ item.name }}</span>
+            <span class="block text-sm text-muted-foreground">{{ item.group }} · {{ $t('user.user-count', item.users?.length ?? 0) }}<template v-if="item.webhooks?.length"> · {{ $t('user.webhooks-enabled') }}</template></span>
+          </span>
+          <ChevronRightIcon class="size-4 shrink-0 text-muted-foreground rtl:rotate-180" />
+        </NuxtLink>
+        <button
+          type="button"
+          class="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-muted-foreground"
+          :disabled="!(!item.users?.length)"
+          :aria-label="$t('data-pages.delete-item', { name: item.name })"
+          :title="(!item.users?.length) ? $t('general.delete') : $t('admin.household-delete-note')"
+          @click="confirmDialog = true; deleteTarget = item.id"
+        >
+          <Trash2Icon class="size-4" />
+        </button>
+      </li>
+    </ul>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { ChevronRightIcon, PlusIcon, Trash2Icon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+import FieldScope from "~/components/ui/field/FieldScope.vue";
+import SelectField from "~/components/ui/field/SelectField.vue";
 import { fieldTypes } from "~/composables/forms";
 import { useGroups } from "~/composables/use-groups";
 import { useAdminHouseholds } from "~/composables/use-households";
 import { validators } from "~/composables/use-validators";
-import type { HouseholdOut } from "~/lib/api/types/household";
-import type { VForm } from "~/types/auto-forms";
 
 definePageMeta({
   layout: "admin",
@@ -135,27 +112,12 @@ useSeoMeta({
 const { groups } = useGroups();
 const { households, deleteHousehold, createHousehold } = useAdminHouseholds();
 
-const refNewHouseholdForm = ref<VForm | null>(null);
+const refNewHouseholdForm = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 
 const createDialog = ref(false);
 const confirmDialog = ref(false);
 const deleteTarget = ref<string>("");
-const search = ref("");
 const updateMode = ref(false);
-
-const headers = [
-  {
-    title: i18n.t("household.household"),
-    align: "start",
-    sortable: false,
-    value: "id",
-  },
-  { title: i18n.t("general.name"), value: "name" },
-  { title: i18n.t("group.group"), value: "group" },
-  { title: i18n.t("user.total-users"), value: "users" },
-  { title: i18n.t("user.webhooks-enabled"), value: "webhookEnable" },
-  { title: i18n.t("general.delete"), value: "actions" },
-];
 
 const createHouseholdForm = reactive({
   items: [
@@ -178,14 +140,9 @@ function openDialog() {
   createHouseholdForm.data.groupId = "";
 }
 
-const router = useRouter();
-
-function handleRowClick(item: HouseholdOut) {
-  router.push(`/admin/manage/households/${item.id}`);
-}
-
 async function handleCreateSubmit() {
-  if (!refNewHouseholdForm.value?.validate()) {
+  const { valid } = (await refNewHouseholdForm.value?.validate()) ?? { valid: false };
+  if (!valid) {
     return;
   }
   createDialog.value = false;

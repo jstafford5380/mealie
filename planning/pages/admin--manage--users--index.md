@@ -24,6 +24,14 @@ Source: [UserInviteDialog.vue](../../frontend/app/components/Domain/User/UserInv
 - If send starts without a token, the current code calls signup-link generation without awaiting it before sending. Changing group also does not explicitly clear household/token. Record these as current race/stale-selection risks; verify and correct during migration rather than preserving an incorrect recipient context.
 - Opening the captured admin dialog leaves both selectors empty and creates no invitation. No active invitation token or sent email appears in these screenshots.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Toolbar with Create, Invite and an overflow menu holding "Reset locked users"; a full-width data table, row click to edit. | The shared data table: search, Reset Locked Users, Invite and "New user" on the toolbar, sortable columns with ID and auth method hidden by default, names link to the user, labelled edit/delete per row. |
+| Admin as a check/cross icon. | An Admin pill. |
+
+
 ## Screenshots
 
 ### Synthetic user table

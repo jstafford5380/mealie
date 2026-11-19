@@ -37,6 +37,16 @@ Route: `/admin/site-settings`. Source: [site-settings.vue](../../frontend/app/pa
 - Tracker links to GitHub's new-issue chooser in a new tab. Opening the preview does not submit a report. Keep copying separate from publishing.
 - Copy uses the shared copy control and its feedback; preserve plain report text and newlines.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Illustration title; Bug Report button on its own row. | Heading with Bug Report beside it; the dialog shows the report in a monospace field with Tracker and Copy. |
+| Configuration checks as a Vuetify list with coloured icons. | Statistics first as linked tiles, then the checks as a list with status-coloured icons (sage ok, red error, marigold warning, grey disabled). |
+| Email status as a bordered alert holding the test field and button. | An Email panel with a Ready / Not ready pill, a "Send a test email to" field with Test, and the result as a line under it. |
+| About as a list with prepend icons and links in subtitles. | About as a two-column list; version, build and scraper values link out. |
+
+
 ## Screenshots
 
 ### Entire diagnostic page

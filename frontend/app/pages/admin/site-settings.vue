@@ -1,266 +1,210 @@
 <template>
-  <v-container
-    fluid
-    class="narrow-container"
-  >
-    <!-- Image -->
-    <BasePageTitle divider>
-      <template #header>
-        <v-img
-          width="100%"
-          max-height="200"
-          max-width="150"
-          src="/svgs/admin-site-settings.svg"
-        />
-      </template>
-      <template #title>
-        {{ $t("settings.site-settings") }}
-      </template>
-    </BasePageTitle>
-
+  <div class="mx-auto flex w-full max-w-[860px] flex-col gap-8 px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8">
     <!-- Bug Report -->
     <BaseDialog
       v-model="bugReportDialog"
-      bottom-sheet
       :title="$t('settings.bug-report')"
       :width="800"
       :icon="$globals.icons.github"
     >
-      <v-card-text>
-        <div class="pb-4">
+      <div class="flex flex-col gap-3 px-6 pb-2">
+        <p class="m-0 text-[15px] text-muted-foreground">
           {{ $t('settings.bug-report-information') }}
-        </div>
-        <v-textarea
-          v-model="bugReportText"
-          variant="outlined"
-          rows="18"
+        </p>
+        <textarea
+          :value="bugReportText"
           readonly
+          rows="16"
+          :aria-label="$t('settings.bug-report')"
+          class="w-full resize-y rounded-control border border-input bg-muted px-3 py-2 font-mono text-[12.5px] outline-none"
         />
-        <div
-          class="d-flex justify-end"
-          style="gap: 5px"
-        >
-          <BaseButton
-            color="gray"
-            secondary
-            target="_blank"
-            href="https://github.com/mealie-recipes/mealie/issues/new/choose"
+        <div class="flex justify-end gap-2">
+          <Button
+            variant="ghost"
+            @click="openTracker"
           >
-            <template #icon>
-              {{ $globals.icons.github }}
-            </template>
+            <MdiIcon
+              :path="$globals.icons.github"
+              class="size-4"
+            />
             {{ $t('settings.tracker') }}
-          </BaseButton>
+          </Button>
           <AppButtonCopy
             :copy-text="bugReportText"
-            color="info"
             :icon="false"
           />
         </div>
-      </v-card-text>
+      </div>
     </BaseDialog>
 
-    <div class="d-flex justify-end">
-      <BaseButton
-        color="info"
-        @click="
-          bugReportDialog = true;
-        "
+    <header class="-mb-2 flex flex-wrap items-end gap-3">
+      <h1 class="m-0 flex-1 text-[26px] font-bold tracking-tight sm:text-[32px]">
+        {{ $t("settings.site-settings") }}
+      </h1>
+      <Button
+        variant="outline"
+        @click="bugReportDialog = true"
       >
-        <template #icon>
-          {{ $globals.icons.github }}
-        </template>
+        <MdiIcon
+          :path="$globals.icons.github"
+          class="size-4"
+        />
         {{ $t('settings.bug-report') }}
-      </BaseButton>
-    </div>
-
-    <!-- Configuration -->
-    <section>
-      <BaseCardSectionTitle
-        class="pb-0"
-        :icon="$globals.icons.cog"
-        :title="$t('settings.configuration')"
-      />
-      <v-card class="mb-4">
-        <template
-          v-for="(check, idx) in simpleChecks"
-          :key="`list-item-${idx}`"
-        >
-          <v-list-item :title="check.text">
-            <template #prepend>
-              <v-icon :color="check.color" class="opacity-100">
-                {{ check.icon }}
-              </v-icon>
-            </template>
-            <v-list-item-subtitle class="wrap-word">
-              {{ check.status ? check.successText : check.errorText }}
-            </v-list-item-subtitle>
-          </v-list-item>
-          <v-divider />
-        </template>
-      </v-card>
-    </section>
-
-    <!-- Email -->
-    <section>
-      <BaseCardSectionTitle
-        class="pt-2"
-        :icon="$globals.icons.email"
-        :title="$t('user.email')"
-      />
-      <v-alert
-        border="start"
-        :border-color="appConfig.emailReady ? 'success' : 'error'"
-        variant="text"
-        elevation="2"
-      >
-        <template #prepend>
-          <v-icon :color="appConfig.emailReady ? 'success' : 'warning'">
-            {{ appConfig.emailReady ? $globals.icons.checkboxMarkedCircle : $globals.icons.alertCircle }}
-          </v-icon>
-        </template>
-        <div class="font-weight-medium">
-          {{ $t('settings.email-configuration-status') }}
-        </div>
-        <div>
-          {{ appConfig.emailReady ? $t('settings.ready') : $t('settings.not-ready') }}
-        </div>
-        <div>
-          <v-text-field
-            v-model="state.address"
-            class="mr-4"
-            :label="$t('user.email')"
-            :rules="[validators.email]"
-          />
-          <BaseButton
-            color="info"
-            variant="elevated"
-            :disabled="!appConfig.emailReady || !validEmail"
-            :loading="state.loading"
-            class="opacity-100"
-            @click="testEmail"
-          >
-            <template #icon>
-              {{ $globals.icons.email }}
-            </template>
-            {{ $t("general.test") }}
-          </BaseButton>
-          <template v-if="state.tested">
-            <v-divider class="my-x mt-6" />
-            <v-card-text class="px-0">
-              <h4> {{ $t("settings.email-test-results") }}</h4>
-              <span class="pl-4">
-                {{ state.success ? $t('settings.succeeded') : $t('settings.failed') }}
-              </span>
-            </v-card-text>
-          </template>
-        </div>
-      </v-alert>
-    </section>
+      </Button>
+    </header>
 
     <!-- Site Statistics -->
     <section>
-      <BaseCardSectionTitle
-        class="pt-2"
-        :icon="$globals.icons.chart"
-        :title="$t('settings.site-statistics')"
-      />
-      <div
-        class="d-flex flex-wrap justify-center align-center"
-        style="gap: 0.8rem"
-      >
-        <StatsCards
+      <h2 class="m-0 mb-3 text-base font-semibold">
+        {{ $t('settings.site-statistics') }}
+      </h2>
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+        <NuxtLink
           v-for="(value, key) in adminStats"
-          :key="`${key}-${value}`"
-          :min-width="$vuetify.display.xs ? '100%' : '158'"
-          :icon="getAdminStatsIcon(key)"
+          :key="key"
           :to="getAdminStatsTo(key)"
+          class="flex flex-col gap-1 rounded-card border bg-card px-4 py-3 text-foreground no-underline transition-colors hover:border-primary/50"
         >
-          <template #title>
+          <span class="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <MdiIcon
+              :path="getAdminStatsIcon(key)"
+              class="size-4"
+            />
             {{ getAdminStatsTitle(key) }}
-          </template>
-          <template #value>
-            {{ value }}
-          </template>
-        </StatsCards>
+          </span>
+          <span class="text-[26px] font-bold tabular-nums">{{ value }}</span>
+        </NuxtLink>
       </div>
     </section>
 
-    <!-- General App Info -->
-    <section class="mt-4">
-      <BaseCardSectionTitle
-        class="pb-0"
-        :icon="$globals.icons.cog"
-        :title="$t('settings.general-about')"
-      />
-      <v-card class="mb-4">
-        <template v-if="appInfo && appInfo.length">
-          <template
-            v-for="(property, idx) in appInfo"
-            :key="property.name"
-          >
-            <v-list-item
-              :title="property.name"
-              :prepend-icon="property.icon || $globals.icons.user"
-            >
-              <template v-if="property.slot === 'recipe-scraper'">
-                <v-list-item-subtitle>
-                  <a
-                    class="text-primary"
-                    target="_blank"
-                    :href="`https://github.com/hhursev/recipe-scrapers/releases/tag/${property.value}`"
-                  >
-                    {{ property.value }}
-                  </a>
-                </v-list-item-subtitle>
-              </template>
-              <template v-else-if="property.slot === 'build'">
-                <v-list-item-subtitle>
-                  <a
-                    class="text-primary"
-                    target="_blank"
-                    :href="`https://github.com/mealie-recipes/mealie/commit/${property.value}`"
-                  >
-                    {{ property.value }}
-                  </a>
-                </v-list-item-subtitle>
-              </template>
-              <template v-else-if="property.slot === 'version' && property.value !== 'develop' && property.value !== 'nightly'">
-                <v-list-item-subtitle>
-                  <a
-                    class="text-primary"
-                    target="_blank"
-                    :href="`https://github.com/mealie-recipes/mealie/releases/tag/${property.value}`"
-                  >
-                    {{ property.value }}
-                  </a>
-                </v-list-item-subtitle>
-              </template>
-              <template v-else>
-                <v-list-item-subtitle>
-                  {{ property.value }}
-                </v-list-item-subtitle>
-              </template>
-            </v-list-item>
-            <v-divider
-              v-if="appInfo && idx !== appInfo.length - 1"
-              :key="`divider-${property.name}`"
-            />
-          </template>
-        </template>
-        <template v-else>
-          <AppLoader />
-        </template>
-      </v-card>
+    <!-- Configuration -->
+    <section>
+      <h2 class="m-0 mb-3 text-base font-semibold">
+        {{ $t('settings.configuration') }}
+      </h2>
+      <ul class="m-0 flex list-none flex-col divide-y rounded-card border bg-card p-0">
+        <li
+          v-for="(check, idx) in simpleChecks"
+          :key="idx"
+          class="flex items-start gap-3 px-4 py-3"
+        >
+          <MdiIcon
+            :path="check.icon"
+            class="mt-0.5 size-5 shrink-0"
+            :class="STATUS_TEXT[check.color] || 'text-muted-foreground'"
+          />
+          <span class="min-w-0">
+            <span class="block font-semibold">{{ check.text }}</span>
+            <span class="block text-sm break-words text-muted-foreground">{{ check.status ? check.successText : check.errorText }}</span>
+          </span>
+        </li>
+      </ul>
     </section>
-  </v-container>
+
+    <!-- Email -->
+    <section class="rounded-panel border bg-card p-5 sm:p-6">
+      <div class="mb-3 flex items-center gap-3">
+        <MdiIcon
+          :path="appConfig.emailReady ? $globals.icons.checkboxMarkedCircle : $globals.icons.alertCircle"
+          class="size-5 shrink-0"
+          :class="appConfig.emailReady ? 'text-primary' : 'text-brand-strong'"
+        />
+        <h2 class="m-0 flex-1 text-xl font-bold tracking-tight">
+          {{ $t('settings.email-configuration-status') }}
+        </h2>
+        <span
+          class="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+          :class="appConfig.emailReady ? 'bg-primary/15 text-primary' : 'bg-brand/20 text-brand-strong'"
+        >{{ appConfig.emailReady ? $t('settings.ready') : $t('settings.not-ready') }}</span>
+      </div>
+      <form
+        class="flex flex-wrap items-end gap-3"
+        @submit.prevent="testEmail"
+      >
+        <div class="min-w-0 flex-1 basis-60">
+          <TextField
+            v-model="state.address"
+            type="email"
+            :label="$t('settings.send-test-email-to')"
+            :rules="[validators.email]"
+          />
+        </div>
+        <Button
+          type="submit"
+          variant="outline"
+          class="mb-1.5"
+          :disabled="!appConfig.emailReady || !validEmail || state.loading"
+        >
+          <LoaderCircleIcon
+            v-if="state.loading"
+            class="size-4 animate-spin"
+          />
+          <MdiIcon
+            v-else
+            :path="$globals.icons.email"
+            class="size-4"
+          />
+          {{ $t("general.test") }}
+        </Button>
+      </form>
+      <p
+        v-if="state.tested"
+        class="m-0 mt-2 text-sm"
+        :class="state.success ? 'text-primary' : 'text-destructive'"
+        role="status"
+      >
+        {{ $t("settings.email-test-results") }}: {{ state.success ? $t('settings.succeeded') : $t('settings.failed') }}
+      </p>
+    </section>
+
+    <!-- General App Info -->
+    <section>
+      <h2 class="m-0 mb-3 text-base font-semibold">
+        {{ $t('settings.general-about') }}
+      </h2>
+      <dl
+        v-if="appInfo && appInfo.length"
+        class="m-0 divide-y rounded-card border bg-card"
+      >
+        <div
+          v-for="property in appInfo"
+          :key="property.name"
+          class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 px-4 py-3"
+        >
+          <dt class="flex items-center gap-2 text-sm text-muted-foreground">
+            <MdiIcon
+              :path="property.icon || $globals.icons.user"
+              class="size-4"
+            />
+            {{ property.name }}
+          </dt>
+          <dd class="m-0 font-semibold break-all">
+            <a
+              v-if="propertyLink(property)"
+              :href="propertyLink(property)"
+              target="_blank"
+              rel="noopener"
+              class="text-primary no-underline hover:underline"
+            >{{ property.value }}</a>
+            <template v-else>
+              {{ property.value }}
+            </template>
+          </dd>
+        </div>
+      </dl>
+      <AppLoader v-else />
+    </section>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { LoaderCircleIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import TextField from "~/components/ui/field/TextField.vue";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { useAdminApi, useUserApi } from "~/composables/api";
 import { validators } from "~/composables/use-validators";
 import { useAsyncKey } from "~/composables/use-utils";
-import StatsCards from "~/components/global/StatsCards.vue";
 import type { AppStatistics, CheckAppConfig } from "~/lib/api/types/admin";
 import AppLoader from "~/components/global/AppLoader.vue";
 
@@ -627,11 +571,29 @@ const bugReportText = computed(() => {
   text += `${i18n.t("settings.email-configured")}: ${appConfig.value.emailReady ? i18n.t("general.yes") : i18n.t("general.no")}\n`;
   return text;
 });
-</script>
 
-<style scoped>
-.wrap-word {
-  white-space: normal;
-  word-wrap: break-word;
+const STATUS_TEXT: Record<string, string> = {
+  success: "text-primary",
+  error: "text-destructive",
+  warning: "text-brand-strong",
+  grey: "text-muted-foreground",
+};
+
+function propertyLink(property: { slot?: string; value?: string | number | null }) {
+  const value = String(property.value ?? "");
+  if (property.slot === "recipe-scraper") {
+    return `https://github.com/hhursev/recipe-scrapers/releases/tag/${value}`;
+  }
+  if (property.slot === "build") {
+    return `https://github.com/mealie-recipes/mealie/commit/${value}`;
+  }
+  if (property.slot === "version" && value !== "develop" && value !== "nightly") {
+    return `https://github.com/mealie-recipes/mealie/releases/tag/${value}`;
+  }
+  return undefined;
 }
-</style>
+
+function openTracker() {
+  window.open("https://github.com/mealie-recipes/mealie/issues/new/choose", "_blank", "noopener");
+}
+</script>

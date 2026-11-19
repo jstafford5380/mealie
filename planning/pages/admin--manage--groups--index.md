@@ -14,6 +14,14 @@ Route: `/admin/manage/groups`. Source: [index.vue](../../frontend/app/pages/admi
 - Although the table binds an internal search string, there is no visible search input on this page. Do not describe search as an existing user control.
 - Creation of the synthetic Catalog Empty Group also produced its default Family household; consequently it remains ineligible for group deletion despite zero users.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Toolbar Create button and a data table; delete disabled with a tooltip when not empty. | Heading with a create button; each group is a linked row with its counts, and a trash button that stays dimmed with the reason as its title when it can't be deleted. |
+| Create dialog as a bottom sheet. | The standard dialog with a Create button. |
+
+
 ## Screenshots
 
 ### List with occupied group and disabled deletion

@@ -14,6 +14,14 @@ Route: `/admin/manage/households`. Source: [index.vue](../../frontend/app/pages/
 - Current validation is invoked without awaiting Vuetify's result. Preserve field requirements while fixing Promise truthiness if form control behavior changes; do not treat the source guard as proven validation.
 - Keep API errors visible and preserve admin-only access.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Toolbar Create button and a data table; delete disabled with a tooltip when not empty. | Heading with a create button; each household is a linked row with its counts, and a trash button that stays dimmed with the reason as its title when it can't be deleted. |
+| Create dialog as a bottom sheet. | The standard dialog with a Create button. |
+
+
 ## Screenshots
 
 ### Occupied and zero-user households

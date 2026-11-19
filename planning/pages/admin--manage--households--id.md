@@ -12,6 +12,13 @@ Route: `/admin/manage/households/:id`. Source: [[id].vue](../../frontend/app/pag
 - Missing household 404 shows the current User Not Found toast and hides the form via error flag; no dedicated missing-household panel exists.
 - Preference edits are drafts until Update; the nested editor does not persist itself. Preserve response synchronization.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Illustration title, back toolbar, solo-filled fields in an outlined card. | Back link, household name as title with its ID underneath; group (read-only) and name side by side, then household preferences, Update in the panel footer. |
+
+
 ## Screenshots
 
 ### Complete household form

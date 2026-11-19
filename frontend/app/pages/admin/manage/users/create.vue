@@ -1,78 +1,68 @@
 <template>
-  <v-container class="narrow-container">
-    <BasePageTitle class="mb-2">
-      <template #header>
-        <v-img
-          width="100%"
-          max-height="125"
-          max-width="125"
-          src="/svgs/manage-profile.svg"
-        />
-      </template>
-      <template #title>
-        {{ $t('user.admin-user-creation') }}
-      </template>
-    </BasePageTitle>
-    <AppToolbar back />
-    <v-form
-      ref="refNewUserForm"
-      @submit.prevent="handleSubmit"
+  <div class="mx-auto flex w-full max-w-[760px] flex-col px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8">
+    <NuxtLink
+      to="/admin/manage/users"
+      class="mb-3 inline-flex w-fit items-center gap-1 text-sm font-semibold text-muted-foreground no-underline hover:text-foreground"
     >
-      <v-card variant="outlined">
-        <v-card-text>
-          <v-sheet>
-            <v-row>
-              <v-col cols="6">
-                <v-select
-                  v-model="selectedGroup"
-                  :items="groups || []"
-                  item-title="name"
-                  return-object
-                  variant="filled"
-                  :label="$t('group.user-group')"
-                  :rules="[validators.required]"
-                />
-              </v-col>
-              <v-col cols="6">
-                <v-select
-                  v-model="newUserData.household"
-                  :disabled="!selectedGroup"
-                  :items="households"
-                  item-title="name"
-                  item-value="name"
-                  variant="filled"
-                  :label="$t('household.user-household')"
-                  :hint="selectedGroup ? '' : $t('group.you-must-select-a-group-before-selecting-a-household')"
-                  persistent-hint
-                  :rules="[validators.required]"
-                />
-              </v-col>
-            </v-row>
-          </v-sheet>
-          <AutoForm
-            v-model="newUserData"
-            :items="userForm"
-            :disabled-fields="disabledFields"
+      <ChevronLeftIcon class="size-4 rtl:rotate-180" />
+      {{ $t('user.user-management') }}
+    </NuxtLink>
+    <header class="mb-6">
+      <h1 class="m-0 text-[26px] font-bold tracking-tight sm:text-[32px]">
+        {{ $t('user.admin-user-creation') }}
+      </h1>
+    </header>
+    <FieldScope ref="refNewUserForm">
+      <form
+        class="rounded-panel border bg-card p-5 sm:p-6"
+        @submit.prevent="handleSubmit"
+      >
+        <div class="grid gap-x-4 sm:grid-cols-2">
+          <SelectField
+            v-model="selectedGroupId"
+            :items="groups || []"
+            item-title="name"
+            item-value="id"
+            :label="$t('group.user-group')"
+            :rules="[validators.required]"
           />
-        </v-card-text>
-      </v-card>
-      <div class="d-flex pa-2">
-        <BaseButton
-          type="submit"
-          class="ml-auto"
+          <SelectField
+            v-model="newUserData.household"
+            :disabled="!selectedGroup"
+            :items="households"
+            item-title="name"
+            item-value="name"
+            :label="$t('household.user-household')"
+            :hint="selectedGroup ? '' : $t('group.you-must-select-a-group-before-selecting-a-household')"
+            :rules="[validators.required]"
+          />
+        </div>
+        <AutoForm
+          v-model="newUserData"
+          class="px-0!"
+          :items="userForm"
+          :disabled-fields="disabledFields"
         />
-      </div>
-    </v-form>
-  </v-container>
+        <div class="mt-4 flex justify-end border-t pt-4">
+          <Button type="submit">
+            {{ $t('user.create-user') }}
+          </Button>
+        </div>
+      </form>
+    </FieldScope>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { ChevronLeftIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import FieldScope from "~/components/ui/field/FieldScope.vue";
+import SelectField from "~/components/ui/field/SelectField.vue";
 import { useAdminApi } from "~/composables/api";
 import { useGroups } from "~/composables/use-groups";
 import { useUserForm } from "~/composables/use-users";
 import { validators } from "~/composables/use-validators";
 import type { GroupOut, UserIn } from "~/lib/api/types/user";
-import type { VForm } from "~/types/auto-forms";
 
 definePageMeta({
   layout: "admin",
@@ -81,10 +71,11 @@ const { userForm } = useUserForm();
 const { groups } = useGroups();
 const router = useRouter();
 
-const refNewUserForm = ref<VForm | null>(null);
+const refNewUserForm = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 const adminApi = useAdminApi();
 
-const selectedGroup = ref<GroupOut | undefined>(undefined);
+const selectedGroupId = ref<string | undefined>(undefined);
+const selectedGroup = computed<GroupOut | undefined>(() => groups.value?.find(group => group.id === selectedGroupId.value));
 const households = computed(() => selectedGroup.value?.households || []);
 
 const newUserData = ref({

@@ -332,7 +332,8 @@
     "no-reports-yet": "Nothing here yet.",
     "report-succeeded": "succeeded",
     "report-failed": "failed",
-    "report-show-error": "Show error"
+    "report-show-error": "Show error",
+    "household-count": "No households | 1 household | {count} households"
   },
   "household": {
     "household": "Household",
@@ -938,7 +939,8 @@
     "recipe-scraper-version": "Recipe Scraper Version",
     "site-statistics": "Site Statistics",
     "uncategorized-recipes": "Uncategorized Recipes",
-    "untagged-recipes": "Untagged Recipes"
+    "untagged-recipes": "Untagged Recipes",
+    "send-test-email-to": "Send a test email to"
   },
   "shopping-list": {
     "all-lists": "All Lists",
@@ -1115,7 +1117,10 @@
     "invite-only-explained": "New accounts are by invitation. Ask someone in your household for an invite link.",
     "back-to-sign-in": "Back to sign in",
     "request-new-link": "Request a new link",
-    "reset-link-missing-token": "This link is missing its reset token. Open the link from your email again, or request a new one."
+    "reset-link-missing-token": "This link is missing its reset token. Open the link from your email again, or request a new one.",
+    "create-user": "New user",
+    "reset-link-explained": "Create a one-time link this person can use to choose a new password. Copy it or email it to them.",
+    "user-count": "No users | 1 user | {count} users"
   },
   "language-dialog": {
     "translated": "translated",

@@ -1,78 +1,69 @@
 <template>
-  <v-container
+  <div
     v-if="household"
-    class="narrow-container"
+    class="mx-auto flex w-full max-w-[760px] flex-col px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8"
   >
-    <BasePageTitle>
-      <template #header>
-        <v-img
-          width="100%"
-          max-height="125"
-          max-width="125"
-          src="/svgs/manage-group-settings.svg"
-        />
-      </template>
-      <template #title>
-        {{ $t('household.admin-household-management') }}
-      </template>
-    </BasePageTitle>
-    <AppToolbar back />
-    <v-card-text> {{ $t('household.household-id-value', [household.id]) }} </v-card-text>
-    <v-form
+    <NuxtLink
+      to="/admin/manage/households"
+      class="mb-3 inline-flex w-fit items-center gap-1 text-sm font-semibold text-muted-foreground no-underline hover:text-foreground"
+    >
+      <ChevronLeftIcon class="size-4 rtl:rotate-180" />
+      {{ $t('household.household-management') }}
+    </NuxtLink>
+    <header class="mb-6">
+      <h1 class="m-0 text-[26px] font-bold tracking-tight sm:text-[32px]">
+        {{ household.name || $t('household.admin-household-management') }}
+      </h1>
+      <p class="m-0 mt-1 font-mono text-xs text-muted-foreground">
+        {{ $t('household.household-id-value', [household.id]) }}
+      </p>
+    </header>
+    <form
       v-if="!userError"
-      ref="refHouseholdEditForm"
+      class="rounded-panel border bg-card p-5 sm:p-6"
       @submit.prevent="handleSubmit"
     >
-      <v-card variant="outlined" style="border-color: lightgrey;">
-        <v-card-text>
-          <v-select
-            v-if="groups"
-            v-model="household.groupId"
-            disabled
-            :items="groups"
-            variant="solo-filled"
-            flat
-            item-title="name"
-            item-value="id"
-            :return-object="false"
-            :label="$t('group.user-group')"
-            :rules="[validators.required]"
-          />
-          <v-text-field
-            v-model="household.name"
-            variant="solo-filled"
-            flat
-            :label="$t('household.household-name')"
-            :rules="[validators.required]"
-          />
-          <HouseholdPreferencesEditor
-            v-if="household.preferences"
-            v-model="household.preferences"
-            variant="solo-filled"
-            flat
-          />
-        </v-card-text>
-      </v-card>
-      <div class="d-flex pa-2">
-        <BaseButton
-          type="submit"
-          edit
-          class="ml-auto"
-        >
-          {{ $t("general.update") }}
-        </BaseButton>
+      <div class="grid gap-x-4 sm:grid-cols-2">
+        <SelectField
+          v-if="groups"
+          v-model="household.groupId"
+          disabled
+          :items="groups"
+          item-title="name"
+          item-value="id"
+          :label="$t('group.user-group')"
+        />
+        <TextField
+          v-model="household.name"
+          :label="$t('household.household-name')"
+          :rules="[validators.required]"
+        />
       </div>
-    </v-form>
-  </v-container>
+      <div class="mt-4 border-t pt-5">
+        <HouseholdPreferencesEditor
+          v-if="household.preferences"
+          v-model="household.preferences"
+        />
+      </div>
+      <div class="mt-5 flex justify-end border-t pt-4">
+        <Button type="submit">
+          {{ $t("general.update") }}
+        </Button>
+      </div>
+    </form>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { ChevronLeftIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import SelectField from "~/components/ui/field/SelectField.vue";
+import TextField from "~/components/ui/field/TextField.vue";
 import HouseholdPreferencesEditor from "~/components/Domain/Household/HouseholdPreferencesEditor.vue";
 import { useGroups } from "~/composables/use-groups";
 import { useAdminApi } from "~/composables/api";
 import { alert } from "~/composables/use-toast";
 import { validators } from "~/composables/use-validators";
-import type { VForm } from "vuetify/components";
 
 definePageMeta({
   layout: "admin",
@@ -86,8 +77,6 @@ const householdId = computed(() => route.params.id as string);
 
 // ==============================================
 // New User Form
-
-const refHouseholdEditForm = ref<VForm | null>(null);
 
 const adminApi = useAdminApi();
 
@@ -107,7 +96,7 @@ const { data: household } = useAsyncData(`get-household-${householdId.value}`, a
 }, { watch: [householdId] });
 
 async function handleSubmit() {
-  if (!refHouseholdEditForm.value?.validate() || household.value === null) {
+  if (household.value === null) {
     return;
   }
 

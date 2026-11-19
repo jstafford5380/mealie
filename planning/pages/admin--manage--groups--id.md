@@ -12,6 +12,13 @@ Route: `/admin/manage/groups/:id`. Source: [[id].vue](../../frontend/app/pages/a
 - Provider Create/Update/Delete call target-group admin APIs, refresh the group on success, and show operation-specific success/failure toasts. These do not wait for the enclosing Update.
 - AI Prompts receives the explicit loaded group ID and saves independently through target-group admin prompt endpoints. Preserve target isolation and each save boundary.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Illustration title, back toolbar, one outlined card holding name, preferences and AI providers. | Back link, group name as title with its ID; a panel for name and preferences, a panel for AI providers, Update below, then the AI prompts panel. |
+
+
 ## Screenshots
 
 ### Full group preferences, provider choices, and task list

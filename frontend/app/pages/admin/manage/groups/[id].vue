@@ -1,73 +1,79 @@
 <template>
-  <v-container
+  <div
     v-if="group"
-    class="narrow-container"
+    class="mx-auto flex w-full max-w-[760px] flex-col gap-6 px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8"
   >
-    <BasePageTitle>
-      <template #header>
-        <v-img
-          width="100%"
-          max-height="125"
-          max-width="125"
-          src="/svgs/manage-group-settings.svg"
-        />
-      </template>
-      <template #title>
-        {{ $t('group.admin-group-management') }}
-      </template>
-    </BasePageTitle>
-    <AppToolbar back />
-    <v-card-text> {{ $t('group.group-id-value', [group.id]) }} </v-card-text>
-    <v-form
+    <div>
+      <NuxtLink
+        to="/admin/manage/groups"
+        class="mb-3 inline-flex w-fit items-center gap-1 text-sm font-semibold text-muted-foreground no-underline hover:text-foreground"
+      >
+        <ChevronLeftIcon class="size-4 rtl:rotate-180" />
+        {{ $t('group.group-management') }}
+      </NuxtLink>
+      <header class="mb-0">
+        <h1 class="m-0 text-[26px] font-bold tracking-tight sm:text-[32px]">
+          {{ group.name || $t('group.admin-group-management') }}
+        </h1>
+        <p class="m-0 mt-1 font-mono text-xs text-muted-foreground">
+          {{ $t('group.group-id-value', [group.id]) }}
+        </p>
+      </header>
+    </div>
+    <form
       v-if="!userError"
-      ref="refGroupEditForm"
+      class="flex flex-col gap-6"
       @submit.prevent="handleSubmit"
     >
-      <v-card variant="outlined" style="border-color: lightgrey;">
-        <v-card-text>
-          <v-text-field
+      <section class="rounded-panel border bg-card p-5 sm:p-6">
+        <div class="max-w-md">
+          <TextField
             v-model="group.name"
             :label="$t('group.group-name')"
           />
-          <GroupPreferencesEditor
-            v-if="group.preferences"
-            v-model="group.preferences"
-          />
-          <GroupAIProviderSettingsEditor
-            v-if="group.aiProviderSettings"
-            v-model="group.aiProviderSettings"
-            @create="handleCreateProvider"
-            @update="handleUpdateProvider"
-            @delete="handleDeleteProvider"
-          />
-        </v-card-text>
-      </v-card>
-      <div class="d-flex pa-2">
-        <BaseButton
-          type="submit"
-          edit
-          class="ml-auto"
-        >
+        </div>
+        <h2 class="m-0 mt-4 mb-3 border-t pt-5 text-base font-semibold">
+          {{ $t('group.group-preferences') }}
+        </h2>
+        <GroupPreferencesEditor
+          v-if="group.preferences"
+          v-model="group.preferences"
+        />
+      </section>
+      <section class="rounded-panel border bg-card p-5 sm:p-6">
+        <GroupAIProviderSettingsEditor
+          v-if="group.aiProviderSettings"
+          v-model="group.aiProviderSettings"
+          @create="handleCreateProvider"
+          @update="handleUpdateProvider"
+          @delete="handleDeleteProvider"
+        />
+      </section>
+      <div class="flex justify-end">
+        <Button type="submit">
           {{ $t("general.update") }}
-        </BaseButton>
+        </Button>
       </div>
-    </v-form>
-    <v-card v-if="!userError" variant="outlined" style="border-color: lightgrey;" class="mt-6">
-      <v-card-text>
-        <GroupAIPromptEditor :group-id="group.id" />
-      </v-card-text>
-    </v-card>
-  </v-container>
+    </form>
+    <section
+      v-if="!userError"
+      class="rounded-panel border bg-card p-5 sm:p-6"
+    >
+      <GroupAIPromptEditor :group-id="group.id" />
+    </section>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { ChevronLeftIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import TextField from "~/components/ui/field/TextField.vue";
 import GroupPreferencesEditor from "~/components/Domain/Group/GroupPreferencesEditor.vue";
 import GroupAIProviderSettingsEditor from "~/components/Domain/Group/GroupAIProviderSettingsEditor.vue";
 import GroupAIPromptEditor from "~/components/Domain/Group/GroupAIPromptEditor.vue";
 import { useAdminApi } from "~/composables/api";
 import { alert } from "~/composables/use-toast";
 import type { AIProviderCreate, AIProviderUpdate } from "~/lib/api/types/group";
-import type { VForm } from "vuetify/components";
 
 definePageMeta({
   layout: "admin",
@@ -80,8 +86,6 @@ const groupId = computed(() => route.params.id as string);
 
 // ==============================================
 // New User Form
-
-const refGroupEditForm = ref<VForm | null>(null);
 
 const adminApi = useAdminApi();
 
@@ -101,7 +105,7 @@ const { data: group, refresh } = useLazyAsyncData(`get-household-${groupId.value
 }, { watch: [groupId] });
 
 async function handleSubmit() {
-  if (!refGroupEditForm.value?.validate() || !group.value) {
+  if (!group.value) {
     return;
   }
 

@@ -19,6 +19,13 @@ Route: `/admin/manage/users/:id`. Source: [[id].vue](../../frontend/app/pages/ad
 - Email calls the ordinary forgot-password mail endpoint for the user's email and displays success/failure toast; it does not simply email the displayed URL value.
 - Password-reset links are credentials. Capture the control, and use invalid/revoked-token fixtures for any future result screenshot; do not store active reset tokens in planning artifacts.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Illustration title, back toolbar, one outlined card mixing the reset-link tools with the form. | Back link, the user's name as the title, the form in one panel with Update, and a separate Reset password panel that explains the link and shows it with Done / Email / Copy. |
+
+
 ## Screenshots
 
 ### Existing administrator with implied permissions

@@ -247,30 +247,21 @@
       "document": "pages/admin--manage--groups--id.md",
       "status": "reviewed",
       "components": [
-        "AppToolbar",
-        "BaseButton",
-        "BasePageTitle",
+        "Button",
+        "ChevronLeftIcon",
         "GroupAIPromptEditor",
         "GroupAIProviderSettingsEditor",
         "GroupPreferencesEditor",
-        "VForm"
+        "NuxtLink",
+        "TextField"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Group/GroupAIPromptEditor.vue",
         "frontend/app/components/Domain/Group/GroupAIProviderSettingsEditor.vue",
         "frontend/app/components/Domain/Group/GroupPreferencesEditor.vue",
-        "frontend/app/components/global/AppToolbar.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-card",
-        "v-card-text",
-        "v-container",
-        "v-form",
-        "v-img",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
         "create: handleCreateProvider",
         "delete: handleDeleteProvider",
@@ -296,12 +287,10 @@
         "frontend/app/components/Domain/Group/GroupAIProviderSettingsEditor.vue",
         "frontend/app/components/Domain/Group/GroupPreferencesEditor.vue",
         "frontend/app/components/global/AppLoader.vue",
-        "frontend/app/components/global/AppToolbar.vue",
         "frontend/app/components/global/BaseButton.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
         "frontend/app/components/global/BaseKeyValueEditor.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
         "frontend/app/components/global/DocLink.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
         "frontend/app/components/ui/field/FilterSelect.vue",
@@ -317,30 +306,22 @@
       "status": "reviewed",
       "components": [
         "AutoForm",
-        "BaseButton",
-        "BaseCardSectionTitle",
-        "BaseDialog"
+        "BaseDialog",
+        "Button",
+        "ChevronRightIcon",
+        "MdiIcon",
+        "NuxtLink",
+        "PlusIcon",
+        "Trash2Icon"
       ],
       "dependencies": [
         "frontend/app/components/global/AutoForm.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card-text",
-        "v-container",
-        "v-data-table",
-        "v-divider",
-        "v-icon",
-        "v-toolbar",
-        "v-tooltip"
-      ],
+      "vuetify": [],
       "events": [
-        "click.stop: \n                    state.confirmDialog = true;\n                    state.deleteTarget = item.id;\n                  ",
         "click: openDialog",
-        "click:row: ($event, { item }) => handleRowClick(item)",
+        "click: state.confirmDialog = true; state.deleteTarget = item.id",
         "confirm: deleteGroup(state.deleteTarget)",
         "submit: createGroup(state.createGroupForm.data)"
       ],
@@ -351,13 +332,10 @@
       ],
       "conditions": [],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "v-tooltip"
-      ],
+      "vuetifyAPIs": [],
       "componentClosure": [
         "frontend/app/components/global/AutoForm.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
         "frontend/app/components/global/InputColor.vue",
@@ -375,27 +353,19 @@
       "document": "pages/admin--manage--households--id.md",
       "status": "reviewed",
       "components": [
-        "AppToolbar",
-        "BaseButton",
-        "BasePageTitle",
+        "Button",
+        "ChevronLeftIcon",
         "HouseholdPreferencesEditor",
-        "VForm"
+        "NuxtLink",
+        "SelectField",
+        "TextField"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Household/HouseholdPreferencesEditor.vue",
-        "frontend/app/components/global/AppToolbar.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-card",
-        "v-card-text",
-        "v-container",
-        "v-form",
-        "v-img",
-        "v-select",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
         "submit.prevent: handleSubmit"
       ],
@@ -414,12 +384,10 @@
       "vuetifyAPIs": [],
       "componentClosure": [
         "frontend/app/components/Domain/Household/HouseholdPreferencesEditor.vue",
-        "frontend/app/components/global/AppToolbar.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
         "frontend/app/components/global/DocLink.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
-        "frontend/app/components/ui/field/SelectField.vue"
+        "frontend/app/components/ui/field/SelectField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
@@ -430,36 +398,28 @@
       "status": "reviewed",
       "components": [
         "AutoForm",
-        "BaseButton",
-        "BaseCardSectionTitle",
         "BaseDialog",
-        "VForm"
+        "Button",
+        "ChevronRightIcon",
+        "FieldScope",
+        "MdiIcon",
+        "NuxtLink",
+        "PlusIcon",
+        "SelectField",
+        "Trash2Icon"
       ],
       "dependencies": [
         "frontend/app/components/global/AutoForm.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
-        "frontend/app/components/global/BaseDialog.vue"
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/ui/field/FieldScope.vue",
+        "frontend/app/components/ui/field/SelectField.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card-text",
-        "v-container",
-        "v-data-table",
-        "v-divider",
-        "v-form",
-        "v-icon",
-        "v-select",
-        "v-toolbar",
-        "v-tooltip"
-      ],
+      "vuetify": [],
       "events": [
-        "click.stop: confirmDialog = true; deleteTarget = item.id",
-        "click: handleCreateSubmit",
+        "click: confirmDialog = true; deleteTarget = item.id",
         "click: openDialog",
-        "click:row: ($event, { item }) => handleRowClick(item)",
         "confirm: deleteHousehold(deleteTarget)",
-        "keydown.enter.prevent: handleCreateSubmit"
+        "submit: handleCreateSubmit"
       ],
       "models": [
         "confirmDialog",
@@ -469,20 +429,18 @@
       ],
       "conditions": [
         "groups",
-        "headers && households"
+        "item.webhooks?.length"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "v-tooltip"
-      ],
+      "vuetifyAPIs": [],
       "componentClosure": [
         "frontend/app/components/global/AutoForm.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
         "frontend/app/components/global/InputColor.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FieldScope.vue",
         "frontend/app/components/ui/field/NumberInputField.vue",
         "frontend/app/components/ui/field/SelectField.vue",
         "frontend/app/components/ui/field/TextField.vue",
@@ -497,37 +455,28 @@
       "status": "reviewed",
       "components": [
         "AppButtonCopy",
-        "AppToolbar",
         "AutoForm",
-        "BaseButton",
-        "BasePageTitle",
-        "UserOut",
-        "VForm"
+        "Button",
+        "ChevronLeftIcon",
+        "FieldScope",
+        "LoaderCircleIcon",
+        "MdiIcon",
+        "NuxtLink",
+        "SelectField",
+        "UserOut"
       ],
       "dependencies": [
         "frontend/app/components/global/AppButtonCopy.vue",
-        "frontend/app/components/global/AppToolbar.vue",
         "frontend/app/components/global/AutoForm.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/ui/field/FieldScope.vue",
+        "frontend/app/components/ui/field/SelectField.vue"
       ],
-      "vuetify": [
-        "v-card",
-        "v-card-actions",
-        "v-card-text",
-        "v-col",
-        "v-container",
-        "v-form",
-        "v-img",
-        "v-row",
-        "v-select",
-        "v-sheet",
-        "v-spacer"
-      ],
+      "vuetify": [],
       "events": [
         "click.prevent: handlePasswordReset",
         "click: resetUrl = ''",
         "click: sendResetEmail",
+        "focus: ($event.target as HTMLInputElement).select()",
         "submit.prevent: handleSubmit"
       ],
       "models": [
@@ -536,10 +485,11 @@
         "user.household"
       ],
       "conditions": [
+        "!resetUrl",
         "!userError",
+        "generatingToken",
         "groups",
         "households",
-        "resetUrl",
         "user",
         "user.email"
       ],
@@ -547,12 +497,10 @@
       "vuetifyAPIs": [],
       "componentClosure": [
         "frontend/app/components/global/AppButtonCopy.vue",
-        "frontend/app/components/global/AppToolbar.vue",
         "frontend/app/components/global/AutoForm.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
         "frontend/app/components/global/InputColor.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FieldScope.vue",
         "frontend/app/components/ui/field/NumberInputField.vue",
         "frontend/app/components/ui/field/SelectField.vue",
         "frontend/app/components/ui/field/TextField.vue",
@@ -566,48 +514,36 @@
       "document": "pages/admin--manage--users--create.md",
       "status": "reviewed",
       "components": [
-        "AppToolbar",
         "AutoForm",
-        "BaseButton",
-        "BasePageTitle",
+        "Button",
+        "ChevronLeftIcon",
+        "FieldScope",
         "GroupOut",
-        "VForm"
+        "NuxtLink",
+        "SelectField"
       ],
       "dependencies": [
-        "frontend/app/components/global/AppToolbar.vue",
         "frontend/app/components/global/AutoForm.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/ui/field/FieldScope.vue",
+        "frontend/app/components/ui/field/SelectField.vue"
       ],
-      "vuetify": [
-        "v-card",
-        "v-card-text",
-        "v-col",
-        "v-container",
-        "v-form",
-        "v-img",
-        "v-row",
-        "v-select",
-        "v-sheet"
-      ],
+      "vuetify": [],
       "events": [
         "submit.prevent: handleSubmit"
       ],
       "models": [
         "newUserData",
         "newUserData.household",
-        "selectedGroup"
+        "selectedGroupId"
       ],
       "conditions": [],
       "dynamicComponents": [],
       "vuetifyAPIs": [],
       "componentClosure": [
-        "frontend/app/components/global/AppToolbar.vue",
         "frontend/app/components/global/AutoForm.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
         "frontend/app/components/global/InputColor.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FieldScope.vue",
         "frontend/app/components/ui/field/NumberInputField.vue",
         "frontend/app/components/ui/field/SelectField.vue",
         "frontend/app/components/ui/field/TextField.vue",
@@ -621,35 +557,27 @@
       "document": "pages/admin--manage--users--index.md",
       "status": "reviewed",
       "components": [
-        "BaseButton",
-        "BaseCardSectionTitle",
         "BaseDialog",
-        "BaseOverflowButton",
+        "Button",
+        "CrudTable",
+        "MdiIcon",
+        "NuxtLink",
+        "PlusIcon",
         "UserInviteDialog"
       ],
       "dependencies": [
         "frontend/app/components/Domain/User/UserInviteDialog.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
-        "frontend/app/components/global/BaseOverflowButton.vue"
+        "frontend/app/components/global/CrudTable.vue"
       ],
-      "vuetify": [
-        "v-alert",
-        "v-btn",
-        "v-card-text",
-        "v-container",
-        "v-data-table",
-        "v-divider",
-        "v-icon",
-        "v-toolbar"
-      ],
+      "vuetify": [],
       "events": [
-        "click.stop: \n              state.deleteDialog = true;\n              state.deleteTargetId = item.id;\n            ",
         "click: inviteDialog = true",
-        "click:row: ($event, { item }) => handleRowClick(item)",
+        "click: navigateTo('/admin/manage/users/create')",
+        "click: unlockAllUsers",
         "confirm: deleteUser(state.deleteTargetId)",
-        "unlock-all-users: unlockAllUsers"
+        "delete-one: openDelete",
+        "edit-one: handleRowClick"
       ],
       "models": [
         "inviteDialog",
@@ -657,7 +585,8 @@
       ],
       "conditions": [
         "$appInfo.allowPasswordLogin",
-        "isUserOwnAccount"
+        "isUserOwnAccount",
+        "item.admin"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": [],
@@ -665,10 +594,9 @@
         "frontend/app/components/Domain/User/UserInviteDialog.vue",
         "frontend/app/components/global/AppButtonCopy.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseOverflowButton.vue",
+        "frontend/app/components/global/CrudTable.vue",
         "frontend/app/components/ui/field/SelectField.vue",
         "frontend/app/components/ui/field/TextField.vue"
       ]
@@ -765,66 +693,46 @@
         "AppButtonCopy",
         "AppLoader",
         "AppStatistics",
-        "BaseButton",
-        "BaseCardSectionTitle",
         "BaseDialog",
-        "BasePageTitle",
+        "Button",
         "CheckApp",
+        "LoaderCircleIcon",
+        "MdiIcon",
+        "NuxtLink",
         "SimpleCheck",
-        "StatsCards"
+        "TextField"
       ],
       "dependencies": [
         "frontend/app/components/global/AppButtonCopy.vue",
         "frontend/app/components/global/AppLoader.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
-        "frontend/app/components/global/StatsCards.vue"
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-alert",
-        "v-card",
-        "v-card-text",
-        "v-container",
-        "v-divider",
-        "v-icon",
-        "v-img",
-        "v-list-item",
-        "v-list-item-subtitle",
-        "v-text-field",
-        "v-textarea"
-      ],
+      "vuetify": [],
       "events": [
-        "click: \n          bugReportDialog = true;\n        ",
-        "click: testEmail"
+        "click: bugReportDialog = true",
+        "click: openTracker",
+        "submit.prevent: testEmail"
       ],
       "models": [
         "bugReportDialog",
-        "bugReportText",
         "state.address"
       ],
       "conditions": [
         "appInfo && appInfo.length",
-        "appInfo && idx !== appInfo.length - 1",
-        "property.slot === 'build'",
-        "property.slot === 'recipe-scraper'",
-        "property.slot === 'version' && property.value !== 'develop' && property.value !== 'nightly'",
+        "propertyLink(property)",
+        "state.loading",
         "state.tested"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ],
+      "vuetifyAPIs": [],
       "componentClosure": [
         "frontend/app/components/global/AppButtonCopy.vue",
         "frontend/app/components/global/AppLoader.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BasePageTitle.vue",
-        "frontend/app/components/global/StatsCards.vue"
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
