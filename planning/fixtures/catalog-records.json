@@ -1,0 +1,156 @@
+{
+  "categories": [
+    {
+      "id": "f0b05000-a673-42c3-9740-408cc073eefb",
+      "groupId": "5fd7dc84-cd45-4044-80e4-481348e1e3d3",
+      "name": "Dinner",
+      "slug": "dinner",
+      "recipeCount": 0
+    },
+    {
+      "id": "4c1961cb-a9fc-469e-8ce1-fb7e498ccfc2",
+      "groupId": "5fd7dc84-cd45-4044-80e4-481348e1e3d3",
+      "name": "Lunch",
+      "slug": "lunch",
+      "recipeCount": 0
+    }
+  ],
+  "tags": [
+    {
+      "id": "1b363bd9-f88c-422b-96f2-94b70fa7deaa",
+      "groupId": "5fd7dc84-cd45-4044-80e4-481348e1e3d3",
+      "name": "Weeknight",
+      "slug": "weeknight",
+      "recipeCount": 0
+    },
+    {
+      "id": "d4f0eb79-75cf-42ac-961a-2adffc9e9504",
+      "groupId": "5fd7dc84-cd45-4044-80e4-481348e1e3d3",
+      "name": "Quick Meals",
+      "slug": "quick-meals",
+      "recipeCount": 0
+    }
+  ],
+  "tools": [
+    {
+      "id": "96d13fff-6c56-4b13-82e2-daba0c5fbd41",
+      "groupId": "5fd7dc84-cd45-4044-80e4-481348e1e3d3",
+      "name": "Large saucepan",
+      "slug": "large-saucepan",
+      "recipeCount": 0,
+      "householdsWithTool": []
+    }
+  ],
+  "labels": [
+    {
+      "name": "Produce",
+      "color": "#43A047",
+      "groupId": "5fd7dc84-cd45-4044-80e4-481348e1e3d3",
+      "id": "c69a6e54-be42-4139-b902-003f221de744"
+    },
+    {
+      "name": "Dairy",
+      "color": "#1976D2",
+      "groupId": "5fd7dc84-cd45-4044-80e4-481348e1e3d3",
+      "id": "734264c8-1407-4762-8f91-572620454574"
+    }
+  ],
+  "aiFixture": {
+    "id": "25d5011d-b201-4c09-910b-73d16046b948",
+    "name": "Catalog local fixture",
+    "baseUrl": "http://127.0.0.1:1/v1",
+    "purpose": "UI-only local connection-failure fixture; no remote provider or real key"
+  },
+  "finder": {
+    "foods": [
+      {
+        "id": "b0c0b8f8-bb59-482c-84f1-73e8cb602356",
+        "name": "Catalog lentil"
+      },
+      {
+        "id": "6ed25e6e-0232-45ae-a36a-2a81a18274b3",
+        "name": "Catalog carrot"
+      }
+    ],
+    "recipe": "catalog-lentil-soup",
+    "tool": "96d13fff-6c56-4b13-82e2-daba0c5fbd41"
+  },
+  "shoppingLists": {
+    "groceries": "528093af-6a6e-4d49-a31b-b96de7b021ef",
+    "pantry": "080f30e2-234a-4d4a-b300-3e358bd09a76",
+    "searchFixtures": [
+      {
+        "id": "09f97b79-7027-4a15-b38e-2f7777087bb2",
+        "note": "Catalog Bananas"
+      },
+      {
+        "id": "98b4393c-f89a-4cb4-93d2-58f7401a7b30",
+        "note": "Catalog Oranges"
+      },
+      {
+        "id": "14f48f06-f074-4ca0-8a79-3498525f8fac",
+        "note": "Catalog Spinach"
+      },
+      {
+        "id": "7816099a-56fc-49b9-a0de-8b2151d41fd7",
+        "note": "Catalog Potatoes"
+      },
+      {
+        "id": "83863374-220c-4da8-9192-199a8dda35cd",
+        "note": "Catalog Onions"
+      },
+      {
+        "id": "cea120b8-6571-49f5-b5e8-809ccc803787",
+        "note": "Catalog Garlic"
+      },
+      {
+        "id": "d78d2fa2-f1a4-47bc-9c69-f6fdd1ff15f5",
+        "note": "Catalog Bell peppers"
+      },
+      {
+        "id": "7bd3153f-2c04-4199-a600-feb063d6c655",
+        "note": "Catalog Mushrooms"
+      },
+      {
+        "id": "b6bf5c26-5c2b-4e11-a2fd-e4c149f0e7ce",
+        "note": "Catalog Zucchini"
+      },
+      {
+        "id": "782c36c7-f782-4431-89fc-9896ec23b8cc",
+        "note": "Catalog Brown rice"
+      },
+      {
+        "id": "9bfa6bf9-0699-4bcb-89e6-b3a1e9f4eb4b",
+        "note": "Catalog Oats"
+      },
+      {
+        "id": "2523f805-2ee2-49e2-a833-10cdb7acff66",
+        "note": "Catalog Wholemeal bread"
+      },
+      {
+        "id": "ff5acfde-ce25-4d65-942c-2556184d4a57",
+        "note": "Catalog Yogurt"
+      },
+      {
+        "id": "1c61d2a8-cfad-443a-b9cd-1199cf233264",
+        "note": "Catalog Cheese"
+      },
+      {
+        "id": "c72c5dfb-50c2-486e-a94e-409c976f8538",
+        "note": "Catalog Butter"
+      },
+      {
+        "id": "699fd305-00c9-4e17-998a-1b7c219a7211",
+        "note": "Catalog Eggs"
+      },
+      {
+        "id": "f5a869db-0e87-4ca8-ae16-bdf3c214ddde",
+        "note": "Catalog Milk"
+      },
+      {
+        "id": "91bb35f9-a564-4888-91b4-15345d856ff9",
+        "note": "Catalog Tea"
+      }
+    ]
+  }
+}

@@ -1,0 +1,5405 @@
+{
+  "components": [
+    {
+      "source": "frontend/app/components/Domain/Admin/Setup/EndPageContent.vue",
+      "name": "EndPageContent",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-avatar",
+        "v-card",
+        "v-card-subtitle",
+        "v-card-title",
+        "v-container"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Announcement/AnnouncementDialog.vue",
+      "name": "AnnouncementDialog",
+      "components": [
+        "Announcement",
+        "BaseButton",
+        "BaseDialog"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/BaseDialog.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-card-text",
+        "v-card-title",
+        "v-chip",
+        "v-icon",
+        "v-list",
+        "v-list-item",
+        "v-list-item-subtitle",
+        "v-list-item-title"
+      ],
+      "events": [
+        "click: markAllAsRead",
+        "click: navOpen = !navOpen",
+        "click: nextAnnouncement",
+        "click: setCurrentAnnouncement(announcement); navOpen = false"
+      ],
+      "models": [
+        "dialog"
+      ],
+      "conditions": [
+        "announcement.date",
+        "currentAnnouncement",
+        "currentAnnouncement.date",
+        "newAnnouncements.length",
+        "newAnnouncements.some(a => a.key === announcement.key)",
+        "useMobile"
+      ],
+      "dynamicComponents": [
+        "currentAnnouncement.component"
+      ],
+      "vuetifyAPIs": [
+        "useDisplay"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Announcement/Announcements/2026-03-27_1_welcome.vue",
+      "name": "2026-03-27_1_welcome",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "user?.canManage",
+        "user?.canManageHousehold"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Announcement/Announcements/2026-05-21_1_ai-providers.vue",
+      "name": "2026-05-21_1_ai-providers",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "!group?.aiProviderSettings?.aiEnabled",
+        "group?.aiProviderSettings?.aiEnabled",
+        "user?.admin",
+        "user?.canManage"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Announcement/Announcements/2026-05-31_1_iframe-embeds.vue",
+      "name": "2026-05-31_1_iframe-embeds",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "user?.admin"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Announcement/Announcements/2026-07-27_1_oidc-email-verification.vue",
+      "name": "2026-07-27_1_oidc-email-verification",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "user?.admin"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Announcement/Announcements/2026-07-27_2_scraper-proxy-flaresolverr.vue",
+      "name": "2026-07-27_2_scraper-proxy-flaresolverr",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "user?.admin"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Announcement/Announcements/2026-09-04_1_outbound-request-protection.vue",
+      "name": "2026-09-04_1_outbound-request-protection",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "user?.admin"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Announcement/Announcements/2026-10-15_1_ai-prompts.vue",
+      "name": "2026-10-15_1_ai-prompts",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "user?.admin",
+        "user?.canManage"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Announcement/Announcements/2026-10-18_1_organize-permission.vue",
+      "name": "2026-10-18_1_organize-permission",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "!user?.canOrganize",
+        "user?.canManage"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Announcement/Announcements/2026-10-26_1_household-integrations-permission.vue",
+      "name": "2026-10-26_1_household-integrations-permission",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "!user?.canManageHousehold",
+        "user?.canManage"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Announcement/Announcements/2026-11-15_1_enrich-non-ai-imports.vue",
+      "name": "2026-11-15_1_enrich-non-ai-imports",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "group?.aiProviderSettings?.aiEnabled",
+        "user?.canManage"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Cookbook/CookbookEditor.vue",
+      "name": "CookbookEditor",
+      "components": [
+        "CookBookOut",
+        "HelpIcon",
+        "QueryFilterBuilder"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/QueryFilterBuilder.vue",
+        "frontend/app/components/global/HelpIcon.vue"
+      ],
+      "vuetify": [
+        "v-card-text",
+        "v-switch",
+        "v-text-field",
+        "v-textarea"
+      ],
+      "events": [
+        "input: handleInput"
+      ],
+      "models": [
+        "cookbook.description",
+        "cookbook.name",
+        "cookbook.public"
+      ],
+      "conditions": [
+        "cookbook"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Cookbook/CookbookPage.vue",
+      "name": "CookbookPage",
+      "components": [
+        "BaseButtonGroup",
+        "BaseDialog",
+        "ButtonOption",
+        "CookBookOut",
+        "CookbookEditor",
+        "RecipeCardSection",
+        "SafeMarkdown"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Cookbook/CookbookEditor.vue",
+        "frontend/app/components/Domain/Recipe/RecipeCardSection.vue",
+        "frontend/app/components/global/BaseButtonGroup.vue",
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/global/SafeMarkdown.vue"
+      ],
+      "vuetify": [
+        "v-card-text",
+        "v-container",
+        "v-icon",
+        "v-sheet",
+        "v-toolbar-title"
+      ],
+      "events": [
+        "append-recipes: appendRecipes",
+        "delete: removeRecipe",
+        "download-pdf: downloadPdf",
+        "edit: handleEditCookbook",
+        "replace-recipes: replaceRecipes",
+        "sort-recipes: assignSorted",
+        "submit: editCookbook"
+      ],
+      "models": [
+        "dialogStates.edit",
+        "editTarget"
+      ],
+      "conditions": [
+        "book",
+        "book.description",
+        "editTarget",
+        "headerButtons.length"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Group/GroupAIPromptEditor.vue",
+      "name": "GroupAIPromptEditor",
+      "components": [
+        "AppLoader",
+        "BaseButton",
+        "BaseCardSectionTitle",
+        "Record"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/AppLoader.vue",
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/BaseCardSectionTitle.vue"
+      ],
+      "vuetify": [
+        "v-alert",
+        "v-btn",
+        "v-btn-toggle",
+        "v-card-subtitle",
+        "v-card-text",
+        "v-chip",
+        "v-expansion-panel",
+        "v-expansion-panel-text",
+        "v-expansion-panel-title",
+        "v-expansion-panels",
+        "v-icon",
+        "v-textarea"
+      ],
+      "events": [
+        "click: drafts[prompt.name]!.showDefault = !drafts[prompt.name]!.showDefault",
+        "click: saveGlobal",
+        "click: savePrompt(prompt)",
+        "update:model-value: (mode: DraftMode) => setMode(prompt, mode)"
+      ],
+      "models": [
+        "drafts[prompt.name]!.append",
+        "drafts[prompt.name]!.override",
+        "globalDraft"
+      ],
+      "conditions": [
+        "!prompts",
+        "drafts[prompt.name]",
+        "drafts[prompt.name]!.mode === 'append'",
+        "drafts[prompt.name]!.mode === 'override'",
+        "drafts[prompt.name]!.showDefault",
+        "prompt.defaultChanged",
+        "prompt.isSystem",
+        "prompt.mode"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Group/GroupAIProviderDialog.vue",
+      "name": "GroupAIProviderDialog",
+      "components": [
+        "AIProviderTestResult",
+        "AppLoader",
+        "BaseDialog",
+        "BaseKeyValueEditor"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/AppLoader.vue",
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/global/BaseKeyValueEditor.vue"
+      ],
+      "vuetify": [
+        "v-alert",
+        "v-btn",
+        "v-card-text",
+        "v-divider",
+        "v-expansion-panel",
+        "v-expansion-panel-text",
+        "v-expansion-panel-title",
+        "v-expansion-panels",
+        "v-form",
+        "v-number-input",
+        "v-text-field"
+      ],
+      "events": [
+        "click: handleTest",
+        "close: resetForm",
+        "submit: handleSubmit"
+      ],
+      "models": [
+        "advancedPanel",
+        "dialog",
+        "formData.apiKey",
+        "formData.baseUrl",
+        "formData.model",
+        "formData.name",
+        "formData.requestHeaders",
+        "formData.requestParams",
+        "formData.timeout"
+      ],
+      "conditions": [
+        "hiddenValuesNeedReentry",
+        "init",
+        "testResult"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Group/GroupAIProviderSettingsEditor.vue",
+      "name": "GroupAIProviderSettingsEditor",
+      "components": [
+        "AIProviderSettingsOut",
+        "BaseButton",
+        "BaseButtonGroup",
+        "BaseCardSectionTitle",
+        "GroupAIProviderDialog"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Group/GroupAIProviderDialog.vue",
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/BaseButtonGroup.vue",
+        "frontend/app/components/global/BaseCardSectionTitle.vue"
+      ],
+      "vuetify": [
+        "v-autocomplete",
+        "v-card",
+        "v-card-subtitle",
+        "v-card-text",
+        "v-checkbox",
+        "v-col",
+        "v-icon",
+        "v-row",
+        "v-tooltip"
+      ],
+      "events": [
+        "click: openCreate",
+        "create: (data) => $emit('create', data)",
+        "delete: $emit('delete', provider.id)",
+        "edit: openEdit(provider.id)",
+        "update: (id, data) => $emit('update', id, data)"
+      ],
+      "models": [
+        "dialogOpen",
+        "local.audioProviderId",
+        "local.defaultProviderId",
+        "local.enrichNonAiImports",
+        "local.imageProviderId"
+      ],
+      "conditions": [
+        "!hideHeader",
+        "noDefaultProviderWarning",
+        "providerSettings"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "v-tooltip"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Group/GroupDataPage.vue",
+      "name": "GroupDataPage",
+      "components": [
+        "Array",
+        "AutoForm",
+        "BaseButton",
+        "BaseCardSectionTitle",
+        "BaseDialog",
+        "BulkAction",
+        "CrudTable",
+        "TableConfig",
+        "TableHeaders"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/AutoForm.vue",
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/BaseCardSectionTitle.vue",
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/global/CrudTable.vue"
+      ],
+      "vuetify": [
+        "v-card",
+        "v-card-text",
+        "v-list-item",
+        "v-list-item-title",
+        "v-virtual-scroll"
+      ],
+      "events": [
+        "bulk-action: handleBulkAction",
+        "click: createDialog = true",
+        "confirm: $emit('bulk-action', 'delete-selected', bulkDeleteTarget)",
+        "confirm: $emit('deleteOne', deleteTarget.id)",
+        "confirm: emit('create-one', createForm.data)",
+        "confirm: emit('edit-one', editForm.data)",
+        "delete-one: deleteEventHandler",
+        "edit-one: editEventHandler"
+      ],
+      "models": [
+        "bulkDeleteDialog",
+        "createDialog",
+        "createForm.data",
+        "createFormValid",
+        "deleteDialog",
+        "editDialog",
+        "editForm.data",
+        "editFormValid"
+      ],
+      "conditions": [
+        "deleteTarget"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Group/GroupExportData.vue",
+      "name": "GroupExportData",
+      "components": [
+        "BaseButton"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseButton.vue"
+      ],
+      "vuetify": [
+        "v-data-table"
+      ],
+      "events": [
+        "click:row: downloadData"
+      ],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Group/GroupPreferencesEditor.vue",
+      "name": "GroupPreferencesEditor",
+      "components": [
+        "BaseCardSectionTitle",
+        "DocLink",
+        "GroupPreferencesOut"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseCardSectionTitle.vue",
+        "frontend/app/components/global/DocLink.vue"
+      ],
+      "vuetify": [
+        "v-checkbox"
+      ],
+      "events": [],
+      "models": [
+        "local.privateGroup",
+        "local.showAnnouncements"
+      ],
+      "conditions": [
+        "preferences"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Household/GroupMealPlanCalendarDialog.vue",
+      "name": "GroupMealPlanCalendarDialog",
+      "components": [
+        "AppButtonCopy",
+        "BaseButton",
+        "BaseDialog",
+        "DocLink",
+        "Partial",
+        "PlanEntryType",
+        "Record"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/AppButtonCopy.vue",
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/global/DocLink.vue"
+      ],
+      "vuetify": [
+        "v-card-text",
+        "v-checkbox",
+        "v-col",
+        "v-divider",
+        "v-number-input",
+        "v-progress-linear",
+        "v-row",
+        "v-select",
+        "v-text-field",
+        "v-textarea"
+      ],
+      "events": [
+        "click: createToken",
+        "click: disableFeed"
+      ],
+      "models": [
+        "description",
+        "dialog",
+        "duration",
+        "includeNotes",
+        "selectedTypes",
+        "summary",
+        "times[option.value]"
+      ],
+      "conditions": [
+        "!canManage",
+        "!token",
+        "canManage",
+        "canManage && !loading",
+        "hasTimes",
+        "loading",
+        "token"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Household/GroupMealPlanEntryDialog.vue",
+      "name": "GroupMealPlanEntryDialog",
+      "components": [
+        "BaseDialog",
+        "InstanceType",
+        "MealPlanDatePicker",
+        "PlanEntryType",
+        "Props",
+        "RecipeScaleEditButton",
+        "RecipeSelector",
+        "RecipeSummary"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Mealplan/MealPlanDatePicker.vue",
+        "frontend/app/components/Domain/Recipe/RecipeScaleEditButton.vue",
+        "frontend/app/components/Domain/Recipe/RecipeSelector.vue",
+        "frontend/app/components/global/BaseDialog.vue"
+      ],
+      "vuetify": [
+        "v-alert",
+        "v-btn",
+        "v-btn-toggle",
+        "v-card-text",
+        "v-col",
+        "v-icon",
+        "v-row",
+        "v-select",
+        "v-switch",
+        "v-text-field",
+        "v-textarea"
+      ],
+      "events": [
+        "click: ignoreRules = true",
+        "submit: submit"
+      ],
+      "models": [
+        "dialog",
+        "entryMode",
+        "entryType",
+        "ignoreRules",
+        "isWeekEntry",
+        "pickerModel",
+        "recipe",
+        "recipeScale",
+        "text",
+        "title"
+      ],
+      "conditions": [
+        "isRecipe",
+        "isRecipe && recipe",
+        "isWeekEntry",
+        "ruleQueryFilter",
+        "showWeekOption"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Household/GroupMealPlanRuleForm.vue",
+      "name": "GroupMealPlanRuleForm",
+      "components": [
+        "Props",
+        "QueryFilterBuilder",
+        "QueryFilterSummary"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/QueryFilterBuilder.vue",
+        "frontend/app/components/Domain/QueryFilterSummary.vue"
+      ],
+      "vuetify": [
+        "v-select"
+      ],
+      "events": [
+        "input: handleQueryFilterInput"
+      ],
+      "models": [
+        "day",
+        "entryType"
+      ],
+      "conditions": [
+        "readonly"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Household/GroupWebhookEditor.vue",
+      "name": "GroupWebhookEditor",
+      "components": [
+        "BaseButtonGroup"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseButtonGroup.vue"
+      ],
+      "vuetify": [
+        "v-card-actions",
+        "v-card-text",
+        "v-switch",
+        "v-text-field"
+      ],
+      "events": [
+        "delete: $emit('delete', webhookCopy.id)",
+        "save: handleSave",
+        "test: $emit('test', webhookCopy.id)"
+      ],
+      "models": [
+        "scheduledTime",
+        "webhookCopy.enabled",
+        "webhookCopy.name",
+        "webhookCopy.url"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Household/HouseholdPreferencesEditor.vue",
+      "name": "HouseholdPreferencesEditor",
+      "components": [
+        "BaseCardSectionTitle",
+        "DocLink",
+        "HouseholdPreferencesOut"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseCardSectionTitle.vue",
+        "frontend/app/components/global/DocLink.vue"
+      ],
+      "vuetify": [
+        "v-checkbox",
+        "v-icon",
+        "v-select",
+        "v-tooltip"
+      ],
+      "events": [],
+      "models": [
+        "local.firstDayOfWeek",
+        "local.lockRecipeEditsFromOtherHouseholds",
+        "local.privateHousehold",
+        "local.showAnnouncements",
+        "local[p.key]"
+      ],
+      "conditions": [
+        "preferences"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "v-tooltip"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Mealplan/MealPlanAddRecipeDialog.vue",
+      "name": "MealPlanAddRecipeDialog",
+      "components": [
+        "BaseDialog",
+        "MealPlanDatePicker",
+        "PlanEntryType"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Mealplan/MealPlanDatePicker.vue",
+        "frontend/app/components/global/BaseDialog.vue"
+      ],
+      "vuetify": [
+        "v-card-text",
+        "v-select",
+        "v-switch"
+      ],
+      "events": [
+        "confirm: addRecipeToPlan"
+      ],
+      "models": [
+        "isWeekEntry",
+        "mealplannerDialog",
+        "newMealType",
+        "pickerModel"
+      ],
+      "conditions": [
+        "isWeekEntry",
+        "mealPlanPreferences.mode === 'weeks'"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Mealplan/MealPlanDatePicker.vue",
+      "name": "MealPlanDatePicker",
+      "components": [
+        "Date"
+      ],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-date-picker"
+      ],
+      "events": [
+        "click: nextMonth",
+        "click: prevMonth",
+        "update:month: updateMonth",
+        "update:year: updateYear"
+      ],
+      "models": [
+        "selectedDate"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Mealplan/MealPlanDay.vue",
+      "name": "MealPlanDay",
+      "components": [
+        "BaseButtonGroup",
+        "GroupMealPlanEntryDialog",
+        "MealPlanDayHeader",
+        "Props",
+        "RecipeDialogAddToShoppingList"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Household/GroupMealPlanEntryDialog.vue",
+        "frontend/app/components/Domain/Mealplan/MealPlanDayHeader.vue",
+        "frontend/app/components/Domain/Recipe/RecipeDialogAddToShoppingList.vue",
+        "frontend/app/components/global/BaseButtonGroup.vue"
+      ],
+      "vuetify": [],
+      "events": [
+        "create: actions.createOne($event)",
+        "list-created: addShoppingList",
+        "update: actions.updateOne($event)"
+      ],
+      "models": [
+        "dialog.open",
+        "shoppingListDialog"
+      ],
+      "conditions": [
+        "inlineActions"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Mealplan/MealPlanDayHeader.vue",
+      "name": "MealPlanDayHeader",
+      "components": [
+        "Props"
+      ],
+      "dependencies": [],
+      "vuetify": [
+        "v-card",
+        "v-container"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "endDate"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Mealplan/MealPlanLayout.vue",
+      "name": "MealPlanLayout",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-col",
+        "v-row"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Mealplan/MealPlanNoteMenu.vue",
+      "name": "MealPlanNoteMenu",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-icon",
+        "v-list",
+        "v-list-item",
+        "v-list-item-title",
+        "v-menu"
+      ],
+      "events": [
+        "click: $emit(child.event as any)"
+      ],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Mealplan/MealPlanScaleControl.vue",
+      "name": "MealPlanScaleControl",
+      "components": [
+        "RecipeScaleEditButton"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeScaleEditButton.vue"
+      ],
+      "vuetify": [],
+      "events": [],
+      "models": [
+        "scale"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/QueryFilterBuilder.vue",
+      "name": "QueryFilterBuilder",
+      "components": [
+        "BaseButton",
+        "BaseButtonGroup",
+        "FieldWithId",
+        "RecipeOrganizerSelector",
+        "RecipeTimeInput",
+        "VueDraggable"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeOrganizerSelector.vue",
+        "frontend/app/components/Domain/Recipe/RecipeTimeInput.vue",
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/BaseButtonGroup.vue"
+      ],
+      "vuetify": [
+        "v-card",
+        "v-card-actions",
+        "v-card-text",
+        "v-checkbox",
+        "v-col",
+        "v-date-picker",
+        "v-icon",
+        "v-menu",
+        "v-number-input",
+        "v-row",
+        "v-select",
+        "v-spacer",
+        "v-text-field"
+      ],
+      "events": [
+        "click: addField(fieldDefs[0]!)",
+        "delete: removeField(index)",
+        "end: onDragEnd",
+        "start: drag = true",
+        "update:model-value: setField(index, $event)",
+        "update:model-value: setFieldValue(field, index, $event!)",
+        "update:model-value: setFieldValue(field, index, $event)",
+        "update:model-value: setFieldValues(field, index, $event)",
+        "update:model-value: setLeftParenthesisValue(field, index, $event)",
+        "update:model-value: setLogicalOperatorValue(field, index, $event as unknown as LogicalOperator)",
+        "update:model-value: setRightParenthesisValue(field, index, $event)",
+        "update:model-value: updateRelationalOperator(field, $event as unknown as RelationalKeyword | RelationalOperator)",
+        "update:model-value: val => setFieldOrganizers(field, index, (val || []) as OrganizerBase[])",
+        "update:model-value: val => setFieldValue(field, index, val ? val.toISOString().slice(0, 10) : '')",
+        "update:seconds: setFieldValue(field, index, $event ?? '')"
+      ],
+      "models": [
+        "datePickers[index]",
+        "field.organizers",
+        "fields",
+        "showAdvanced"
+      ],
+      "conditions": [
+        "!$vuetify.display.smAndDown || index === fields.length - 1",
+        "!$vuetify.display.xs || index === fields.length - 1",
+        "!isNullOperator(field.relationalOperatorValue)",
+        "field.fieldChoices",
+        "field.type !== 'boolean'",
+        "field.type === 'boolean'",
+        "field.type === 'date'",
+        "field.type === 'duration'",
+        "field.type === 'number'",
+        "field.type === 'relativeDate'",
+        "field.type === 'string'",
+        "field.type === Organizer.Category",
+        "field.type === Organizer.Food",
+        "field.type === Organizer.Household",
+        "field.type === Organizer.Label",
+        "field.type === Organizer.Tag",
+        "field.type === Organizer.Tool",
+        "field.type === Organizer.User",
+        "index",
+        "index != 0 || $vuetify.display.smAndUp",
+        "showAdvanced"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/QueryFilterSummary.vue",
+      "name": "QueryFilterSummary",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-chip"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "index && part.logicalOperator",
+        "part.leftParenthesis",
+        "part.organizers",
+        "part.rightParenthesis"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeActionMenu.vue",
+      "name": "RecipeActionMenu",
+      "components": [
+        "BaseDialog",
+        "Props",
+        "RecipeContextMenu",
+        "RecipeFavoriteBadge",
+        "RecipeTimelineBadge"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenu.vue",
+        "frontend/app/components/Domain/Recipe/RecipeFavoriteBadge.vue",
+        "frontend/app/components/Domain/Recipe/RecipeTimelineBadge.vue",
+        "frontend/app/components/global/BaseDialog.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-card-text",
+        "v-icon",
+        "v-spacer",
+        "v-toolbar",
+        "v-tooltip"
+      ],
+      "events": [
+        "click: $emit('edit', true)",
+        "click: emitHandler(btn.event)",
+        "confirm: emitDelete()",
+        "print: $emit('print')"
+      ],
+      "models": [
+        "deleteDialog"
+      ],
+      "conditions": [
+        "!open",
+        "canEdit",
+        "loggedIn",
+        "open"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify",
+        "v-tooltip"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeAssets.vue",
+      "name": "RecipeAssets",
+      "components": [
+        "AppButtonUpload",
+        "BaseDialog",
+        "RecipeAsset",
+        "RecipeImageLightbox"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeImageLightbox.vue",
+        "frontend/app/components/global/AppButtonUpload.vue",
+        "frontend/app/components/global/BaseDialog.vue"
+      ],
+      "vuetify": [
+        "v-avatar",
+        "v-btn",
+        "v-card",
+        "v-card-text",
+        "v-card-title",
+        "v-divider",
+        "v-icon",
+        "v-img",
+        "v-list",
+        "v-list-item",
+        "v-list-item-title",
+        "v-menu",
+        "v-select",
+        "v-spacer",
+        "v-text-field"
+      ],
+      "events": [
+        "click: copyText(assetEmbed(item.fileName ?? ''))",
+        "click: handleRowClick($event, item)",
+        "click: handleViewClick($event, item)",
+        "click: model.splice(i, 1)",
+        "click: state.newAssetDialog = true",
+        "submit: addAsset",
+        "uploaded: setFileObject"
+      ],
+      "models": [
+        "lightbox.index",
+        "lightbox.open",
+        "state.newAsset.icon",
+        "state.newAsset.name",
+        "state.newAssetDialog"
+      ],
+      "conditions": [
+        "!edit",
+        "edit",
+        "isImage(item.fileName)",
+        "lightbox.open",
+        "model.length > 0",
+        "model.length > 0 || edit"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeCard.vue",
+      "name": "RecipeCard",
+      "components": [
+        "Props",
+        "RecipeCardImage",
+        "RecipeCardRating",
+        "RecipeChips",
+        "RecipeContextMenu",
+        "RecipeFavoriteBadge",
+        "SafeMarkdown"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeCardImage.vue",
+        "frontend/app/components/Domain/Recipe/RecipeCardRating.vue",
+        "frontend/app/components/Domain/Recipe/RecipeChips.vue",
+        "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenu.vue",
+        "frontend/app/components/Domain/Recipe/RecipeFavoriteBadge.vue",
+        "frontend/app/components/global/SafeMarkdown.vue"
+      ],
+      "vuetify": [
+        "v-card",
+        "v-card-actions",
+        "v-card-text",
+        "v-card-title",
+        "v-expand-transition",
+        "v-hover",
+        "v-spacer"
+      ],
+      "events": [
+        "click.self: $emit('click')",
+        "deleted: $emit('delete', slug)",
+        "item-selected: (item, urlPrefix) => $emit('itemSelected', item, urlPrefix)"
+      ],
+      "models": [],
+      "conditions": [
+        "description",
+        "isHovering",
+        "isOwnGroup",
+        "isOwnGroup && showRecipeContent",
+        "showRecipeContent",
+        "tags.length > 0"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeCardImage.vue",
+      "name": "RecipeCardImage",
+      "components": [
+        "Props"
+      ],
+      "dependencies": [],
+      "vuetify": [
+        "v-icon",
+        "v-img"
+      ],
+      "events": [
+        "click: $emit('click')",
+        "error: fallBackImage = true",
+        "load: fallBackImage = false"
+      ],
+      "models": [],
+      "conditions": [
+        "showImage"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeCardLineItem.vue",
+      "name": "RecipeCardLineItem",
+      "components": [
+        "Props",
+        "RecipeCardImage"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeCardImage.vue"
+      ],
+      "vuetify": [
+        "v-avatar",
+        "v-list-item",
+        "v-list-item-subtitle",
+        "v-list-item-title"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "$slots.append",
+        "$slots.subtitle"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeCardMobile.vue",
+      "name": "RecipeCardMobile",
+      "components": [
+        "Props",
+        "RecipeCardImage",
+        "RecipeCardRating",
+        "RecipeChips",
+        "RecipeContextMenu",
+        "RecipeFavoriteBadge",
+        "SafeMarkdown"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeCardImage.vue",
+        "frontend/app/components/Domain/Recipe/RecipeCardRating.vue",
+        "frontend/app/components/Domain/Recipe/RecipeChips.vue",
+        "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenu.vue",
+        "frontend/app/components/Domain/Recipe/RecipeFavoriteBadge.vue",
+        "frontend/app/components/global/SafeMarkdown.vue"
+      ],
+      "vuetify": [
+        "v-card",
+        "v-card-actions",
+        "v-expand-transition",
+        "v-img",
+        "v-list-item",
+        "v-list-item-subtitle",
+        "v-list-item-title"
+      ],
+      "events": [
+        "click: $emit('selected')",
+        "deleted: $emit('delete', slug)",
+        "item-selected: (item, urlPrefix) => $emit('itemSelected', item, urlPrefix)",
+        "mealplan-edit: $emit('mealplanEdit')",
+        "mealplan-remove: $emit('mealplanRemove')"
+      ],
+      "models": [],
+      "conditions": [
+        "!vertical",
+        "description",
+        "isOwnGroup && showRecipeContent",
+        "showRecipeContent",
+        "vertical"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeCardRating.vue",
+      "name": "RecipeCardRating",
+      "components": [
+        "Star"
+      ],
+      "dependencies": [],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "star === 'empty' || star === 'half'",
+        "star === 'full' || star === 'half'"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeCardSection.vue",
+      "name": "RecipeCardSection",
+      "components": [
+        "AppLoader",
+        "AppScrollToTop",
+        "ContextMenu",
+        "Props",
+        "RecipeCard",
+        "RecipeCardMobile"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeCard.vue",
+        "frontend/app/components/Domain/Recipe/RecipeCardMobile.vue",
+        "frontend/app/components/Layout/LayoutParts/AppScrollToTop.vue",
+        "frontend/app/components/global/AppLoader.vue",
+        "frontend/app/components/global/ContextMenu.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-card",
+        "v-col",
+        "v-fade-transition",
+        "v-icon",
+        "v-list",
+        "v-list-item",
+        "v-list-item-title",
+        "v-menu",
+        "v-row",
+        "v-spacer"
+      ],
+      "events": [
+        "click: navigateRandom",
+        "click: sortRecipes(EVENTS.az)",
+        "click: sortRecipes(EVENTS.created)",
+        "click: sortRecipes(EVENTS.lastMade)",
+        "click: sortRecipes(EVENTS.rating)",
+        "click: sortRecipes(EVENTS.shuffle)",
+        "click: sortRecipes(EVENTS.totalTime)",
+        "click: sortRecipes(EVENTS.updated)",
+        "item-selected: (item, urlPrefix) => emit('itemSelected', item, urlPrefix)",
+        "toggle-dense-view: toggleMobileCards()"
+      ],
+      "models": [],
+      "conditions": [
+        "!$vuetify.display.smAndDown",
+        "!disableSort",
+        "!disableToolbar",
+        "!useMobileCards",
+        "isOwnGroup",
+        "loading",
+        "recipes && ready",
+        "title"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify",
+        "useDisplay",
+        "v-intersect"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeChips.vue",
+      "name": "RecipeChips",
+      "components": [
+        "Props"
+      ],
+      "dependencies": [],
+      "vuetify": [
+        "v-chip"
+      ],
+      "events": [
+        "click.prevent: () => $emit('item-selected', category, urlPrefix)"
+      ],
+      "models": [],
+      "conditions": [
+        "items.length > 0",
+        "title"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenu.vue",
+      "name": "RecipeContextMenu",
+      "components": [
+        "ContextMenuIncludes",
+        "Props",
+        "RecipeContextMenuContent"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenuContent.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-icon",
+        "v-menu"
+      ],
+      "events": [
+        "deleted: $emit('deleted', $event)",
+        "mealplan-edit: $emit('mealplanEdit')",
+        "mealplan-remove: $emit('mealplanRemove')",
+        "print: $emit('print')",
+        "update:model-value: onMenuToggle"
+      ],
+      "models": [],
+      "conditions": [
+        "isMenuContentLoaded"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenuContent.vue",
+      "name": "RecipeContextMenuContent",
+      "components": [
+        "BaseDialog",
+        "ContextMenuItem",
+        "HouseholdSummary",
+        "MealPlanAddRecipeDialog",
+        "Props",
+        "RecipeDialogAddToShoppingList",
+        "RecipeDialogPrintPreferences",
+        "RecipeDialogShare",
+        "RecipeOut"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Mealplan/MealPlanAddRecipeDialog.vue",
+        "frontend/app/components/Domain/Recipe/RecipeDialogAddToShoppingList.vue",
+        "frontend/app/components/Domain/Recipe/RecipeDialogPrintPreferences.vue",
+        "frontend/app/components/Domain/Recipe/RecipeDialogShare.vue",
+        "frontend/app/components/global/BaseDialog.vue"
+      ],
+      "vuetify": [
+        "v-card-text",
+        "v-divider",
+        "v-icon",
+        "v-list",
+        "v-list-item",
+        "v-list-item-title",
+        "v-text-field"
+      ],
+      "events": [
+        "click: contextMenuEventHandler(item.event)",
+        "click: executeRecipeAction(action)",
+        "confirm: deleteRecipe()",
+        "confirm: duplicateRecipe()",
+        "list-created: addShoppingList"
+      ],
+      "models": [
+        "mealplannerDialog",
+        "printPreferencesDialog",
+        "recipeDeleteDialog",
+        "recipeDuplicateDialog",
+        "recipeName",
+        "shareDialog",
+        "shoppingListDialog"
+      ],
+      "conditions": [
+        "isAdminAndNotOwner",
+        "shoppingLists && recipeRefWithScale",
+        "useItems.recipeActions && recipeActions && recipeActions.length"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeDataAliasManagerDialog.vue",
+      "name": "RecipeDataAliasManagerDialog",
+      "components": [
+        "BaseButton",
+        "BaseButtonGroup",
+        "BaseDialog",
+        "GenericAlias",
+        "Props"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/BaseButtonGroup.vue",
+        "frontend/app/components/global/BaseDialog.vue"
+      ],
+      "vuetify": [
+        "v-card-text",
+        "v-col",
+        "v-container",
+        "v-row",
+        "v-text-field"
+      ],
+      "events": [
+        "cancel: $emit('cancel')",
+        "click: createAlias",
+        "delete: deleteAlias(i)",
+        "submit: saveAliases"
+      ],
+      "models": [
+        "alias.name",
+        "dialog"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeDataSubstitutionManagerDialog.vue",
+      "name": "RecipeDataSubstitutionManagerDialog",
+      "components": [
+        "BaseDialog",
+        "Props",
+        "RecipeIngredientSubstitutionEditor",
+        "SubstitutionRow"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeIngredientSubstitutionEditor.vue",
+        "frontend/app/components/global/BaseDialog.vue"
+      ],
+      "vuetify": [
+        "v-card-text",
+        "v-checkbox"
+      ],
+      "events": [
+        "add: createSubstitution",
+        "cancel: $emit('cancel')",
+        "delete: deleteSubstitution",
+        "food-changed: resetReverse",
+        "submit: saveSubstitutions",
+        "update:model-value: setReverse(index, !!$event)"
+      ],
+      "models": [
+        "dialog"
+      ],
+      "conditions": [
+        "substitutions[index]?.substituteFoodId"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeDataTable.vue",
+      "name": "RecipeDataTable",
+      "components": [
+        "Props",
+        "RecipeChip",
+        "RecipeSummary",
+        "UserAvatar",
+        "UserSummary"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/User/UserAvatar.vue"
+      ],
+      "vuetify": [
+        "v-data-table"
+      ],
+      "events": [
+        "click: $emit('click')",
+        "item-selected: filterItems"
+      ],
+      "models": [
+        "selected"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeDialogAddToShoppingList.vue",
+      "name": "RecipeDialogAddToShoppingList",
+      "components": [
+        "BaseButtonGroup",
+        "BaseDialog",
+        "BasePageTitle",
+        "Props",
+        "RecipeDraft",
+        "RecipeIngredientListItem",
+        "ShoppingListRecipeIngredientSection",
+        "ShoppingListSummary"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeIngredientListItem.vue",
+        "frontend/app/components/global/BaseButtonGroup.vue",
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/global/BasePageTitle.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-card",
+        "v-card-text",
+        "v-card-title",
+        "v-checkbox",
+        "v-col",
+        "v-container",
+        "v-divider",
+        "v-expand-transition",
+        "v-icon",
+        "v-list-item",
+        "v-row",
+        "v-text-field",
+        "v-tooltip"
+      ],
+      "events": [
+        "check: bulkCheckIngredients(true)",
+        "click: createAndOpenList",
+        "click: dialog = false",
+        "click: newListForm.show = true",
+        "click: openShoppingListIngredientDialog(list)",
+        "click: recipeIngredientSections[recipeSectionIndex]\n                    .ingredientSections[ingredientSectionIndex]\n                    .ingredients[i].checked = !recipeIngredientSections[recipeSectionIndex]\n                      .ingredientSections[ingredientSectionIndex]\n                      .ingredients[i]\n                      .checked",
+        "click: resetNewListForm",
+        "click: setShowAllToggled()",
+        "keyup.enter: createAndOpenList",
+        "submit: addRecipesToList()",
+        "uncheck: bulkCheckIngredients(false)"
+      ],
+      "models": [
+        "dialog",
+        "newListForm.name",
+        "preferences.viewAllLists"
+      ],
+      "conditions": [
+        "!filteredShoppingLists.length && !newListForm.show",
+        "!newListForm.show",
+        "dialog",
+        "ingredientSection.sectionName",
+        "newListForm.show",
+        "recipeIngredientSections.length > 1",
+        "recipeSection.parentRecipe?.name",
+        "recipeSection.recipeScale > 1",
+        "recipeSectionIndex > 0",
+        "shoppingListDialog && ready",
+        "shoppingListIngredientDialog"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify",
+        "v-tooltip"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeDialogBulkAdd.vue",
+      "name": "RecipeDialogBulkAdd",
+      "components": [
+        "BaseButton",
+        "BaseDialog",
+        "Props"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/BaseDialog.vue"
+      ],
+      "vuetify": [
+        "v-avatar",
+        "v-btn",
+        "v-card-text",
+        "v-divider",
+        "v-icon",
+        "v-list",
+        "v-list-item",
+        "v-list-item-title",
+        "v-textarea"
+      ],
+      "events": [
+        "click: dialog = true",
+        "click: util.action",
+        "submit: save"
+      ],
+      "models": [
+        "dialog",
+        "inputText"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeDialogPrintPreferences.vue",
+      "name": "RecipeDialogPrintPreferences",
+      "components": [
+        "BaseDialog",
+        "Props",
+        "RecipePrintView"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipePrintView.vue",
+        "frontend/app/components/global/BaseDialog.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-btn-toggle",
+        "v-card",
+        "v-col",
+        "v-container",
+        "v-icon",
+        "v-row",
+        "v-switch"
+      ],
+      "events": [],
+      "models": [
+        "dialog",
+        "preferences.expandChildRecipes",
+        "preferences.imagePosition",
+        "preferences.showDescription",
+        "preferences.showLinkedIngredients",
+        "preferences.showNotes",
+        "preferences.showNutrition",
+        "preferences.showSubstitutions"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeDialogSearch.vue",
+      "name": "RecipeDialogSearch",
+      "components": [
+        "RecipeCardMobile"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeCardMobile.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-card",
+        "v-card-actions",
+        "v-dialog",
+        "v-icon",
+        "v-text-field",
+        "v-toolbar"
+      ],
+      "events": [
+        "click: dialog = false"
+      ],
+      "models": [
+        "dialog",
+        "search.query.value"
+      ],
+      "conditions": [
+        "$vuetify.display.xs"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeDialogShare.vue",
+      "name": "RecipeDialogShare",
+      "components": [
+        "BaseButton",
+        "BaseDialog",
+        "Props",
+        "RecipeShareTokenOut"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/BaseDialog.vue"
+      ],
+      "vuetify": [
+        "v-avatar",
+        "v-btn",
+        "v-card-actions",
+        "v-card-text",
+        "v-date-picker",
+        "v-icon",
+        "v-list-item",
+        "v-list-item-title",
+        "v-menu",
+        "v-text-field"
+      ],
+      "events": [
+        "click.stop: copyTokenLink(token.id)",
+        "click.stop: deleteToken(token.id)",
+        "click.stop: qrCodeToken = token.id",
+        "click: createNewToken",
+        "click: downloadQrCode",
+        "click: qrCodeToken = null",
+        "click: shareRecipe(token.id)",
+        "update:model-value: datePickerMenu = false"
+      ],
+      "models": [
+        "datePickerMenu",
+        "dialog",
+        "expirationDate"
+      ],
+      "conditions": [
+        "qrCodeToken"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeExplorerPage/RecipeExplorerPage.vue",
+      "name": "RecipeExplorerPage",
+      "components": [
+        "InstanceType",
+        "RecipeCardSection",
+        "RecipeExplorerPageSearch"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeCardSection.vue",
+        "frontend/app/components/Domain/Recipe/RecipeExplorerPage/RecipeExplorerPageParts/RecipeExplorerPageSearch.vue"
+      ],
+      "vuetify": [
+        "v-container",
+        "v-divider"
+      ],
+      "events": [
+        "append-recipes: appendRecipes",
+        "item-selected: onItemSelected",
+        "ready: onSearchReady",
+        "replace-recipes: replaceRecipes"
+      ],
+      "models": [],
+      "conditions": [
+        "ready"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeExplorerPage/RecipeExplorerPageParts/RecipeExplorerPageSearch.vue",
+      "name": "RecipeExplorerPageSearch",
+      "components": [
+        "RecipeExplorerPageSearchFilters"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeExplorerPage/RecipeExplorerPageParts/RecipeExplorerPageSearchFilters.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-card",
+        "v-card-text",
+        "v-divider",
+        "v-icon",
+        "v-list",
+        "v-list-item",
+        "v-menu",
+        "v-switch",
+        "v-text-field"
+      ],
+      "events": [
+        "click.stop: v.value === 'random' ? setRandomOrderByWrapper() : setOrderBy(v.value)",
+        "click: reset",
+        "click: toggleOrderDirection",
+        "keyup.enter: hideKeyboard",
+        "submit.prevent: search"
+      ],
+      "models": [
+        "state.auto",
+        "state.search"
+      ],
+      "conditions": [
+        "!state.auto",
+        "v.value === 'random' && showRandomLoading"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeExplorerPage/RecipeExplorerPageParts/RecipeExplorerPageSearchFilters.vue",
+      "name": "RecipeExplorerPageSearchFilters",
+      "components": [
+        "SearchFilter"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/SearchFilter.vue"
+      ],
+      "vuetify": [
+        "v-icon"
+      ],
+      "events": [],
+      "models": [
+        "selectedCategories",
+        "selectedFoods",
+        "selectedHouseholds",
+        "selectedTags",
+        "selectedTools",
+        "state.requireAllCategories",
+        "state.requireAllFoods",
+        "state.requireAllTags",
+        "state.requireAllTools"
+      ],
+      "conditions": [
+        "categories",
+        "foods",
+        "households.length > 1",
+        "tags",
+        "tools"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeFavoriteBadge.vue",
+      "name": "RecipeFavoriteBadge",
+      "components": [
+        "Props"
+      ],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-icon",
+        "v-tooltip"
+      ],
+      "events": [
+        "click.prevent: toggleFavorite"
+      ],
+      "models": [],
+      "conditions": [
+        "isFavorite || showAlways"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "v-tooltip"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeImageLightbox.vue",
+      "name": "RecipeImageLightbox",
+      "components": [
+        "HTMLElement",
+        "LightboxItem",
+        "Props"
+      ],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-dialog",
+        "v-icon"
+      ],
+      "events": [
+        "click.stop: goNext",
+        "click.stop: goPrev",
+        "click.stop: model = false",
+        "click: onBackgroundClick",
+        "click: onImageClick",
+        "load: onImageLoad",
+        "pointercancel: onPointerCancel",
+        "pointerdown: onPointerDown",
+        "pointermove: onPointerMove",
+        "pointerup: onPointerUp"
+      ],
+      "models": [
+        "lightboxOpen",
+        "model"
+      ],
+      "conditions": [
+        "imageUrl",
+        "lightboxOpen",
+        "showNav",
+        "showNav && canNext && !zoomed",
+        "showNav && canPrev && !zoomed"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "useTheme"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeImageUploadBtn.vue",
+      "name": "RecipeImageUploadBtn",
+      "components": [
+        "AppButtonUpload",
+        "BaseButton",
+        "BaseDialog"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/AppButtonUpload.vue",
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/BaseDialog.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-card",
+        "v-card-text",
+        "v-card-title",
+        "v-icon",
+        "v-menu",
+        "v-text-field"
+      ],
+      "events": [
+        "click: dialogDeleteImage = true",
+        "click: getImageFromURL",
+        "delete: deleteImage",
+        "uploaded: uploadImage"
+      ],
+      "models": [
+        "dialogDeleteImage",
+        "menu",
+        "url"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeImportImages.vue",
+      "name": "RecipeImportImages",
+      "components": [
+        "AppButtonUpload",
+        "ImageCropper"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/AppButtonUpload.vue",
+        "frontend/app/components/global/ImageCropper.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-col",
+        "v-icon",
+        "v-row"
+      ],
+      "events": [
+        "click: () => setCoverImage(index)",
+        "delete: clearImage(index)",
+        "save: (croppedImage: Blob) => updateImage(index, croppedImage)",
+        "uploaded: uploadImages"
+      ],
+      "models": [],
+      "conditions": [
+        "images.length",
+        "images.length > 1"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeIngredientEditor.vue",
+      "name": "RecipeIngredientEditor",
+      "components": [
+        "BaseButton",
+        "BaseButtonGroup",
+        "HTMLInputElement",
+        "RecipeIngredient",
+        "RecipeIngredientEditorLayout",
+        "RecipeIngredientSubstitutionEditor"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeIngredientEditorLayout.vue",
+        "frontend/app/components/Domain/Recipe/RecipeIngredientSubstitutionEditor.vue",
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/BaseButtonGroup.vue"
+      ],
+      "vuetify": [
+        "v-autocomplete",
+        "v-icon",
+        "v-number-input",
+        "v-text-field",
+        "v-tooltip"
+      ],
+      "events": [
+        "add: addSubstitution",
+        "click: $emit('clickIngredientField', 'note')",
+        "click: $emit('clickIngredientField', 'title')",
+        "click: createAssignFood()",
+        "click: createAssignUnit()",
+        "click: search.trigger()",
+        "delete: $emit('delete')",
+        "delete: deleteSubstitution",
+        "focus: search.trigger()",
+        "insert-above: $emit('insert-above')",
+        "insert-below: $emit('insert-below')",
+        "keypress: quantityFilter",
+        "keyup.enter: handleFoodEnter",
+        "keyup.enter: handleUnitEnter",
+        "toggle-section: toggleTitle",
+        "toggle-subrecipe: toggleIsRecipe",
+        "toggle-substitutions: toggleSubstitutions",
+        "update:focused: onQuantityFocused"
+      ],
+      "models": [
+        "foodSearch",
+        "model.food",
+        "model.note",
+        "model.quantity",
+        "model.referencedRecipe",
+        "model.title",
+        "model.unit",
+        "search.query.value",
+        "unitSearch"
+      ],
+      "conditions": [
+        "!state.isRecipe",
+        "enableContextMenu",
+        "enableDragHandle",
+        "foodError",
+        "foodErrorTooltip",
+        "showCreateFood",
+        "showCreateUnit",
+        "state.isRecipe",
+        "substitutionsVisible",
+        "titleVisible",
+        "unitError",
+        "unitErrorTooltip"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify",
+        "v-tooltip"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeIngredientEditorLayout.vue",
+      "name": "RecipeIngredientEditorLayout",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "!$vuetify.display.mdAndDown",
+        "$vuetify.display.mdAndDown",
+        "header"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeIngredientHtml.vue",
+      "name": "RecipeIngredientHtml",
+      "components": [
+        "Props",
+        "SafeMarkdown"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/SafeMarkdown.vue"
+      ],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "baseText",
+        "ingredient?.note"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeIngredientListItem.vue",
+      "name": "RecipeIngredientListItem",
+      "components": [
+        "Props",
+        "RecipeIngredientSubstitutions",
+        "SafeMarkdown"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeIngredientSubstitutions.vue",
+        "frontend/app/components/global/SafeMarkdown.vue"
+      ],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "parsedIng.name",
+        "parsedIng.note",
+        "parsedIng.note && !parsedIng.name",
+        "parsedIng.quantity",
+        "parsedIng.recipeLink",
+        "parsedIng.unit",
+        "showSubstitutions"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeIngredientSubstitutionEditor.vue",
+      "name": "RecipeIngredientSubstitutionEditor",
+      "components": [
+        "Props"
+      ],
+      "dependencies": [],
+      "vuetify": [
+        "v-autocomplete",
+        "v-btn",
+        "v-icon",
+        "v-text-field"
+      ],
+      "events": [
+        "click: emit('add')",
+        "click: emit('delete', i)",
+        "update:model-value: emit('food-changed', i)"
+      ],
+      "models": [
+        "substitution.note",
+        "substitution.substituteFoodId"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeIngredientSubstitutions.vue",
+      "name": "RecipeIngredientSubstitutions",
+      "components": [
+        "Props",
+        "SafeMarkdown",
+        "SubstitutionSection"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/SafeMarkdown.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-card",
+        "v-card-text",
+        "v-icon",
+        "v-menu"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "hasSubstitutions",
+        "substitution.note",
+        "substitution.substituteFood"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeIngredients.vue",
+      "name": "RecipeIngredients",
+      "components": [
+        "AppButtonCopy",
+        "Props",
+        "RecipeIngredientListItem",
+        "Record"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeIngredientListItem.vue",
+        "frontend/app/components/global/AppButtonCopy.vue"
+      ],
+      "vuetify": [
+        "v-checkbox",
+        "v-divider",
+        "v-list-item",
+        "v-list-item-title"
+      ],
+      "events": [
+        "click.stop: toggleChecked(index)",
+        "update:model-value: setChecked(index, !!$event)"
+      ],
+      "models": [],
+      "conditions": [
+        "!isCookMode",
+        "showTitleEditor[index]",
+        "value && value.length > 0"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeLastMade.vue",
+      "name": "RecipeLastMade",
+      "components": [
+        "AppButtonUpload",
+        "BaseDialog",
+        "Blob",
+        "Date",
+        "ImageCropper",
+        "RecipeTimelineEventIn",
+        "VForm"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/AppButtonUpload.vue",
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/global/ImageCropper.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-card-text",
+        "v-checkbox",
+        "v-col",
+        "v-container",
+        "v-date-picker",
+        "v-form",
+        "v-icon",
+        "v-list",
+        "v-list-item",
+        "v-menu",
+        "v-row",
+        "v-spacer",
+        "v-text-field",
+        "v-textarea",
+        "v-tooltip"
+      ],
+      "events": [
+        "click: childRecipe.checked = !childRecipe.checked",
+        "click: clearImage",
+        "click: madeThisDialog = true",
+        "save: updateUploadedImage",
+        "submit: createTimelineEvent",
+        "update:model-value: datePickerMenu = false",
+        "uploaded: uploadImage"
+      ],
+      "models": [
+        "datePickerMenu",
+        "madeThisDialog",
+        "newTimelineEvent.eventMessage",
+        "newTimelineEventTimestamp"
+      ],
+      "conditions": [
+        "!!newTimelineEventImage",
+        "!newTimelineEventImage",
+        "childRecipes?.length",
+        "lastMadeReady",
+        "newTimelineEventImage && newTimelineEventImagePreviewUrl"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "v-tooltip"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeList.vue",
+      "name": "RecipeList",
+      "components": [
+        "Props",
+        "RecipeCardLineItem",
+        "SafeInlineHtml"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeCardLineItem.vue",
+        "frontend/app/components/global/SafeInlineHtml.vue"
+      ],
+      "vuetify": [
+        "v-list",
+        "v-sheet"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "listItem && listItemDescriptions[index]",
+        "showDescription",
+        "showDescription || (listItem && listItemDescriptions[index])"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "useDisplay"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeNotes.vue",
+      "name": "RecipeNotes",
+      "components": [
+        "BaseButton",
+        "RecipeNote",
+        "SafeMarkdown"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/SafeMarkdown.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-card",
+        "v-card-text",
+        "v-card-title",
+        "v-icon",
+        "v-text-field",
+        "v-textarea"
+      ],
+      "events": [
+        "click: addNote",
+        "click: removeByIndex(index)"
+      ],
+      "models": [
+        "model[index]['text']",
+        "model[index]['title']"
+      ],
+      "conditions": [
+        "edit",
+        "model.length > 0 || edit"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeNutrition.vue",
+      "name": "RecipeNutrition",
+      "components": [
+        "Nutrition",
+        "Props"
+      ],
+      "dependencies": [],
+      "vuetify": [
+        "v-card",
+        "v-card-subtitle",
+        "v-card-text",
+        "v-card-title",
+        "v-divider",
+        "v-list",
+        "v-list-item",
+        "v-list-item-title",
+        "v-number-input"
+      ],
+      "events": [
+        "update:model-value: updateValue(key, $event)"
+      ],
+      "models": [],
+      "conditions": [
+        "edit",
+        "showViewer",
+        "valueNotNull || edit"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeOrganizerDialog.vue",
+      "name": "RecipeOrganizerDialog",
+      "components": [
+        "BaseDialog",
+        "Props"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseDialog.vue"
+      ],
+      "vuetify": [
+        "v-card-text",
+        "v-checkbox",
+        "v-form",
+        "v-text-field"
+      ],
+      "events": [
+        "submit: select"
+      ],
+      "models": [
+        "dialog",
+        "name",
+        "onHand"
+      ],
+      "conditions": [
+        "itemType === Organizer.Tool"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeOrganizerPage.vue",
+      "name": "RecipeOrganizerPage",
+      "components": [
+        "BaseButton",
+        "BaseCardSectionTitle",
+        "BaseDialog",
+        "ContextMenu",
+        "RecipeOrganizerDialog",
+        "T"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeOrganizerDialog.vue",
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/BaseCardSectionTitle.vue",
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/global/ContextMenu.vue"
+      ],
+      "vuetify": [
+        "v-card",
+        "v-card-actions",
+        "v-card-text",
+        "v-card-title",
+        "v-checkbox",
+        "v-col",
+        "v-icon",
+        "v-row",
+        "v-spacer",
+        "v-text-field",
+        "v-toolbar-title"
+      ],
+      "events": [
+        "click: dialogs.organizer = true",
+        "confirm: deleteOne()",
+        "confirm: updateOne()",
+        "delete: confirmDelete(item)",
+        "edit: openUpdateDialog(item)"
+      ],
+      "models": [
+        "dialogs.delete",
+        "dialogs.organizer",
+        "dialogs.update",
+        "searchString",
+        "updateTarget.name",
+        "updateTarget.onHand"
+      ],
+      "conditions": [
+        "deleteTarget",
+        "isTitle(key)",
+        "item",
+        "itemType === Organizer.Tool",
+        "items",
+        "updateTarget"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeOrganizerSelector.vue",
+      "name": "RecipeOrganizerSelector",
+      "components": [
+        "BaseButton",
+        "Props",
+        "RecipeOrganizerDialog",
+        "T"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeOrganizerDialog.vue",
+        "frontend/app/components/global/BaseButton.vue"
+      ],
+      "vuetify": [
+        "v-autocomplete",
+        "v-chip"
+      ],
+      "events": [
+        "click: createItem()",
+        "click:append: dialog = true",
+        "click:close: removeByIndex(index)",
+        "created-item: appendCreated",
+        "keyup.enter: handleEnter",
+        "update:model-value: resetSearchInput"
+      ],
+      "models": [
+        "dialog",
+        "searchInput",
+        "selected"
+      ],
+      "conditions": [
+        "showAdd",
+        "showAdd && searchInput"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePage.vue",
+      "name": "RecipePage",
+      "components": [
+        "BaseButton",
+        "BaseDialog",
+        "BooleanString",
+        "ComponentPublicInstance",
+        "RecipeDialogBulkAdd",
+        "RecipeIngredient",
+        "RecipeIngredients",
+        "RecipeJsonEditor",
+        "RecipeNotes",
+        "RecipeOut",
+        "RecipePageComments",
+        "RecipePageEditorToolbar",
+        "RecipePageFooter",
+        "RecipePageHeader",
+        "RecipePageInfoEditor",
+        "RecipePageIngredientEditor",
+        "RecipePageIngredientToolsView",
+        "RecipePageInstructions",
+        "RecipePageOrganizers",
+        "RecipePageParseDialog",
+        "RecipePageScale",
+        "RecipePrintContainer",
+        "RouteLocationNormalized",
+        "VForm",
+        "WakelockSwitch"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeDialogBulkAdd.vue",
+        "frontend/app/components/Domain/Recipe/RecipeIngredients.vue",
+        "frontend/app/components/Domain/Recipe/RecipeNotes.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageComments.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageEditorToolbar.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageFooter.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageHeader.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageInfoEditor.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageIngredientEditor.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageIngredientToolsView.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageInstructions.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageOrganizers.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageScale.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeParseDialog/RecipePageParseDialog.vue",
+        "frontend/app/components/Domain/Recipe/RecipePrintContainer.vue",
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/global/RecipeJsonEditor.vue",
+        "frontend/app/components/global/WakelockSwitch.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-card",
+        "v-card-text",
+        "v-card-title",
+        "v-col",
+        "v-container",
+        "v-divider",
+        "v-fab",
+        "v-form",
+        "v-icon",
+        "v-row",
+        "v-sheet",
+        "v-tooltip"
+      ],
+      "events": [
+        "bulk-data: addStep",
+        "cancel: cancelDiscard",
+        "click: addStep()",
+        "click: saveRecipe",
+        "click: toggleCookMode()",
+        "close: closeEditor",
+        "confirm: confirmDiscard",
+        "delete: deleteRecipe",
+        "item-selected: chipClicked",
+        "save: saveParsedIngredients",
+        "save: saveRecipe",
+        "update:model-value: toggleIsParsing"
+      ],
+      "models": [
+        "discardDialog",
+        "recipe",
+        "recipe.assets",
+        "recipe.notes",
+        "recipe.recipeInstructions",
+        "scale"
+      ],
+      "conditions": [
+        "!$vuetify.display.mdAndUp",
+        "!disableComments && !isEditForm && !isCookMode",
+        "!isCookMode || isEditForm",
+        "!isEditForm",
+        "$vuetify.display.mdAndUp",
+        "isCookMode",
+        "isEditForm",
+        "isEditJSON",
+        "isEditMode",
+        "isEditMode && !toolbarVisible",
+        "notLinkedIngredients.length > 0"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify",
+        "useDisplay",
+        "v-tooltip"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/CookTime.vue",
+      "name": "CookTime",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-number-input"
+      ],
+      "events": [
+        "keypress: e => e.key === '-' && e.preventDefault()",
+        "update:model-value: updateDuration"
+      ],
+      "models": [],
+      "conditions": [
+        "isEditMode",
+        "modelValue"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageComments.vue",
+      "name": "RecipePageComments",
+      "components": [
+        "BaseButton",
+        "RecipeOut",
+        "SafeMarkdown",
+        "UserAvatar"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/User/UserAvatar.vue",
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/SafeMarkdown.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-card",
+        "v-card-actions",
+        "v-card-text",
+        "v-card-title",
+        "v-divider",
+        "v-icon",
+        "v-textarea"
+      ],
+      "events": [
+        "click: deleteComment(recipeComment.id)",
+        "click: submitComment"
+      ],
+      "models": [
+        "comment"
+      ],
+      "conditions": [
+        "user.id",
+        "user.id == recipeComment.user.id || user.admin"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageEditorToolbar.vue",
+      "name": "RecipePageEditorToolbar",
+      "components": [
+        "RecipeImageUploadBtn",
+        "RecipeOut",
+        "RecipeSettingsMenu",
+        "UserAvatar"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeImageUploadBtn.vue",
+        "frontend/app/components/Domain/Recipe/RecipeSettingsMenu.vue",
+        "frontend/app/components/Domain/User/UserAvatar.vue"
+      ],
+      "vuetify": [
+        "v-select",
+        "v-spacer"
+      ],
+      "events": [
+        "delete: deleteImage",
+        "refresh: refreshImage",
+        "upload: uploadImage"
+      ],
+      "models": [
+        "recipe.settings",
+        "recipe.userId"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageFooter.vue",
+      "name": "RecipePageFooter",
+      "components": [
+        "AdvancedOnly",
+        "BaseButton",
+        "RecipeOut"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/AdvancedOnly.vue",
+        "frontend/app/components/global/BaseButton.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-card",
+        "v-card-actions",
+        "v-card-text",
+        "v-card-title",
+        "v-col",
+        "v-divider",
+        "v-icon",
+        "v-row",
+        "v-text-field"
+      ],
+      "events": [
+        "click: createApiExtra",
+        "click: removeApiExtra(key)"
+      ],
+      "models": [
+        "apiNewKey",
+        "recipe.extras[key]",
+        "recipe.orgURL"
+      ],
+      "conditions": [
+        "isEditForm",
+        "isHttpUrl(recipe.orgURL) && !isCookMode"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageHeader.vue",
+      "name": "RecipePageHeader",
+      "components": [
+        "HouseholdSummary",
+        "Props",
+        "RecipeActionMenu",
+        "RecipePageInfoCard"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeActionMenu.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageInfoCard.vue"
+      ],
+      "vuetify": [
+        "v-divider"
+      ],
+      "events": [
+        "close: $emit('close')",
+        "delete: $emit('delete')",
+        "edit: setMode(PageMode.EDIT)",
+        "json: toggleEditMode()",
+        "print: printRecipe",
+        "save: $emit('save')"
+      ],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageInfoCard.vue",
+      "name": "RecipePageInfoCard",
+      "components": [
+        "Props",
+        "RecipeLastMade",
+        "RecipePageInfoCardImage",
+        "RecipeRating",
+        "RecipeTimeCard",
+        "RecipeYield",
+        "SafeMarkdown",
+        "UserAvatar",
+        "UserSummary"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeLastMade.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageInfoCardImage.vue",
+        "frontend/app/components/Domain/Recipe/RecipeRating.vue",
+        "frontend/app/components/Domain/Recipe/RecipeTimeCard.vue",
+        "frontend/app/components/Domain/Recipe/RecipeYield.vue",
+        "frontend/app/components/Domain/User/UserAvatar.vue",
+        "frontend/app/components/global/SafeMarkdown.vue"
+      ],
+      "vuetify": [
+        "v-card",
+        "v-card-text",
+        "v-card-title",
+        "v-col",
+        "v-container",
+        "v-divider",
+        "v-row"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "!landscape && recipe.image",
+        "hasTime",
+        "isOwnGroup",
+        "isOwnGroup && owner",
+        "landscape && recipe.image",
+        "recipe.description",
+        "recipe.recipeYieldQuantity || recipe.recipeYield"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageInfoCardImage.vue",
+      "name": "RecipePageInfoCardImage",
+      "components": [
+        "HouseholdSummary",
+        "Props",
+        "RecipeImageLightbox"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeImageLightbox.vue"
+      ],
+      "vuetify": [
+        "v-img"
+      ],
+      "events": [
+        "click: openLightbox",
+        "error: hideImage = true"
+      ],
+      "models": [
+        "lightboxIndex",
+        "lightboxOpen"
+      ],
+      "conditions": [
+        "lightboxOpen"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "useDisplay"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageInfoEditor.vue",
+      "name": "RecipePageInfoEditor",
+      "components": [
+        "RecipeOut",
+        "RecipeTimeInput"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeTimeInput.vue"
+      ],
+      "vuetify": [
+        "v-col",
+        "v-container",
+        "v-number-input",
+        "v-row",
+        "v-text-field",
+        "v-textarea"
+      ],
+      "events": [
+        "update:model-value: recipe.recipeServings = $event",
+        "update:model-value: recipe.recipeYieldQuantity = $event"
+      ],
+      "models": [
+        "recipe.description",
+        "recipe.name",
+        "recipe.performTime",
+        "recipe.performTimeSeconds",
+        "recipe.prepTime",
+        "recipe.prepTimeSeconds",
+        "recipe.recipeYield",
+        "recipe.totalTime",
+        "recipe.totalTimeSeconds"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageIngredientEditor.vue",
+      "name": "RecipePageIngredientEditor",
+      "components": [
+        "BaseButton",
+        "InstanceType",
+        "RecipeDialogBulkAdd",
+        "RecipeIngredientEditor",
+        "RecipeOut",
+        "VueDraggable"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeDialogBulkAdd.vue",
+        "frontend/app/components/Domain/Recipe/RecipeIngredientEditor.vue",
+        "frontend/app/components/global/BaseButton.vue"
+      ],
+      "vuetify": [
+        "v-alert",
+        "v-btn",
+        "v-icon",
+        "v-list",
+        "v-list-item",
+        "v-menu",
+        "v-skeleton-loader"
+      ],
+      "events": [
+        "bulk-data: addIngredient",
+        "click: addIngredient",
+        "click: addRecipe",
+        "click: showBulkAdd",
+        "click: toggleIsParsing(true)",
+        "delete: recipe.recipeIngredient.splice(index, 1)",
+        "end: drag = false",
+        "insert-above: insertNewIngredient(index)",
+        "insert-below: insertNewIngredient(index + 1)",
+        "start: drag = true"
+      ],
+      "models": [
+        "recipe.recipeIngredient",
+        "recipe.recipeIngredient[index]"
+      ],
+      "conditions": [
+        "recipe.recipeIngredient.length > 0",
+        "recipe.recipeIngredient.length > 0 && !hasFoodOrUnit"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageIngredientToolsView.vue",
+      "name": "RecipePageIngredientToolsView",
+      "components": [
+        "Props",
+        "RecipeIngredients",
+        "RecipeToolWithOnHand"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeIngredients.vue"
+      ],
+      "vuetify": [
+        "v-checkbox",
+        "v-list",
+        "v-list-item",
+        "v-list-item-title"
+      ],
+      "events": [
+        "change: updateTool(index)"
+      ],
+      "models": [
+        "recipeTools[index].onHand"
+      ],
+      "conditions": [
+        "!isEditMode && recipe.tools && recipe.tools.length > 0"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageInstructions.vue",
+      "name": "RecipePageInstructions",
+      "components": [
+        "BaseButton",
+        "BaseButtonGroup",
+        "BaseDialog",
+        "CookTime",
+        "DropZone",
+        "MarkdownEditor",
+        "RecipeAsset",
+        "RecipeIngredient",
+        "RecipeIngredientHtml",
+        "RecipeIngredients",
+        "RecipeNote",
+        "RecipeStep",
+        "SafeMarkdown",
+        "StepMerge",
+        "TransitionGroup",
+        "VueDraggable"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeIngredientHtml.vue",
+        "frontend/app/components/Domain/Recipe/RecipeIngredients.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/CookTime.vue",
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/BaseButtonGroup.vue",
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/global/DropZone.vue",
+        "frontend/app/components/global/MarkdownEditor.vue",
+        "frontend/app/components/global/SafeMarkdown.vue"
+      ],
+      "vuetify": [
+        "v-bottom-sheet",
+        "v-btn",
+        "v-card",
+        "v-card-text",
+        "v-card-title",
+        "v-checkbox-btn",
+        "v-col",
+        "v-divider",
+        "v-expand-transition",
+        "v-fade-transition",
+        "v-hover",
+        "v-icon",
+        "v-progress-linear",
+        "v-row",
+        "v-sheet",
+        "v-spacer",
+        "v-text-field",
+        "v-toolbar-title",
+        "v-tooltip"
+      ],
+      "events": [
+        "click.stop: openLinkedNotesSheet(step)",
+        "click: $emit('click-instruction-field', `${index}.text`)",
+        "click: autoSetReferences",
+        "click: closeDialog",
+        "click: linkedNotesSheetOpen = false",
+        "click: saveAndOpenNextDialogLinks",
+        "click: saveDialogLinks",
+        "click: toggleCollapseSection(index)",
+        "click: toggleCookMode()",
+        "click: toggleDisabled(index)",
+        "delete: instructionList.splice(index, 1)",
+        "drop-unsupported: notifyUnsupportedDrop",
+        "drop-url: (u) => handleImageUrlDrop(index, u)",
+        "drop: (f) => handleImageDrop(index, f)",
+        "end: onDragEnd",
+        "insert-above: insert(index)",
+        "insert-below: insert(index + 1)",
+        "keyup.ctrl.z: undoMerge",
+        "link-references: openReferenceDialog(index)",
+        "merge-above: mergeAbove(index - 1, index)",
+        "move-to-bottom: moveTo('bottom', index)",
+        "move-to-top: moveTo('top', index)",
+        "preview-step: togglePreviewState(index)",
+        "start: drag = true",
+        "toggle-section: toggleShowTitle(step.id!)",
+        "update:focused: onSectionTitleFocused(step.id, $event)",
+        "update:model-value: step.durationSeconds = $event",
+        "upload-image: openImageUpload(index)"
+      ],
+      "models": [
+        "activeNoteReferenceIds",
+        "activeRefs",
+        "dialog",
+        "instructionList",
+        "instructionList[index]['text']",
+        "linkedNotesSheetOpen",
+        "previewStates[index]",
+        "step.summary",
+        "step.title"
+      ],
+      "conditions": [
+        "!isChecked(index) && !isEditForm",
+        "!isCookMode",
+        "!isEditForm",
+        "!isEditForm && !isCookMode",
+        "Object.keys(groupedUnusedIngredients).length > 0",
+        "Object.keys(groupedUsedIngredients).length > 0",
+        "availableDialogNextStep",
+        "hasLinkedIngredients(step)",
+        "hasLinkedIngredients(step) && hasLinkedNotes(step)",
+        "hasLinkedNotes(step)",
+        "hasLinkedNotes(step) && !isCookMode",
+        "isCookMode && hasCookModeLinkedContent(step)",
+        "isCookMode && hasCookModeLinkedContent(step) && $vuetify.display.smAndUp",
+        "isEditForm",
+        "isEditForm && loadingStates[index]",
+        "linkRef.referenceId && ingredientLookup[linkRef.referenceId]",
+        "linkableNotes.length === 0",
+        "noteIndex > 0",
+        "step.id && showTitleEditor[step.id]",
+        "step.ingredientReferences && step.ingredientReferences.length",
+        "step.noteReferences && step.noteReferences.length",
+        "step.summary",
+        "title"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify",
+        "v-tooltip"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageOrganizers.vue",
+      "name": "RecipePageOrganizers",
+      "components": [
+        "RecipeAssets",
+        "RecipeChips",
+        "RecipeNutrition",
+        "RecipeOrganizerSelector",
+        "RecipeOut"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeAssets.vue",
+        "frontend/app/components/Domain/Recipe/RecipeChips.vue",
+        "frontend/app/components/Domain/Recipe/RecipeNutrition.vue",
+        "frontend/app/components/Domain/Recipe/RecipeOrganizerSelector.vue"
+      ],
+      "vuetify": [
+        "v-card",
+        "v-card-text",
+        "v-card-title",
+        "v-divider"
+      ],
+      "events": [],
+      "models": [
+        "recipe.assets",
+        "recipe.nutrition",
+        "recipe.recipeCategory",
+        "recipe.tags",
+        "recipe.tools"
+      ],
+      "conditions": [
+        "isEditForm",
+        "recipe.recipeCategory.length > 0 || isEditForm",
+        "recipe.settings.showAssets",
+        "recipe.settings.showNutrition",
+        "recipe.tags.length > 0 || isEditForm"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageScale.vue",
+      "name": "RecipePageScale",
+      "components": [
+        "RecipeScaleEditButton",
+        "RecipeUnitSystemButton"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeScaleEditButton.vue",
+        "frontend/app/components/Domain/Recipe/RecipeUnitSystemButton.vue"
+      ],
+      "vuetify": [],
+      "events": [],
+      "models": [
+        "scale"
+      ],
+      "conditions": [
+        "!isEditMode"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeParseDialog/ParseDialogChangeParser.vue",
+      "name": "ParseDialogChangeParser",
+      "components": [
+        "BaseButton",
+        "BaseDialog",
+        "Parser"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/BaseDialog.vue"
+      ],
+      "vuetify": [
+        "v-alert",
+        "v-card",
+        "v-card-actions",
+        "v-card-text",
+        "v-list",
+        "v-list-item"
+      ],
+      "events": [
+        "click.stop: open = true",
+        "click: \n          currentParser = parser.value as Parser;\n          $emit('parse')\n        ",
+        "click: $emit('parse')"
+      ],
+      "models": [
+        "open"
+      ],
+      "conditions": [
+        "showNlpLanguageHint"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeParseDialog/ParseDialogInfo.vue",
+      "name": "ParseDialogInfo",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-checkbox",
+        "v-chip",
+        "v-empty-state"
+      ],
+      "events": [],
+      "models": [
+        "dontShowAgain"
+      ],
+      "conditions": [
+        "autoParsed"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeParseDialog/ParseDialogParse.vue",
+      "name": "ParseDialogParse",
+      "components": [
+        "BaseButton",
+        "ParseDialogChangeParser",
+        "RecipeIngredientEditor"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeIngredientEditor.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeParseDialog/ParseDialogChangeParser.vue",
+        "frontend/app/components/global/BaseButton.vue"
+      ],
+      "vuetify": [
+        "v-card-actions",
+        "v-card-text",
+        "v-checkbox",
+        "v-icon",
+        "v-spacer"
+      ],
+      "events": [
+        "click: addMissingFoodAsAlias",
+        "click: addMissingUnitAsAlias",
+        "click: createMissingFood",
+        "click: createMissingUnit",
+        "parse: parseIngredients",
+        "update:model-value: (newParser) => parser = newParser"
+      ],
+      "models": [
+        "currentIng.ingredient",
+        "currentIngShouldDelete",
+        "parser"
+      ],
+      "conditions": [
+        "\n          currentMissingFood\n            && currentIng.ingredient.food?.id\n            && currentMissingFood.toLowerCase() != currentIng.ingredient.food?.name.toLowerCase()\n        ",
+        "\n          currentMissingUnit\n            && currentIng.ingredient.unit?.id\n            && currentMissingUnit.toLowerCase() != currentIng.ingredient.unit?.name.toLowerCase()\n        ",
+        "currentIng",
+        "currentMissingFood && !currentIng.ingredient.food?.id",
+        "currentMissingUnit && !currentIng.ingredient.unit?.id"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeParseDialog/ParseDialogReview.vue",
+      "name": "ParseDialogReview",
+      "components": [
+        "ParseDialogChangeParser",
+        "ParsedIngredient",
+        "RecipeIngredientEditor",
+        "TransitionGroup",
+        "VueDraggable"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeIngredientEditor.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeParseDialog/ParseDialogChangeParser.vue"
+      ],
+      "vuetify": [
+        "v-card-text",
+        "v-card-title",
+        "v-lazy"
+      ],
+      "events": [
+        "delete: parsedIngs.splice(index, 1)",
+        "end: drag = false",
+        "insert-above: insertNewIngredient(index)",
+        "insert-below: insertNewIngredient(index + 1)",
+        "parse: $emit('parse')",
+        "start: drag = true",
+        "update:model-value: $emit('changeParser', $event)"
+      ],
+      "models": [
+        "ingredient.ingredient",
+        "parsedIngs",
+        "state.parser"
+      ],
+      "conditions": [
+        "ingredient.input"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeParseDialog/RecipePageParseDialog.vue",
+      "name": "RecipePageParseDialog",
+      "components": [
+        "AppLoader",
+        "BaseButton",
+        "BaseDialog",
+        "ParseDialogInfo",
+        "ParseDialogParse",
+        "ParseDialogReview",
+        "RecipeIngredient",
+        "SwipeTransition"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeParseDialog/ParseDialogInfo.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeParseDialog/ParseDialogParse.vue",
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeParseDialog/ParseDialogReview.vue",
+        "frontend/app/components/global/AppLoader.vue",
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/global/Transition/SwipeTransition.vue"
+      ],
+      "vuetify": [
+        "v-container"
+      ],
+      "events": [
+        "change-parser: (newParser) => parser = newParser",
+        "click: nextIngredient",
+        "click: nextStep",
+        "click: saveIngs",
+        "parse: parseIngredients",
+        "update:model-value: emit('update:modelValue', $event)"
+      ],
+      "models": [
+        "dontShowInfoPage",
+        "parsedIngs"
+      ],
+      "conditions": [
+        "state.step !== ParseStep.LOADING",
+        "state.step === ParseStep.INFO",
+        "state.step === ParseStep.LOADING",
+        "state.step === ParseStep.PARSE",
+        "state.step === ParseStep.PARSE && currentIng",
+        "state.step === ParseStep.REVIEW"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePrintContainer.vue",
+      "name": "RecipePrintContainer",
+      "components": [
+        "Props",
+        "RecipePrintView"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipePrintView.vue"
+      ],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipePrintView.vue",
+      "name": "RecipePrintView",
+      "components": [
+        "IngredientSection",
+        "InstructionSection",
+        "Props",
+        "RecipeTimeCard",
+        "SafeInlineHtml",
+        "SafeMarkdown"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeTimeCard.vue",
+        "frontend/app/components/global/SafeInlineHtml.vue",
+        "frontend/app/components/global/SafeMarkdown.vue"
+      ],
+      "vuetify": [
+        "v-card-text",
+        "v-card-title",
+        "v-col",
+        "v-container",
+        "v-divider",
+        "v-icon",
+        "v-row"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "!sectionIndex",
+        "hasNotes",
+        "ingredientSection.ingredients[0].title",
+        "preferences.showDescription",
+        "preferences.showLinkedIngredients && step.ingredientReferences && step.ingredientReferences.length > 0",
+        "preferences.showNotes",
+        "preferences.showNutrition",
+        "preferences.showSubstitutions && substitutionSummary(ingredient)",
+        "recipe.image && preferences.imagePosition && preferences.imagePosition != ImagePosition.hidden",
+        "recipeYield",
+        "step.title",
+        "value"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeRating.vue",
+      "name": "RecipeRating",
+      "components": [
+        "Props"
+      ],
+      "dependencies": [],
+      "vuetify": [
+        "v-rating"
+      ],
+      "events": [
+        "update:model-value: updateRating(+$event)"
+      ],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeScaleEditButton.vue",
+      "name": "RecipeScaleEditButton",
+      "components": [
+        "BaseButtonGroup",
+        "Props",
+        "SafeInlineHtml"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseButtonGroup.vue",
+        "frontend/app/components/global/SafeInlineHtml.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-card",
+        "v-card-text",
+        "v-card-title",
+        "v-icon",
+        "v-menu",
+        "v-number-input",
+        "v-tooltip"
+      ],
+      "events": [
+        "click: scale = 1",
+        "decrement: recalculateScale(yieldQuantity - 1)",
+        "increment: recalculateScale(yieldQuantity + 1)",
+        "update:model-value: recalculateScale($event || 0)"
+      ],
+      "models": [
+        "menu"
+      ],
+      "conditions": [
+        "canEditScale",
+        "yieldDisplay"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "v-tooltip"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeSelector.vue",
+      "name": "RecipeSelector",
+      "components": [
+        "CategoryOut",
+        "HTMLElement",
+        "Props",
+        "RecipeCardLineItem",
+        "RecipeSearchQuery",
+        "RecipeSummary",
+        "SearchFilter",
+        "TagOut"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeCardLineItem.vue",
+        "frontend/app/components/Domain/SearchFilter.vue"
+      ],
+      "vuetify": [
+        "v-alert",
+        "v-chip",
+        "v-icon",
+        "v-list",
+        "v-progress-circular",
+        "v-text-field"
+      ],
+      "events": [
+        "click: select(recipe)",
+        "click:close: select(null)"
+      ],
+      "models": [
+        "search",
+        "selectedCategories",
+        "selectedTags"
+      ],
+      "conditions": [
+        "!loading",
+        "categories.length",
+        "loading",
+        "modelValue",
+        "recipes.length",
+        "tags.length"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeSettingsMenu.vue",
+      "name": "RecipeSettingsMenu",
+      "components": [
+        "RecipeSettingsSwitches"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeSettingsSwitches.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-card",
+        "v-card-text",
+        "v-card-title",
+        "v-divider",
+        "v-icon",
+        "v-menu"
+      ],
+      "events": [],
+      "models": [
+        "value"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeSettingsSwitches.vue",
+      "name": "RecipeSettingsSwitches",
+      "components": [
+        "RecipeSettings"
+      ],
+      "dependencies": [],
+      "vuetify": [
+        "v-icon",
+        "v-switch",
+        "v-tooltip"
+      ],
+      "events": [],
+      "models": [
+        "model[key]"
+      ],
+      "conditions": [
+        "key === 'public'"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "v-tooltip"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeSuggestion.vue",
+      "name": "RecipeSuggestion",
+      "components": [
+        "Props",
+        "RecipeCardMobile"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeCardMobile.vue"
+      ],
+      "vuetify": [
+        "v-card-text",
+        "v-checkbox",
+        "v-chip",
+        "v-col",
+        "v-container",
+        "v-icon",
+        "v-row"
+      ],
+      "events": [
+        "click: handleCheckbox(item)"
+      ],
+      "models": [],
+      "conditions": [
+        "organizer.show",
+        "substitutedFoods?.length"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeTimeCard.vue",
+      "name": "RecipeTimeCard",
+      "components": [
+        "Props"
+      ],
+      "dependencies": [],
+      "vuetify": [
+        "v-divider",
+        "v-icon",
+        "v-row"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "_showCards",
+        "validatePerformTime",
+        "validatePrepTime",
+        "validatePrepTime && validatePerformTime && !$vuetify.display.smAndDown",
+        "validatePrepTime || validatePerformTime",
+        "validateTotalTime",
+        "validateTotalTime && (validatePrepTime || validatePerformTime)"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeTimeInput.vue",
+      "name": "RecipeTimeInput",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-number-input",
+        "v-text-field"
+      ],
+      "events": [],
+      "models": [
+        "hours",
+        "minutes",
+        "text"
+      ],
+      "conditions": [
+        "!hideText",
+        "label"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeTimeline.vue",
+      "name": "RecipeTimeline",
+      "components": [
+        "AppLoader",
+        "Props",
+        "RecipeSummary",
+        "RecipeTimelineItem"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeTimelineItem.vue",
+        "frontend/app/components/global/AppLoader.vue"
+      ],
+      "vuetify": [
+        "v-badge",
+        "v-btn",
+        "v-card",
+        "v-card-title",
+        "v-col",
+        "v-divider",
+        "v-icon",
+        "v-list",
+        "v-list-item",
+        "v-list-item-title",
+        "v-menu",
+        "v-row",
+        "v-spacer",
+        "v-timeline"
+      ],
+      "events": [
+        "click: reverseSort",
+        "click: toggleEventTypeOption(option.value)",
+        "delete: deleteTimelineEvent(index)",
+        "update: updateTimelineEvent(index, $event)"
+      ],
+      "models": [],
+      "conditions": [
+        "!loading",
+        "loading",
+        "timelineEvents.length"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeTimelineBadge.vue",
+      "name": "RecipeTimelineBadge",
+      "components": [
+        "BaseDialog",
+        "Props",
+        "RecipeTimeline"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeTimeline.vue",
+        "frontend/app/components/global/BaseDialog.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-icon",
+        "v-tooltip"
+      ],
+      "events": [
+        "click.prevent: toggleTimeline"
+      ],
+      "models": [
+        "showTimeline"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "v-tooltip"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeTimelineContextMenu.vue",
+      "name": "RecipeTimelineContextMenu",
+      "components": [
+        "AppButtonUpload",
+        "BaseDialog",
+        "Blob",
+        "ImageCropper"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/AppButtonUpload.vue",
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/global/ImageCropper.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-card-text",
+        "v-col",
+        "v-form",
+        "v-icon",
+        "v-img",
+        "v-list",
+        "v-list-item",
+        "v-list-item-title",
+        "v-menu",
+        "v-row",
+        "v-spacer",
+        "v-text-field",
+        "v-textarea"
+      ],
+      "events": [
+        "click: clearImage",
+        "click: contextMenuEventHandler(item.event)",
+        "confirm: $emit('delete')",
+        "save: updateUploadedImage",
+        "submit: submitEdit",
+        "uploaded: uploadImage"
+      ],
+      "models": [
+        "localEvent.eventMessage",
+        "localEvent.subject",
+        "recipeEventDeleteDialog",
+        "recipeEventEditDialog"
+      ],
+      "conditions": [
+        "!newImage && !hasExistingImage",
+        "hasExistingImage",
+        "newImage && newImagePreviewUrl"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeTimelineItem.vue",
+      "name": "RecipeTimelineItem",
+      "components": [
+        "Props",
+        "RecipeCardMobile",
+        "RecipeTimelineContextMenu",
+        "SafeMarkdown",
+        "UserAvatar"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeCardMobile.vue",
+        "frontend/app/components/Domain/Recipe/RecipeTimelineContextMenu.vue",
+        "frontend/app/components/Domain/User/UserAvatar.vue",
+        "frontend/app/components/global/SafeMarkdown.vue"
+      ],
+      "vuetify": [
+        "v-card",
+        "v-card-text",
+        "v-card-title",
+        "v-chip",
+        "v-col",
+        "v-divider",
+        "v-icon",
+        "v-img",
+        "v-row",
+        "v-timeline-item"
+      ],
+      "events": [
+        "click: $emit('selected')",
+        "delete: $emit('delete')",
+        "error: hideImage = true",
+        "update: $emit('update', $event)"
+      ],
+      "models": [],
+      "conditions": [
+        "!useMobileFormat",
+        "currentUser && currentUser.id == event.userId && event.eventType != 'system'",
+        "event.eventMessage",
+        "event.timestamp",
+        "eventImageUrl",
+        "showRecipeCards && recipe",
+        "showRecipeCards && recipe && (useMobileFormat || event.eventMessage)",
+        "useMobileFormat"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "useDisplay"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeUnitSystemButton.vue",
+      "name": "RecipeUnitSystemButton",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-card",
+        "v-icon",
+        "v-list",
+        "v-list-item",
+        "v-list-item-title",
+        "v-menu",
+        "v-tooltip"
+      ],
+      "events": [
+        "click: unitSystem = option.value"
+      ],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "v-tooltip"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/Recipe/RecipeYield.vue",
+      "name": "RecipeYield",
+      "components": [
+        "Props",
+        "SafeInlineHtml"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/SafeInlineHtml.vue"
+      ],
+      "vuetify": [
+        "v-icon",
+        "v-row"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "yieldDisplay"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/SearchFilter.vue",
+      "name": "SearchFilter",
+      "components": [
+        "ISearchableItem"
+      ],
+      "dependencies": [],
+      "vuetify": [
+        "v-alert",
+        "v-badge",
+        "v-btn",
+        "v-btn-toggle",
+        "v-card",
+        "v-card-text",
+        "v-checkbox-btn",
+        "v-divider",
+        "v-list-item",
+        "v-list-item-action",
+        "v-menu",
+        "v-radio",
+        "v-radio-group",
+        "v-row",
+        "v-spacer",
+        "v-text-field",
+        "v-virtual-scroll"
+      ],
+      "events": [
+        "click: clearSelection",
+        "click: handleRadioClick(item)"
+      ],
+      "models": [
+        "combinator",
+        "searchInput",
+        "selected",
+        "selectedRadio",
+        "state.menu"
+      ],
+      "conditions": [
+        "filtered.length > 0",
+        "radio",
+        "requireAll != undefined"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/ShoppingList/MultiPurposeLabel.vue",
+      "name": "MultiPurposeLabel",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-chip"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/ShoppingList/MultiPurposeLabelSection.vue",
+      "name": "MultiPurposeLabelSection",
+      "components": [
+        "ShoppingListMultiPurposeLabelOut"
+      ],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-icon",
+        "v-menu"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/ShoppingList/ShoppingListAddItemForm.vue",
+      "name": "ShoppingListAddItemForm",
+      "components": [
+        "ShoppingListItemOut",
+        "ShoppingListQuickAdd"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/ShoppingList/ShoppingListQuickAdd.vue"
+      ],
+      "vuetify": [
+        "v-navigation-drawer"
+      ],
+      "events": [
+        "save: $emit('save')"
+      ],
+      "models": [
+        "listItem",
+        "showDetails"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/ShoppingList/ShoppingListItem.vue",
+      "name": "ShoppingListItem",
+      "components": [
+        "InstanceType",
+        "RecipeIngredientListItem",
+        "RecipeList",
+        "RecipeSummary",
+        "ShoppingListItemEditor",
+        "ShoppingListItemOut"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeIngredientListItem.vue",
+        "frontend/app/components/Domain/Recipe/RecipeList.vue",
+        "frontend/app/components/Domain/ShoppingList/ShoppingListItemEditor.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-checkbox",
+        "v-col",
+        "v-container",
+        "v-icon",
+        "v-list",
+        "v-list-item",
+        "v-list-item-title",
+        "v-menu",
+        "v-row",
+        "v-tooltip"
+      ],
+      "events": [
+        "cancel: $emit('view')",
+        "click: $emit('edit')",
+        "click: $emit(action.event as any)",
+        "click: displayRecipeRefs = !displayRecipeRefs",
+        "click: toggleChecked",
+        "delete: $emit('delete')",
+        "save: save"
+      ],
+      "models": [
+        "localListItem"
+      ],
+      "conditions": [
+        "!edit",
+        "!listItem.checked",
+        "!listItem.checked && recipeList && recipeList.length && displayRecipeRefs",
+        "edit",
+        "listItem.checked",
+        "recipeList && recipeList.length"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "v-tooltip"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/ShoppingList/ShoppingListItemDetails.vue",
+      "name": "ShoppingListItemDetails",
+      "components": [
+        "BaseButton",
+        "InputLabelType",
+        "ShoppingListItemOut"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/InputLabelType.vue"
+      ],
+      "vuetify": [
+        "v-number-input",
+        "v-spacer",
+        "v-textarea"
+      ],
+      "events": [
+        "click: assignLabelToFood",
+        "create: createAssignUnit",
+        "keydown.enter.prevent: emit('save')",
+        "keypress: handleNoteKeyPress"
+      ],
+      "models": [
+        "listItem.label",
+        "listItem.labelId!",
+        "listItem.note",
+        "listItem.quantity",
+        "listItem.unit",
+        "listItem.unitId!"
+      ],
+      "conditions": [
+        "listItem.labelId && listItem.food && listItem.labelId !== listItem.food.labelId"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "useDisplay"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/ShoppingList/ShoppingListItemEditor.vue",
+      "name": "ShoppingListItemEditor",
+      "components": [
+        "BaseButtonGroup",
+        "InputLabelType",
+        "ShoppingListItemDetails",
+        "ShoppingListItemOut"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/ShoppingList/ShoppingListItemDetails.vue",
+        "frontend/app/components/global/BaseButtonGroup.vue",
+        "frontend/app/components/global/InputLabelType.vue"
+      ],
+      "vuetify": [
+        "v-card",
+        "v-card-actions"
+      ],
+      "events": [
+        "cancel: $emit('cancel')",
+        "create: createAssignFood",
+        "delete: $emit('delete')",
+        "save: $emit('save')"
+      ],
+      "models": [
+        "listItem",
+        "listItem.food",
+        "listItem.foodId!"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/ShoppingList/ShoppingListQuickAdd.vue",
+      "name": "ShoppingListQuickAdd",
+      "components": [
+        "BaseButton",
+        "IngredientFoodOut",
+        "ShoppingListItemDetails",
+        "ShoppingListItemOut"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/ShoppingList/ShoppingListItemDetails.vue",
+        "frontend/app/components/global/BaseButton.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-combobox",
+        "v-spacer",
+        "v-tooltip"
+      ],
+      "events": [
+        "click.stop: toggleDetails",
+        "click: createFoodAndSubmit",
+        "click: submit()",
+        "keyup.enter: submit()",
+        "save: submit()",
+        "update:model-value: onSelect"
+      ],
+      "models": [
+        "listItem",
+        "search",
+        "selected",
+        "tooltipOpen"
+      ],
+      "conditions": [
+        "search?.trim() && !pickedFood && !resolveFood(search, foods)",
+        "showDetails"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "useDisplay",
+        "v-tooltip"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/User/UserAvatar.vue",
+      "name": "UserAvatar",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-avatar",
+        "v-img",
+        "v-tooltip"
+      ],
+      "events": [
+        "error: error = true",
+        "load: error = false"
+      ],
+      "models": [],
+      "conditions": [
+        "list",
+        "user",
+        "userId"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "v-tooltip"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/User/UserInviteDialog.vue",
+      "name": "UserInviteDialog",
+      "components": [
+        "AppButtonCopy",
+        "BaseButton",
+        "BaseDialog",
+        "GroupOut",
+        "HouseholdOut"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/AppButtonCopy.vue",
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/BaseDialog.vue"
+      ],
+      "vuetify": [
+        "v-col",
+        "v-container",
+        "v-form",
+        "v-row",
+        "v-select",
+        "v-text-field"
+      ],
+      "events": [
+        "click: sendInvite",
+        "keydown.enter: sendInvite"
+      ],
+      "models": [
+        "generatedSignupLink",
+        "inviteDialog",
+        "selectedGroup",
+        "selectedHousehold",
+        "sendTo"
+      ],
+      "conditions": [
+        "groups && groups.length",
+        "households && households.length"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/User/UserPasswordStrength.vue",
+      "name": "UserPasswordStrength",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-progress-linear"
+      ],
+      "events": [],
+      "models": [
+        "pwStrength.score.value"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Domain/User/UserProfileLinkCard.vue",
+      "name": "UserProfileLinkCard",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-card",
+        "v-card-actions",
+        "v-card-text",
+        "v-card-title",
+        "v-divider",
+        "v-img",
+        "v-spacer"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "$vuetify.display.mdAndUp",
+        "$vuetify.display.smAndDown"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Domain/User/UserRegistrationForm.vue",
+      "name": "UserRegistrationForm",
+      "components": [
+        "UserPasswordStrength"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/User/UserPasswordStrength.vue"
+      ],
+      "vuetify": [
+        "v-card-text",
+        "v-card-title",
+        "v-checkbox",
+        "v-divider",
+        "v-form",
+        "v-icon",
+        "v-text-field"
+      ],
+      "events": [
+        "blur: validateEmail",
+        "blur: validateUsername",
+        "click:append-inner: pwFields.togglePasswordShow"
+      ],
+      "models": [
+        "accountDetails.advancedOptions.value",
+        "accountDetails.email.value",
+        "accountDetails.fullName.value",
+        "accountDetails.username.value",
+        "credentials.password1.value",
+        "credentials.password2.value",
+        "isFormValid"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Layout/DefaultLayout.vue",
+      "name": "DefaultLayout",
+      "components": [
+        "AppHeader",
+        "AppSidebar",
+        "NuxtPage",
+        "Record",
+        "SideBarLink",
+        "TheSnackbar"
+      ],
+      "dependencies": [
+        "frontend/app/components/Layout/LayoutParts/AppHeader.vue",
+        "frontend/app/components/Layout/LayoutParts/AppSidebar.vue",
+        "frontend/app/components/Layout/LayoutParts/TheSnackbar.vue"
+      ],
+      "vuetify": [
+        "v-app",
+        "v-btn",
+        "v-divider",
+        "v-icon",
+        "v-list",
+        "v-list-item",
+        "v-list-item-subtitle",
+        "v-list-item-title",
+        "v-main",
+        "v-menu",
+        "v-scroll-x-transition"
+      ],
+      "events": [
+        "click.stop: sidebar = !sidebar"
+      ],
+      "models": [
+        "sidebar"
+      ],
+      "conditions": [
+        "!item.hide",
+        "!item.restricted || isOwnGroup",
+        "isOwnGroup",
+        "item.insertDivider"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify",
+        "useDisplay"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Layout/LayoutParts/AppFooter.vue",
+      "name": "AppFooter",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-col",
+        "v-footer",
+        "v-icon",
+        "v-row"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Layout/LayoutParts/AppHeader.vue",
+      "name": "AppHeader",
+      "components": [
+        "InstanceType",
+        "RecipeDialogSearch",
+        "RouterLink"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Recipe/RecipeDialogSearch.vue"
+      ],
+      "vuetify": [
+        "v-app-bar",
+        "v-btn",
+        "v-icon",
+        "v-img",
+        "v-responsive",
+        "v-spacer",
+        "v-text-field",
+        "v-toolbar-title"
+      ],
+      "events": [
+        "click: $router.push(routerLink)",
+        "click: activateSearch",
+        "click: logout()"
+      ],
+      "models": [],
+      "conditions": [
+        "!xs",
+        "$appInfo.brandingLogoUrl",
+        "loggedIn",
+        "menu"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "useDisplay"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Layout/LayoutParts/AppScrollToTop.vue",
+      "name": "AppScrollToTop",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-fade-transition",
+        "v-icon"
+      ],
+      "events": [
+        "click: scrollToTop"
+      ],
+      "models": [],
+      "conditions": [
+        "showButton"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/Layout/LayoutParts/AppSidebar.vue",
+      "name": "AppSidebar",
+      "components": [
+        "AnnouncementDialog",
+        "LanguageDialog",
+        "UserAvatar"
+      ],
+      "dependencies": [
+        "frontend/app/components/Domain/Announcement/AnnouncementDialog.vue",
+        "frontend/app/components/Domain/User/UserAvatar.vue",
+        "frontend/app/components/global/LanguageDialog.vue"
+      ],
+      "vuetify": [
+        "v-badge",
+        "v-btn",
+        "v-divider",
+        "v-icon",
+        "v-list",
+        "v-list-group",
+        "v-list-item",
+        "v-list-item-subtitle",
+        "v-list-item-title",
+        "v-menu",
+        "v-navigation-drawer"
+      ],
+      "events": [
+        "click: () => showAnnouncementsDialog = !showAnnouncementsDialog",
+        "click: state.languageDialog=true",
+        "click: toggleDark"
+      ],
+      "models": [
+        "modelValue",
+        "showAnnouncementsDialog",
+        "state.bottomSelected",
+        "state.dropDowns[nav.title]",
+        "state.languageDialog",
+        "state.secondarySelected"
+      ],
+      "conditions": [
+        "!nav.restricted || isOwnGroup",
+        "canOrganize",
+        "isAdmin",
+        "isOwnGroup",
+        "loggedIn",
+        "loggedIn && announcementsEnabled",
+        "loggedIn && sessionUser",
+        "nav.children",
+        "secondaryLinks.length > 0",
+        "topLink"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify"
+      ]
+    },
+    {
+      "source": "frontend/app/components/Layout/LayoutParts/TheSnackbar.vue",
+      "name": "TheSnackbar",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-icon",
+        "v-progress-linear",
+        "v-snackbar"
+      ],
+      "events": [
+        "click: () => {\n            toastAlert.action?.onClick();\n            toastAlert.open = false\n          }",
+        "click: toastLoading.open = false"
+      ],
+      "models": [
+        "toastAlert.open",
+        "toastLoading.open"
+      ],
+      "conditions": [
+        "icon"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/AdvancedOnly.vue",
+      "name": "AdvancedOnly",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "advanced"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/AppButtonCopy.vue",
+      "name": "AppButtonCopy",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-icon",
+        "v-tooltip"
+      ],
+      "events": [
+        "click: textToClipboard()"
+      ],
+      "models": [
+        "show"
+      ],
+      "conditions": [
+        "!isSupported",
+        "!isSupported || copiedSuccess !== null"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "v-tooltip"
+      ]
+    },
+    {
+      "source": "frontend/app/components/global/AppButtonUpload.vue",
+      "name": "AppButtonUpload",
+      "components": [
+        "File",
+        "HTMLInputElement"
+      ],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-form",
+        "v-icon"
+      ],
+      "events": [
+        "change: onFileChanged",
+        "click: onButtonClick"
+      ],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/AppLoader.vue",
+      "name": "AppLoader",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-icon",
+        "v-progress-circular"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/AppLogo.vue",
+      "name": "AppLogo",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-avatar",
+        "v-divider",
+        "v-img"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "$appInfo.brandingLogoUrl"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/AppToolbar.vue",
+      "name": "AppToolbar",
+      "components": [
+        "BaseButton"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseButton.vue"
+      ],
+      "vuetify": [
+        "v-toolbar"
+      ],
+      "events": [
+        "click: $router.go(-1)"
+      ],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/AutoForm.vue",
+      "name": "AutoForm",
+      "components": [
+        "InputColor",
+        "Record"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/InputColor.vue"
+      ],
+      "vuetify": [
+        "v-card",
+        "v-card-text",
+        "v-card-title",
+        "v-checkbox",
+        "v-col",
+        "v-divider",
+        "v-form",
+        "v-icon",
+        "v-number-input",
+        "v-row",
+        "v-select",
+        "v-text-field",
+        "v-textarea",
+        "v-tooltip"
+      ],
+      "events": [],
+      "models": [
+        "isValid",
+        "model[inputField.varName]"
+      ],
+      "conditions": [
+        "inputField.section",
+        "inputField.sectionDetails",
+        "inputField.tooltip",
+        "inputField.type === fieldTypes.BOOLEAN",
+        "inputField.type === fieldTypes.COLOR",
+        "inputField.type === fieldTypes.NUMBER",
+        "inputField.type === fieldTypes.SELECT",
+        "inputField.type === fieldTypes.TEXT || inputField.type === fieldTypes.PASSWORD",
+        "inputField.type === fieldTypes.TEXT_AREA"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "v-tooltip"
+      ]
+    },
+    {
+      "source": "frontend/app/components/global/BannerExperimental.vue",
+      "name": "BannerExperimental",
+      "components": [
+        "BannerWarning"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BannerWarning.vue"
+      ],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "issue"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/BannerWarning.vue",
+      "name": "BannerWarning",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-alert"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "$slots.default",
+        "description",
+        "title"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/BaseButton.vue",
+      "name": "BaseButton",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-icon"
+      ],
+      "events": [
+        "click: download ? downloadFile() : undefined"
+      ],
+      "models": [],
+      "conditions": [
+        "!iconRight",
+        "iconRight"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/BaseButtonGroup.vue",
+      "name": "BaseButtonGroup",
+      "components": [
+        "BaseMenu"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseMenu.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-icon",
+        "v-item-group",
+        "v-tooltip"
+      ],
+      "events": [
+        "click: $emit(btn.event)",
+        "menu: (childEvent) => $emit(childEvent)"
+      ],
+      "models": [],
+      "conditions": [
+        "btn.children"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "v-tooltip"
+      ]
+    },
+    {
+      "source": "frontend/app/components/global/BaseCardSectionTitle.vue",
+      "name": "BaseCardSectionTitle",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-card",
+        "v-card-text",
+        "v-card-title",
+        "v-divider",
+        "v-icon"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "$slots.default",
+        "icon"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/BaseDialog.vue",
+      "name": "BaseDialog",
+      "components": [
+        "BaseDialogContent",
+        "DialogEmits",
+        "DialogProps"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseDialogContent.vue"
+      ],
+      "vuetify": [
+        "v-bottom-sheet",
+        "v-dialog"
+      ],
+      "events": [
+        "click:outside: emit('cancel')",
+        "keydown.enter: submitOnEnter",
+        "keydown.esc: emit('cancel')"
+      ],
+      "models": [
+        "dialog"
+      ],
+      "conditions": [
+        "bottomSheet && $vuetify.display.xs"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify"
+      ]
+    },
+    {
+      "source": "frontend/app/components/global/BaseDialogContent.vue",
+      "name": "BaseDialogContent",
+      "components": [
+        "BaseButton",
+        "DialogEmits",
+        "DialogProps"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseButton.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-card",
+        "v-card-actions",
+        "v-divider",
+        "v-icon",
+        "v-progress-linear",
+        "v-spacer",
+        "v-toolbar",
+        "v-toolbar-title"
+      ],
+      "events": [
+        "click: emit('cancel')",
+        "click: emit('confirm')",
+        "click: emit('delete')",
+        "click: emit('submit')"
+      ],
+      "models": [],
+      "conditions": [
+        "!$vuetify.display.xs",
+        "canConfirm",
+        "canDelete",
+        "canSubmit",
+        "submitIcon"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify"
+      ]
+    },
+    {
+      "source": "frontend/app/components/global/BaseDivider.vue",
+      "name": "BaseDivider",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-divider"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/BaseExpansionPanels.vue",
+      "name": "BaseExpansionPanels",
+      "components": [
+        "Props"
+      ],
+      "dependencies": [],
+      "vuetify": [
+        "v-expansion-panels"
+      ],
+      "events": [],
+      "models": [
+        "open"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/BaseKeyValueEditor.vue",
+      "name": "BaseKeyValueEditor",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-icon",
+        "v-text-field"
+      ],
+      "events": [
+        "click: addEntry",
+        "click: removeEntry(key)",
+        "focusout: onNewEntryFocusOut",
+        "keydown.enter.prevent: addEntry",
+        "update:model-value: updateValue(key, $event)"
+      ],
+      "models": [
+        "newKey",
+        "newValue"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/BaseMenu.vue",
+      "name": "BaseMenu",
+      "components": [
+        "BaseMenu"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseMenu.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-divider",
+        "v-icon",
+        "v-list",
+        "v-list-item",
+        "v-list-item-title",
+        "v-menu"
+      ],
+      "events": [
+        "click: $emit('menu', child.event)",
+        "menu: (childEvent) => $emit('menu', childEvent)"
+      ],
+      "models": [],
+      "conditions": [
+        "child.children",
+        "child.divider"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/BaseOverflowButton.vue",
+      "name": "BaseOverflowButton",
+      "components": [
+        "MenuItem"
+      ],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-divider",
+        "v-icon",
+        "v-list",
+        "v-list-item",
+        "v-list-item-title",
+        "v-menu"
+      ],
+      "events": [
+        "click: $emit(item.event)",
+        "click: setValue(item)"
+      ],
+      "models": [
+        "itemGroup"
+      ],
+      "conditions": [
+        "!item.hide",
+        "activeObj.icon",
+        "item.divider",
+        "item.icon",
+        "mode === MODES.event",
+        "mode === MODES.link",
+        "mode === MODES.model"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/BasePageTitle.vue",
+      "name": "BasePageTitle",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-divider"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "divider"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/ButtonLink.vue",
+      "name": "ButtonLink",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-icon"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "icon != ''"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/ContextMenu.vue",
+      "name": "ContextMenu",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-icon",
+        "v-list",
+        "v-list-item",
+        "v-list-item-title",
+        "v-menu"
+      ],
+      "events": [
+        "click: $emit(item.event)"
+      ],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/CrudTable.vue",
+      "name": "CrudTable",
+      "components": [
+        "BaseButton",
+        "BaseButtonGroup",
+        "BaseOverflowButton"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseButton.vue",
+        "frontend/app/components/global/BaseButtonGroup.vue",
+        "frontend/app/components/global/BaseOverflowButton.vue"
+      ],
+      "vuetify": [
+        "v-btn",
+        "v-card",
+        "v-card-actions",
+        "v-card-text",
+        "v-checkbox",
+        "v-data-table",
+        "v-icon",
+        "v-menu",
+        "v-text-field"
+      ],
+      "events": [
+        "click: downloadAsJson(data, 'export.json')",
+        "delete: $emit('delete-one', item)",
+        "edit: $emit('edit-one', item)"
+      ],
+      "models": [
+        "itemValue.show",
+        "search",
+        "selected"
+      ],
+      "conditions": [
+        "bulkActions.length > 0",
+        "tableConfig.hideColumns"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/DevDumpJson.vue",
+      "name": "DevDumpJson",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/DocLink.vue",
+      "name": "DocLink",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-icon"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/DropZone.vue",
+      "name": "DropZone",
+      "components": [
+        "HTMLDivElement"
+      ],
+      "dependencies": [],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "isOverDropZone"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/HelpIcon.vue",
+      "name": "HelpIcon",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-card",
+        "v-card-text",
+        "v-icon",
+        "v-menu"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/ImageCropper.vue",
+      "name": "ImageCropper",
+      "components": [
+        "Control",
+        "Cropper"
+      ],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-card",
+        "v-card-text",
+        "v-icon",
+        "v-list",
+        "v-list-item",
+        "v-list-item-group",
+        "v-list-item-icon",
+        "v-menu",
+        "v-row",
+        "v-spacer"
+      ],
+      "events": [
+        "change: changed = changed + 1",
+        "click: $emit('delete')",
+        "click: control.callback()",
+        "click: save",
+        "ready: onReady"
+      ],
+      "models": [],
+      "conditions": [
+        "changed"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/InputColor.vue",
+      "name": "InputColor",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-card",
+        "v-card-text",
+        "v-color-picker",
+        "v-icon",
+        "v-menu",
+        "v-text-field"
+      ],
+      "events": [
+        "click: setRandomHex"
+      ],
+      "models": [
+        "menu",
+        "modelValue"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/InputLabelType.vue",
+      "name": "InputLabelType",
+      "components": [
+        "BaseButton",
+        "HTMLInputElement",
+        "MultiPurposeLabelSummary"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseButton.vue"
+      ],
+      "vuetify": [
+        "v-autocomplete"
+      ],
+      "events": [
+        "click: emitCreate",
+        "keyup.enter: emitCreate"
+      ],
+      "models": [
+        "itemVal",
+        "searchInput"
+      ],
+      "conditions": [
+        "create"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/LanguageDialog.vue",
+      "name": "LanguageDialog",
+      "components": [
+        "BaseDialog",
+        "i18n-t"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseDialog.vue"
+      ],
+      "vuetify": [
+        "v-autocomplete",
+        "v-card-text",
+        "v-list-item-subtitle",
+        "v-list-item-title"
+      ],
+      "events": [
+        "update:model-value: onLocaleSelect"
+      ],
+      "models": [
+        "modelValue",
+        "selectedLocale"
+      ],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/MarkdownEditor.vue",
+      "name": "MarkdownEditor",
+      "components": [
+        "BaseButtonGroup",
+        "SafeMarkdown"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/BaseButtonGroup.vue",
+        "frontend/app/components/global/SafeMarkdown.vue"
+      ],
+      "vuetify": [
+        "v-textarea"
+      ],
+      "events": [
+        "toggle: previewState = !previewState"
+      ],
+      "models": [
+        "modelValue"
+      ],
+      "conditions": [
+        "!previewState",
+        "displayPreview"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/RecipeJsonEditor.vue",
+      "name": "RecipeJsonEditor",
+      "components": [
+        "JsonEditorVue"
+      ],
+      "dependencies": [],
+      "vuetify": [],
+      "events": [
+        "change: onChange"
+      ],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/ReportTable.vue",
+      "name": "ReportTable",
+      "components": [
+        "ReportSummary"
+      ],
+      "dependencies": [],
+      "vuetify": [
+        "v-btn",
+        "v-data-table",
+        "v-icon"
+      ],
+      "events": [
+        "click.stop: deleteReport(item.id)",
+        "click:row: ($event, { item }) => handleRowClick(item)"
+      ],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/SafeInlineHtml.vue",
+      "name": "SafeInlineHtml",
+      "components": [
+        "SafeMarkdown"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/SafeMarkdown.vue"
+      ],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/SafeMarkdown.vue",
+      "name": "SafeMarkdown",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/StatsCards.vue",
+      "name": "StatsCards",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-avatar",
+        "v-card",
+        "v-card-subtitle",
+        "v-card-title",
+        "v-icon"
+      ],
+      "events": [],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/ToggleState.vue",
+      "name": "ToggleState",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [
+        "tag"
+      ],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/Transition/SpinTransition.vue",
+      "name": "SpinTransition",
+      "components": [
+        "TransitionGroup"
+      ],
+      "dependencies": [],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/Transition/SwipeTransition.vue",
+      "name": "SwipeTransition",
+      "components": [
+        "Transition",
+        "TransitionGroup"
+      ],
+      "dependencies": [],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "group"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
+      "source": "frontend/app/components/global/WakelockSwitch.vue",
+      "name": "WakelockSwitch",
+      "components": [],
+      "dependencies": [],
+      "vuetify": [
+        "v-switch"
+      ],
+      "events": [],
+      "models": [
+        "wakeLock"
+      ],
+      "conditions": [
+        "wakeIsSupported"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": [
+        "$vuetify"
+      ]
+    }
+  ]
+}

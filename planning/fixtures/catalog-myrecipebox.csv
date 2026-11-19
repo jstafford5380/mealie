@@ -1,0 +1,5 @@
+"title","description","preparationTime","cookingTime","inactiveTime","totalTime","quantity","ingredients","instructions","notes","nutrition","favorite","rating","categories","tags","video","source","originalPicture"
+"Catalog Migration Salad","Synthetic local migration fixture","5","0","","5","2","1 cucumber
+2 tomatoes
+1 tbsp olive oil","Chop vegetables.
+Toss with olive oil.","Catalog fixture only","","false","","Lunch","Catalog migration","","",""

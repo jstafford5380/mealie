@@ -1,0 +1,187 @@
+# Shared recipe page
+
+This contract covers RecipePage and both ordinary/shared recipe routes. The page documents identify remaining evidence checks.
+
+## Page mode, draft, and save
+
+Source: [RecipePage](../frontend/app/components/Domain/Recipe/RecipePage/RecipePage.vue).
+
+- Keep View, form Edit, JSON Edit, Parse, and Cook modes distinct. Child form editors mutate the same recipe model.
+- Hydrate edit=true and parse=true only for the current group. Hydrate a positive finite scale query and cook-mode query.
+- Clear edit/parse parameters when those modes close. Preserve rename navigation without a conflicting query cleanup.
+- Take a deep snapshot of the loaded/saved recipe. Compare the full model for unsaved changes.
+- Close or route exit with unsaved edits opens Discard Changes. Cancel stays in the editor; Confirm restores the snapshot and completes the pending route or returns to View.
+- Validate the instruction form before form-mode Save. JSON mode skips this form validation.
+- Update by route slug. Keep edit mode on error. On data success, replace recipe/snapshot and navigate to its new slug when renamed.
+- Parsed ingredients replace the ingredient array and save. Close Parse and restore form Edit when parsing started there.
+- Delete navigates to the group explorer only after the API returns a slug.
+- Track header intersection and show a floating Save button when an edit toolbar leaves view. Disconnect the observer on unmount.
+- Clear shared page state and browser navigation warning on unmount.
+- Display unit conversion only outside Edit. Keep the original model by identity inside editors so converted copies never enter saved data.
+- Hide comments when household or recipe preferences disable them. Show comments outside form Edit and Cook; current JSON mode still shows comments.
+- Default to landscape header layout on small screens or when recipe settings request it.
+
+## Header, actions, image, and settings
+
+Sources: [header](../frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageHeader.vue), [info card](../frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageInfoCard.vue), [action menu](../frontend/app/components/Domain/Recipe/RecipeActionMenu.vue).
+
+- Display name, user/group rating, current-group owner avatar/name, sanitized Markdown description, scaled yield, Last Made, and available prep/cook/total times.
+- Show recipe image above the header in landscape or beside it otherwise. Use small image URLs on small screens and full URLs on desktop.
+- Hide failed image content, reset failure on URL changes, and open hero plus image-assets lightbox on click. Hero height is 200px at xs and 400px otherwise.
+- Use recipe permissions, household context, and page user for Edit access. Keep favorite and timeline buttons in the current group.
+- Preserve [shared context actions](shared-recipe-actions.md). The full page enables Print and Print Preferences, plus authenticated ZIP/PDF, duplicate, meal plan, shopping list, share, delete, and custom actions.
+- Editor toolbar offers Delete review, JSON/form toggle, Close, and Save. Small screens show icon-only variants with accessible names.
+- Info editor fields: required name, nonnegative fractional servings/yield quantity, yield text, total/prep/cook times, and multiline description.
+- Time controls preserve textual or seconds forms and imported remainder seconds according to the shared time-input contract.
+- Image menu offers file upload, Delete with confirmation, and URL fetch with loading and error handling. Disable Get without a saved slug and show the save-first message.
+- Image upload/delete/URL operations act on the backend immediately; they do not wait for recipe Save. Update image model and refresh key after success.
+- Settings switches: Public Recipe with visibility help, Show Nutrition, Show Assets, Landscape View, Disable Comments, and Locked. Only the owner can change Locked.
+- Owner selector shows group users with household subtitles. Enable owner changes only for recipe owner or admin.
+
+## Rating and ingredient reader
+
+Sources: [rating](../frontend/app/components/Domain/Recipe/RecipeRating.vue), [ingredients](../frontend/app/components/Domain/Recipe/RecipeIngredients.vue), [ingredient row](../frontend/app/components/Domain/Recipe/RecipeIngredientListItem.vue), [unit selector](../frontend/app/components/Domain/Recipe/RecipeUnitSystemButton.vue).
+
+- User ratings use whole stars and clear when the current star repeats. Keep local updates during pending writes; do not overwrite them with a stale refetch.
+- Public/read-only rating falls back to a nonzero group average with half-stars and muted styling. Hover feedback requires a fine pointer with hover support.
+- Display scaled quantity, unit, food or referenced-recipe link, and sanitized Markdown note. Free-text ingredients render their note as the primary text.
+- Ingredient sections have headings and dividers. Copy Ingredients includes section headings in brackets and scaled plain-text rows.
+- Click row or checkbox to toggle checked state without double toggles. Store by referenceId, with index fallback, in recipe-specific session storage.
+- Share ingredient checked state between normal and Cook views. Use transient state only when no storage key exists.
+- Substitutions open on click/tap. Show recipe-specific substitutions first and common food substitutions second with reduced emphasis.
+- Substitute names follow the ingredient's scaled plurality. Food substitutions can include Markdown notes; note-only substitutions remain primary content.
+- Required Tools shows on-hand checkboxes. Update the current household's tool association only for a current-group signed-in user.
+- Servings controls appear outside Edit. Enable scale edits only when at least one ingredient has a food or unit; use servings/yield/one fallback.
+- Unit menu offers As Written, Metric, and Imperial (stored as us). Disable conversion when no ingredient has convertible standardization data.
+- Apply display conversion consistently to ingredient list, Cook, and Print. Keep conversion separate from saved data.
+
+## Ingredient editor
+
+Sources: [parent editor](../frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageIngredientEditor.vue), [row editor](../frontend/app/components/Domain/Recipe/RecipeIngredientEditor.vue), [substitution editor](../frontend/app/components/Domain/Recipe/RecipeIngredientSubstitutionEditor.vue).
+
+- Offer Parse when ingredients exist but none has a food/unit. Show an empty skeleton when no ingredient exists.
+- Drag ingredients by handle with a 250ms touch delay. Preserve stable reference IDs and order.
+- Add creates a UUID row with empty note/title, zero quantity, and autofocus quantity. Select initial zero on first autofocus only.
+- Split menu offers Add Food, Add Recipe, and Bulk Add. Bulk creates a note-only row per supplied line.
+- Add Recipe starts quantity one and a recipe-specific row type. Toggle Recipe clears food/unit when entering recipe mode and clears referencedRecipe when leaving.
+- Row fields: nonnegative fractional quantity, searchable/clearable unit, searchable/clearable food or recipe, note, optional section title, and substitutions.
+- Prevent minus, plus, and exponent keys in quantity. Preserve autocomplete errors/tooltips from parser review and attached overlay targets.
+- Unit and food selectors use shared search, auto-select-first, and explicit Create/Enter creation when no matching named object exists.
+- Recipe search runs on focus/click and typed query. Preserve current-group/public API selection.
+- Row menu offers Add/Clear Section, Toggle Recipe, Add/Clear Substitutions, Insert Above, and Insert Below. A separate delete action removes the row.
+- Existing title/substitution data remains visible without a toggle. Clear actions remove its data, not only its display.
+- Substitutions support an existing-food selector, optional note-only alternative, Add, and Delete. Clearing the last row keeps its editor open.
+- Do not create new foods from the substitution selector. Keep accessible delete targets and responsive field layout.
+
+## Organizers, nutrition, notes, and footer
+
+- Categories/tags show linked chips in View and creatable organizer multiselects in Edit. Tools use their selector in Edit.
+- Place organizers beside instructions on desktop and below them on smaller screens. Preserve [organizer management](shared-organizer-browser.md) contracts.
+- Show Nutrition only when enabled and at least one value exists, or in Edit. Fields cover calories, carbohydrate, cholesterol, fat, fiber, protein, saturated fat, sodium, sugar, trans-fat, and unsaturated fat.
+- Nutrition is per serving. Use nonnegative fractional inputs, proper unit suffixes, string/null persistence, and hide empty rows in View.
+- Notes have title and Markdown text. Add creates a stable note referenceId; Delete removes that note. Preserve notes for instruction linking.
+- Original URL opens only a valid HTTP URL in View; Edit has its text input. Hide the link in Cook mode.
+- Advanced-only API Extras supports key/value fields, duplicate-key prevention, add-key reset, and key deletion.
+- Keep Screen Awake follows supported-device preference and releases the wake lock on unmount.
+
+## Comments
+
+- Show signed-in avatar and multiline comment form. Disable Submit for whitespace-only input. Submit trims text and appends successful data.
+- Clear the comment input after a request. Preserve error feedback so failed text does not disappear silently during replacement.
+- Render author avatar/name, localized timestamp, and sanitized Markdown for each comment.
+- Show Delete only for the author or admin. Remove locally only after HTTP 200. Current source deletes directly without review.
+
+## Cook mode
+
+- Without linked ingredients, show ingredient/tools and instructions in separate desktop scroll columns; stack on small screens.
+- With linked ingredients, show each step's linked ingredients and notes alongside its instructions. Show unlinked ingredients below the steps.
+- Keep scale/unit controls, ingredient state, required tools, and a fixed Close control. Preserve cook query synchronization.
+
+
+## Instruction edit, references, and display
+
+Source: [instructions](../frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipePageInstructions.vue).
+
+- View steps show Markdown summary or step number, duration, Markdown instructions, optional linked-note button, and completed/collapsed state.
+- Click a step to collapse/mark it complete; repeat to expand. Click a section header to collapse/expand its complete range until the next section.
+- Edit supports summary, section title, Markdown content and preview, duration, drag order, and Delete.
+- Menu actions: Add/Clear Section, Link References, Upload Image, Preview/Edit Markdown, Merge Above, Move to Top/Bottom, Insert Above/Below.
+- Newly opened section title takes focus once. Clearing its text must not close its field while typing. Clear Section removes the title.
+- New and bulk steps receive UUIDs, empty titles/summaries/reference arrays, and null duration. Bulk utilities trim lines, remove first character, and split numbered prefixes.
+- Preserve merge history and Ctrl+Z undo for the last merge. Keep step content, titles, and references according to the merge helper.
+- Link References opens the active step text and ingredients grouped by section, split into Unlinked and Linked to Other Step.
+- Select ingredients and notes by stable referenceId. Show no-notes guidance. Auto matches ingredients from step text.
+- Save applies both ingredient and note references. Next Step saves and opens the next step. Cancel leaves references unchanged.
+- Editor shows selected ingredient text and note titles below Markdown. Public/cook display resolves references without enabling edit links.
+- View linked notes opens a bottom sheet with title, count, Markdown notes, and Close. Cook mode displays them beside the step directly.
+- Duration uses nonnegative whole minutes up to 35,791,394. Retain imported seconds until the minute value changes and show their exact duration hint.
+- Zero duration stores null. Display localized hours/minutes/seconds next to the step summary.
+- Drop a local image, upload from the step menu, or drop an HTTP image URL to create a recipe asset and embed its image HTML.
+- Show upload progress per step. Report unsupported image URLs and URL-fetch failure. Keep the asset list and Markdown embed together.
+- Preserve touch drag delay, stable step IDs, responsive linked-content columns, and nested-click prevention.
+
+## Assets and lightbox
+
+Sources: [assets](../frontend/app/components/Domain/Recipe/RecipeAssets.vue), [lightbox](../frontend/app/components/Domain/Recipe/RecipeImageLightbox.vue).
+
+- Assets appear when enabled and nonempty, or while editing. Images show lazy thumbnails; other files show the selected icon.
+- View image rows open a gallery. Other file rows open their URL in a new tab. Each view row has Download.
+- Edit asset menu offers View, Download, Copy image embed HTML, and Delete from the model.
+- Add Asset dialog contains Name, File/PDF/Image/Code/Recipe icon selector, and Upload. Require a selected file and report invalid submission.
+- Default name from file base name. Use a trimmed custom name or full filename fallback; send extension, name, icon, and file.
+- Successful creation appends the server asset; reset file/name/icon afterward. Asset upload occurs before recipe Save.
+- Gallery order is hero then image assets in model order. Recognize png, jpg/jpeg, gif, webp, bmp, and avif; exclude other files.
+- Open the clicked asset's index. Show previous/next only within bounds, plus label and index/total when multiple images exist.
+- Arrow keys navigate without scrolling the underlying page. Ignore modified keys and text-input targets; remove listeners on close/unmount.
+- Click image to toggle 2x zoom. Drag to pan within bounds. Suppress click zoom after drag. Hide navigation arrows while zoomed.
+- Touch/pen horizontal swipe navigates at 50px. Separate it from zoom. Cancel pointer state cleanly.
+- Reset zoom and natural/frame dimensions on image change. Preload adjacent images. Recalculate fit on load/resize.
+- Background click or Close exits. Preserve theme-aware backdrop/caption contrast, image fit, focus, and scroll locking.
+
+## Ingredient parser
+
+Source: [parser state](../frontend/app/composables/recipes/use-parse-ingredients-dialog.ts).
+
+- Opening Parse starts a fresh bulk parse with loading, optional explanation, low-confidence per-item review, then final review.
+- Persist parser choice and Don't Show Again. Default NLP for English and Brute for other locales. Show the NLP language warning outside English.
+- Offer AI parser only when group AI settings enable it. Retry current parser or select another parser and reparse.
+- Skip referenced recipes during text parse. Restore section titles and stable ingredient reference IDs; retain referenced recipe rows.
+- Review average confidence below 0.85 or missing food/unit IDs. Show original text, confidence, editable fields, and field-specific warnings.
+- Missing food/unit can create a new record or add the missing text as an alias to a selected existing record.
+- Keep independent food/unit loading states, permission errors, and lowercase caches to avoid repeated creations within a run.
+- Delete Item marks the current ingredient for removal on Next. Otherwise Next advances through items needing review.
+- Final review supports row edits, drag order, insert above/below, delete with at least one row, original text, and parser retry.
+- Insert an empty UUID ingredient if final review becomes empty. Save emits ingredient rows and shows save loading.
+- Reset current row, missing names, deletion flag, arrays, caches, and review state on each parse. Prevent overlapping bulk parse.
+- Preserve parser error feedback and recovery instead of leaving the loading state stuck.
+
+## I Made This and recipe timeline
+
+- Last Made fetches the current household's value. I Made This accepts comment, local date, optional image/crop/removal, and selected child recipes.
+- Reset date to today whenever the dialog opens. Use household week start. Enter does not submit.
+- Create a comment event at the selected day's local 23:59:59. Derive its subject from the current user's display name.
+- Update Last Made only for a newer event timestamp. For checked child recipes, create their event and update their newer Last Made independently.
+- Upload event image after event creation. Distinguish total creation failure from event success with image failure; keep successful metadata.
+- Reset the form, close, emit the created event, and show feedback. Preserve image crop/name state and separate partial failures.
+- Timeline badge opens a recipe-scoped timeline with recipe.slug query. Preserve [timeline filtering/edit/image/delete behavior](pages/g--groupSlug--recipes--timeline.md).
+
+## JSON and print
+
+- JSON editor uses text mode, hides its main menu, and retains valid previous data when JSON parsing fails. Preserve line/column, editor scrolling, and form toggle.
+- Print calls window.print and uses a dedicated print container with compact black-on-white output and removed app chrome.
+- Print preferences include image left/right/hidden, description, notes, nutrition, child recipe expansion, linked ingredients, and substitutions.
+- Render scaled servings/yield, times, Markdown description, ingredient sections in two columns, instruction sections with continuous step numbers, notes, and per-serving nutrition.
+- Expand linked child ingredient arrays recursively when requested. Preserve scaling semantics and review nested recipe quantity handling.
+- Print linked ingredient references with each step when selected. Render substitution text because paper has no popup.
+- Keep section and ingredient cells together across print pages. Preserve safe HTML/Markdown and current image refresh keys.
+- Print preparation currently assigns ingredient section titles while deriving sections. Verify print preview does not dirty the editable recipe.
+
+## Exact helper semantics
+
+- Merge Above concatenates source text with a space, unions ingredient/note references by ID, and removes the source step. It retains target metadata.
+- Undo restores target text/reference arrays and reinserts the source at its original index. Undo merges in reverse order.
+- Auto reference matching strips boundary punctuation, ignores short/common/numeric words, matches ingredient text case-insensitively, and deduplicates unused IDs.
+- Organizer selectors support normalized search, removable multi-chips, clear search after selection, plus creation dialog, and Enter creation for unmatched names.
+- Tool creation includes On Hand. New organizer dialog resets its name on close and appends the returned item to selected values.
+- Bulk Add ignores blank lines. Its utilities trim whitespace, remove each line's first character, and split numbered prefixes; Enter remains multiline.
+- Header yield combines scaled quantity and yield text. Time cards prefer formatted seconds with text fallback and wrap at mobile breakpoints.
