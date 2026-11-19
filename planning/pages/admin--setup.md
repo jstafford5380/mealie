@@ -57,6 +57,17 @@ The final step also links to Backup Restore, Recipe Migration, manual recipe cre
 Source: [GroupAIProviderSettingsEditor.vue](../../frontend/app/components/Domain/Group/GroupAIProviderSettingsEditor.vue).
 The [shared provider and prompt contract](../shared-group-settings.md) covers every field, validation rule, test result, secret sentinel, and independent save.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| 1200px card with a primary "Mealie" toolbar and a Vuetify stepper with six icon steps. | The sign-in frame, wider, with a six-segment progress bar labelled by step (phones show "Step N of 6 · name"). |
+| Landing: centred logo, title, outlined rounded buttons, a large Choose Language button and a separate stepper action row. | Landing: title, the "previous instance?" question with Restore Backup and "already set up" buttons, and a quiet Choose Language button. |
+| Each step had its own Vuetify stepper-actions row with a green Next. | One Back / Next row at the bottom of every step; the summary step's button reads "Finish setup"; the last step's reads "Home". |
+| Summary as a Vuetify list. | A two-column summary list. |
+| End page: tonal-avatar cards in a single column. | Linked cards with an icon, title and description, two per row on wider screens, grouped under their headings. |
+| AI providers: default/audio/image selects first, then provider cards with a button group. | Providers list first (with a Default badge, edit and delete), then the three choices and the enrich option; a marigold note when no default is set. The provider dialog's Advanced section is a collapsible with key/value rows. |
+
 ## Screenshots
 
 ### Welcome, backup restore, skip link, locale, and step navigation

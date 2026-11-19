@@ -1,52 +1,49 @@
 <template>
-  <v-container max-width="880" class="end-page-content">
-    <div class="d-flex flex-column ga-6">
-      <div>
-        <v-card-title class="text-h4 justify-center">
-          {{ $t('admin.setup.setup-complete') }}
-        </v-card-title>
-        <v-card-subtitle class="justify-center">
-          {{ $t('admin.setup.here-are-a-few-things-to-help-you-get-started') }}
-        </v-card-subtitle>
+  <div class="flex flex-col gap-6 font-sans">
+    <section
+      v-for="section, idx in sections"
+      :key="idx"
+      class="flex flex-col gap-2"
+    >
+      <h3 class="m-0 text-base font-semibold">
+        {{ section.title }}
+      </h3>
+      <div class="grid gap-2 sm:grid-cols-2">
+        <NuxtLink
+          v-for="link, linkIdx in section.links"
+          :key="linkIdx"
+          :to="link.to"
+          class="group flex items-start gap-3 rounded-card border bg-card p-4 text-foreground no-underline transition-colors hover:border-primary/50 hover:bg-primary/5"
+        >
+          <span class="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-subtle text-subtle-foreground">
+            <MdiIcon
+              :path="link.icon"
+              class="size-5"
+            />
+          </span>
+          <span class="min-w-0 flex-1">
+            <span class="block font-semibold">{{ link.text }}</span>
+            <span class="mt-0.5 block text-sm text-muted-foreground">{{ link.description }}</span>
+          </span>
+          <ChevronRightIcon class="mt-2.5 size-4 shrink-0 text-muted-foreground group-hover:text-foreground rtl:rotate-180" />
+        </NuxtLink>
       </div>
-      <div
-        v-for="section, idx in sections"
-        :key="idx"
-        class="d-flex flex-column ga-3"
-      >
-        <v-card-title class="text-h6 pl-0">
-          {{ section.title }}
-        </v-card-title>
-        <div class="sections d-flex flex-column ga-2">
-          <v-card
-            v-for="link, linkIdx in section.links"
-            :key="linkIdx"
-            clas="link-card"
-            :href="link.to"
-            :title="link.text"
-            :subtitle="link.description"
-            :append-icon="$globals.icons.chevronRight"
-          >
-            <template #prepend>
-              <v-avatar :icon="link.icon || undefined" variant="tonal" :color="section.color" />
-            </template>
-          </v-card>
-        </div>
-      </div>
-    </div>
-  </v-container>
+    </section>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { ChevronRightIcon } from "@lucide/vue";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+
 const i18n = useI18n();
 const auth = useMealieAuth();
 const groupSlug = computed(() => auth.user.value?.groupSlug);
 const { $globals } = useNuxtApp();
 
-const sections = ref([
+const sections = computed(() => [
   {
     title: i18n.t("profile.data-migrations"),
-    color: "info",
     links: [
       {
         icon: $globals.icons.backupRestore,
@@ -64,17 +61,16 @@ const sections = ref([
   },
   {
     title: i18n.t("recipe.create-recipes"),
-    color: "success",
     links: [
       {
         icon: $globals.icons.createAlt,
-        to: computed(() => `/g/${groupSlug.value || ""}/r/create/new`),
+        to: `/g/${groupSlug.value || ""}/r/create/new`,
         text: i18n.t("recipe.create-recipe"),
         description: i18n.t("recipe.create-recipe-description"),
       },
       {
         icon: $globals.icons.link,
-        to: computed(() => `/g/${groupSlug.value || ""}/r/create/url`),
+        to: `/g/${groupSlug.value || ""}/r/create/url`,
         text: i18n.t("recipe.import-with-url"),
         description: i18n.t("recipe.scrape-recipe-description"),
       },
@@ -82,7 +78,6 @@ const sections = ref([
   },
   {
     title: i18n.t("user.manage-users"),
-    color: "primary",
     links: [
       {
         icon: $globals.icons.group,
@@ -100,17 +95,3 @@ const sections = ref([
   },
 ]);
 </script>
-
-<style>
-.v-container {
-  .v-card-title,
-  .v-card-subtitle {
-    padding: 0;
-    white-space: unset;
-  }
-
-  .v-card-item {
-    gap: 0.5rem;
-  }
-}
-</style>

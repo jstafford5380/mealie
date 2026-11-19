@@ -1,73 +1,65 @@
 <template>
-  <div>
+  <div class="flex flex-col gap-2 font-sans">
     <div
       v-for="(value, key) in (modelValue ?? {})"
       :key="key"
-      class="d-flex align-center mb-2 gap-2"
+      class="flex items-center gap-2"
     >
-      <v-text-field
-        :model-value="key"
-        :label="resolvedKeyLabel"
-        density="compact"
-        variant="outlined"
-        hide-details
+      <input
+        :value="key"
         readonly
-        class="me-3 flex-grow-1"
-      />
-      <v-text-field
-        :model-value="value"
-        :label="resolvedValueLabel"
-        density="compact"
-        variant="outlined"
-        hide-details
-        class="ms-3 flex-grow-1"
-        @update:model-value="updateValue(key, $event)"
-      />
-      <v-btn
-        icon
-        variant="text"
-        color="error"
-        size="small"
+        :aria-label="resolvedKeyLabel"
+        class="h-10 min-w-0 flex-1 rounded-control border border-input bg-card px-3 text-[15px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/25 bg-muted"
+      >
+      <input
+        :value="value"
+        :aria-label="resolvedValueLabel"
+        class="h-10 min-w-0 flex-1 rounded-control border border-input bg-card px-3 text-[15px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/25"
+        @input="updateValue(key, ($event.target as HTMLInputElement).value)"
+      >
+      <button
+        type="button"
+        class="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+        :aria-label="$t('general.delete')"
         @click="removeEntry(key)"
       >
-        <v-icon>{{ $globals.icons.delete }}</v-icon>
-      </v-btn>
+        <Trash2Icon class="size-4" />
+      </button>
     </div>
 
-    <div class="d-flex align-center mt-2 gap-2" @focusout="onNewEntryFocusOut">
-      <v-text-field
+    <div
+      class="flex items-center gap-2"
+      @focusout="onNewEntryFocusOut"
+    >
+      <input
         v-model="newKey"
-        :label="resolvedKeyLabel"
-        density="compact"
-        variant="outlined"
-        hide-details
-        class="me-3 flex-grow-1"
+        :placeholder="resolvedKeyLabel"
+        :aria-label="resolvedKeyLabel"
+        class="h-10 min-w-0 flex-1 rounded-control border border-input bg-card px-3 text-[15px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/25"
         @keydown.enter.prevent="addEntry"
-      />
-      <v-text-field
+      >
+      <input
         v-model="newValue"
-        :label="resolvedValueLabel"
-        density="compact"
-        variant="outlined"
-        hide-details
-        class="ms-3 flex-grow-1"
+        :placeholder="resolvedValueLabel"
+        :aria-label="resolvedValueLabel"
+        class="h-10 min-w-0 flex-1 rounded-control border border-input bg-card px-3 text-[15px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/25"
         @keydown.enter.prevent="addEntry"
-      />
-      <v-btn
-        icon
-        variant="text"
-        color="primary"
-        size="small"
+      >
+      <button
+        type="button"
+        class="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-primary hover:bg-highlight disabled:opacity-40"
+        :aria-label="$t('general.add')"
         :disabled="!newKey?.trim()"
         @click="addEntry"
       >
-        <v-icon>{{ $globals.icons.createAlt }}</v-icon>
-      </v-btn>
+        <PlusIcon class="size-4" />
+      </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { PlusIcon, Trash2Icon } from "@lucide/vue";
 import { useGlobalI18n } from "~/composables/use-global-i18n";
 
 const i18n = useGlobalI18n();
@@ -81,8 +73,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: "update:modelValue", value: Record<string, string>): void;
 }>();
-
-const { $globals } = useNuxtApp();
 
 const resolvedKeyLabel = computed(() => props.keyLabel ?? i18n.t("general.key"));
 const resolvedValueLabel = computed(() => props.valueLabel ?? i18n.t("general.value"));

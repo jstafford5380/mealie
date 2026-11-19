@@ -11,114 +11,104 @@
     @submit="handleSubmit"
     @close="resetForm"
   >
-    <v-card-text v-if="init" style="max-height: 70vh; overflow-y: auto;">
-      <v-form ref="form" v-no-autofill>
-        <v-text-field
-          v-model="formData.name"
-          :label="$t('group.ai-provider-settings.provider-name')"
-          :rules="[validators.required]"
-          density="compact"
-          variant="outlined"
-          class="mb-4"
-        />
-        <v-text-field
-          v-model="formData.model"
-          :label="$t('group.ai-provider-settings.model')"
-          :hint="$t('group.ai-provider-settings.model-description')"
-          :rules="[validators.required]"
-          density="compact"
-          variant="outlined"
-          class="mb-4"
-        />
-        <v-text-field
-          v-model="formData.apiKey"
-          :label="$t('group.ai-provider-settings.api-key')"
-          :hint="$t(apiKeyHint)"
-          :persistent-hint="isEdit"
-          :rules="apiKeyRequired ? [validators.required] : []"
-          density="compact"
-          variant="outlined"
-          type="password"
-          class="mb-4"
-        />
-        <v-text-field
-          v-model="formData.baseUrl"
-          :label="$t('group.ai-provider-settings.base-url')"
-          :hint="$t('group.ai-provider-settings.base-url-description')"
-          density="compact"
-          variant="outlined"
-          class="mb-4"
-        />
-        <v-number-input
-          v-model.number="formData.timeout"
-          :label="$t('group.ai-provider-settings.request-timeout-seconds')"
-          type="number"
-          :min="0"
-          hide-details
-          density="compact"
-          variant="outlined"
-          class="mb-4"
-        />
-        <v-alert
-          v-if="hiddenValuesNeedReentry"
-          type="warning"
-          density="compact"
-          variant="tonal"
-          class="mb-4"
-        >
-          {{ $t('group.ai-provider-settings.reenter-hidden-values') }}
-        </v-alert>
-        <v-expansion-panels v-model="advancedPanel" variant="accordion">
-          <v-expansion-panel>
-            <v-expansion-panel-title class="text-subtitle-2" expand-icon="$expand" collapse-icon="$expand">
-              {{ $t('search.advanced') }}
-            </v-expansion-panel-title>
-            <v-expansion-panel-text class="px-0">
-              <div class="mb-2 text-subtitle-2">
-                {{ $t('group.ai-provider-settings.request-headers') }}
-              </div>
-              <BaseKeyValueEditor
-                v-model="formData.requestHeaders"
-                class="mb-4"
-              />
-              <v-divider class="mb-4" />
-              <div class="mb-2 text-subtitle-2">
-                {{ $t('group.ai-provider-settings.request-params') }}
-              </div>
-              <BaseKeyValueEditor
-                v-model="formData.requestParams"
-              />
-            </v-expansion-panel-text>
-          </v-expansion-panel>
-        </v-expansion-panels>
+    <div
+      v-if="init"
+      v-no-autofill
+      class="flex max-h-[70vh] flex-col gap-1 overflow-y-auto px-6 pb-2"
+    >
+      <TextField
+        v-model="formData.name"
+        :label="$t('group.ai-provider-settings.provider-name')"
+        :rules="[validators.required]"
+      />
+      <TextField
+        v-model="formData.model"
+        :label="$t('group.ai-provider-settings.model')"
+        :hint="$t('group.ai-provider-settings.model-description')"
+        :rules="[validators.required]"
+      />
+      <TextField
+        v-model="formData.apiKey"
+        type="password"
+        autocomplete="off"
+        :label="$t('group.ai-provider-settings.api-key')"
+        :hint="$t(apiKeyHint)"
+        :rules="apiKeyRequired ? [validators.required] : []"
+      />
+      <TextField
+        v-model="formData.baseUrl"
+        :label="$t('group.ai-provider-settings.base-url')"
+        :hint="$t('group.ai-provider-settings.base-url-description')"
+      />
+      <NumberInputField
+        v-model="formData.timeout"
+        :label="$t('group.ai-provider-settings.request-timeout-seconds')"
+        :min="0"
+      />
+      <p
+        v-if="hiddenValuesNeedReentry"
+        class="m-0 my-2 rounded-control border border-brand/50 bg-brand/10 px-3 py-2 text-sm"
+      >
+        {{ $t('group.ai-provider-settings.reenter-hidden-values') }}
+      </p>
+      <Collapsible
+        :open="advancedPanel === 0"
+        class="mt-2 rounded-card border"
+        @update:open="advancedPanel = $event ? 0 : undefined"
+      >
+        <CollapsibleTrigger class="flex w-full items-center justify-between px-4 py-3 text-sm font-semibold">
+          {{ $t('search.advanced') }}
+          <ChevronDownIcon
+            class="size-4 transition-transform"
+            :class="advancedPanel === 0 && 'rotate-180'"
+          />
+        </CollapsibleTrigger>
+        <CollapsibleContent class="flex flex-col gap-2 border-t px-4 py-3">
+          <p class="m-0 text-sm font-semibold">
+            {{ $t('group.ai-provider-settings.request-headers') }}
+          </p>
+          <BaseKeyValueEditor v-model="formData.requestHeaders" />
+          <p class="m-0 mt-3 text-sm font-semibold">
+            {{ $t('group.ai-provider-settings.request-params') }}
+          </p>
+          <BaseKeyValueEditor v-model="formData.requestParams" />
+        </CollapsibleContent>
+      </Collapsible>
 
-        <v-alert
-          v-if="testResult"
-          :type="testResult.success ? 'success' : 'error'"
-          density="compact"
-          variant="tonal"
-          class="mt-4"
-        >
-          {{ connectionMessage }}{{ imageSupportMessage }}
-        </v-alert>
-      </v-form>
-    </v-card-text>
+      <p
+        v-if="testResult"
+        class="m-0 mt-3 rounded-control border px-3 py-2 text-sm"
+        :class="testResult.success ? 'border-primary/40 bg-primary/10' : 'border-destructive/40 bg-destructive/10 text-destructive'"
+        role="status"
+      >
+        {{ connectionMessage }}{{ imageSupportMessage }}
+      </p>
+    </div>
     <AppLoader v-else />
 
     <template #custom-card-action>
-      <v-btn
-        variant="text"
-        :loading="testing"
+      <Button
+        variant="ghost"
         :disabled="submitDisabled || testing"
         @click="handleTest"
       >
+        <LoaderCircleIcon
+          v-if="testing"
+          class="size-4 animate-spin"
+        />
         {{ $t('group.ai-provider-settings.test-connection') }}
-      </v-btn>
+      </Button>
     </template>
   </BaseDialog>
 </template>
 
 <script setup lang="ts">
+import { ChevronDownIcon, LoaderCircleIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "~/components/ui/collapsible";
+import NumberInputField from "~/components/ui/field/NumberInputField.vue";
+import TextField from "~/components/ui/field/TextField.vue";
+import { provideFieldGroup } from "~/composables/forms/use-field-validation";
 import { useAIProviders } from "~/composables/use-ai-providers";
 import { validators } from "~/composables/use-validators";
 import type { AIProviderCreate, AIProviderTestResult, AIProviderUpdate } from "~/lib/api/types/group";
@@ -141,7 +131,7 @@ const i18n = useI18n();
 const { loading, getOne, testOne, testSavedOne } = useAIProviders();
 const init = ref(false);
 
-const form = ref();
+const form = provideFieldGroup();
 const advancedPanel = ref<number | undefined>(undefined);
 
 const isEdit = computed(() => !!props.providerId);
@@ -281,7 +271,7 @@ function handleSubmit() {
 function resetForm() {
   Object.assign(formData, defaultForm());
   savedBaseUrl.value = null;
-  form.value?.reset();
+  form.reset();
   advancedPanel.value = undefined;
   testResult.value = null;
 }

@@ -3,15 +3,13 @@
     {
       "source": "frontend/app/components/Domain/Admin/Setup/EndPageContent.vue",
       "name": "EndPageContent",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-avatar",
-        "v-card",
-        "v-card-subtitle",
-        "v-card-title",
-        "v-container"
+      "components": [
+        "ChevronRightIcon",
+        "MdiIcon",
+        "NuxtLink"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [],
@@ -372,33 +370,31 @@
         "AIProviderTestResult",
         "AppLoader",
         "BaseDialog",
-        "BaseKeyValueEditor"
+        "BaseKeyValueEditor",
+        "Button",
+        "ChevronDownIcon",
+        "Collapsible",
+        "CollapsibleContent",
+        "CollapsibleTrigger",
+        "LoaderCircleIcon",
+        "NumberInputField",
+        "TextField"
       ],
       "dependencies": [
         "frontend/app/components/global/AppLoader.vue",
         "frontend/app/components/global/BaseDialog.vue",
-        "frontend/app/components/global/BaseKeyValueEditor.vue"
+        "frontend/app/components/global/BaseKeyValueEditor.vue",
+        "frontend/app/components/ui/field/NumberInputField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-alert",
-        "v-btn",
-        "v-card-text",
-        "v-divider",
-        "v-expansion-panel",
-        "v-expansion-panel-text",
-        "v-expansion-panel-title",
-        "v-expansion-panels",
-        "v-form",
-        "v-number-input",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
         "click: handleTest",
         "close: resetForm",
-        "submit: handleSubmit"
+        "submit: handleSubmit",
+        "update:open: advancedPanel = $event ? 0 : undefined"
       ],
       "models": [
-        "advancedPanel",
         "dialog",
         "formData.apiKey",
         "formData.baseUrl",
@@ -411,7 +407,8 @@
       "conditions": [
         "hiddenValuesNeedReentry",
         "init",
-        "testResult"
+        "testResult",
+        "testing"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": []
@@ -421,51 +418,42 @@
       "name": "GroupAIProviderSettingsEditor",
       "components": [
         "AIProviderSettingsOut",
-        "BaseButton",
-        "BaseButtonGroup",
-        "BaseCardSectionTitle",
-        "GroupAIProviderDialog"
+        "Button",
+        "CheckboxField",
+        "FilterSelect",
+        "GroupAIProviderDialog",
+        "MdiIcon",
+        "PencilIcon",
+        "PlusIcon",
+        "Trash2Icon"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Group/GroupAIProviderDialog.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue"
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FilterSelect.vue"
       ],
-      "vuetify": [
-        "v-autocomplete",
-        "v-card",
-        "v-card-subtitle",
-        "v-card-text",
-        "v-checkbox",
-        "v-col",
-        "v-icon",
-        "v-row",
-        "v-tooltip"
-      ],
+      "vuetify": [],
       "events": [
+        "click: $emit('delete', provider.id)",
         "click: openCreate",
+        "click: openEdit(provider.id)",
         "create: (data) => $emit('create', data)",
-        "delete: $emit('delete', provider.id)",
-        "edit: openEdit(provider.id)",
         "update: (id, data) => $emit('update', id, data)"
       ],
       "models": [
         "dialogOpen",
-        "local.audioProviderId",
-        "local.defaultProviderId",
         "local.enrichNonAiImports",
-        "local.imageProviderId"
+        "local[choice.key]"
       ],
       "conditions": [
         "!hideHeader",
+        "local.providers.length",
         "noDefaultProviderWarning",
+        "provider.id === local.defaultProviderId",
         "providerSettings"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "v-tooltip"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/Group/GroupDataPage.vue",
@@ -4642,19 +4630,18 @@
     {
       "source": "frontend/app/components/global/BaseKeyValueEditor.vue",
       "name": "BaseKeyValueEditor",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-icon",
-        "v-text-field"
+      "components": [
+        "PlusIcon",
+        "Trash2Icon"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [
         "click: addEntry",
         "click: removeEntry(key)",
         "focusout: onNewEntryFocusOut",
-        "keydown.enter.prevent: addEntry",
-        "update:model-value: updateValue(key, $event)"
+        "input: updateValue(key, ($event.target as HTMLInputElement).value)",
+        "keydown.enter.prevent: addEntry"
       ],
       "models": [
         "newKey",

@@ -278,7 +278,9 @@
       "test-connection-succeeded": "Connection successful",
       "test-connection-failed": "Connection failed",
       "supports-images": "Supports images",
-      "text-only-provider": "Text-only, can't be your image provider"
+      "text-only-provider": "Text-only, can't be your image provider",
+      "default-badge": "Default",
+      "no-providers-yet": "No AI providers yet. Add one to use AI imports, audio and images."
     },
     "ai-prompts": {
       "ai-prompts": "AI Prompts",
@@ -1375,7 +1377,8 @@
       "setup-complete": "Setup Complete!",
       "here-are-a-few-things-to-help-you-get-started": "Here are a few things to help you get started with Mealie",
       "restore-from-v1-backup": "Have a backup from a previous instance of Mealie v1? You can restore it here.",
-      "manage-profile-or-get-invite-link": "Manage your own profile, or grab an invite link to share with others."
+      "manage-profile-or-get-invite-link": "Manage your own profile, or grab an invite link to share with others.",
+      "finish-setup": "Finish setup"
     },
     "debug-ai-providers": "Debug AI Providers",
     "debug-ai-providers-description": "Use this page to debug AI providers. You can test your AI connection and see the results here. If you have image services enabled, you can also provide an image.",
