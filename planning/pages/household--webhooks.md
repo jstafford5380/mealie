@@ -17,6 +17,14 @@ Route: `/household/webhooks`. Sources: [webhooks.vue](../../frontend/app/pages/h
 - Test does not save unsaved URL/time changes. Save is distinct from test/delete. The local editor copy is initialized once; verify refreshed props remain reflected after save.
 - The disabled fixture uses a local-only URL and UTC 19:30, shown as 12:30 PM in the America/Phoenix capture environment. No webhook was tested or scheduled to run during captures.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Illustration title, a Create button, and expansion panels titled "name - time". | Heading with a "New webhook" button; webhooks in an accordion showing name, time and "Disabled" when off; an empty state. |
+| Editor: Vuetify switch, underlined fields and an unlabelled time field; a button group for Delete/Test/Save. | Enabled switch, labelled Name, URL and "Runs at" fields; Delete on the left, Test and Save on the right. |
+
+
 ## Screenshots
 
 ### Collapsed scheduled webhook and full editor

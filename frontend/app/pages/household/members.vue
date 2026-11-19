@@ -1,168 +1,97 @@
 <template>
-  <v-container>
-    <BasePageTitle divider>
-      <template #header>
-        <v-img
-          width="100%"
-          max-height="125"
-          max-width="125"
-          src="/svgs/manage-members.svg"
-        />
-      </template>
-      <template #title>
+  <div class="mx-auto flex w-full max-w-[900px] flex-col gap-6 px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8">
+    <header>
+      <h1 class="m-0 text-[26px] font-bold tracking-tight sm:text-[32px]">
         {{ $t('group.manage-members') }}
-      </template>
-      <i18n-t keypath="group.manage-members-description">
-        <template #manage>
-          <b>{{ $t('group.manage') }}</b>
-        </template>
-        <template #organize>
-          <b>{{ $t('settings.organize') }}</b>
-        </template>
-        <template #invite>
-          <b>{{ $t('group.invite') }}</b>
-        </template>
-      </i18n-t>
-      <v-container class="mt-1 px-0">
-        <nuxt-link
-          class="text-center text-primary"
-          :to="`/user/profile/edit`"
-        > {{ $t('group.looking-to-update-your-profile') }}
-        </nuxt-link>
-      </v-container>
-    </BasePageTitle>
-    <v-data-table
-      :headers="headers"
-      :items="members || []"
-      item-key="id"
-      class="elevation-0"
-      :items-per-page="-1"
-      hide-default-footer
-      disable-pagination
-    >
-      <template #[`header.manage`]="{ column }">
-        {{ column.title }}
-        <v-tooltip location="bottom">
-          <template #activator="{ props: tooltipProps }">
-            <v-icon v-bind="tooltipProps" size="small" class="ms-1">
-              {{ $globals.icons.informationOutline }}
-            </v-icon>
+      </h1>
+      <p class="m-0 mt-1 max-w-[65ch] text-[15px] text-muted-foreground">
+        <i18n-t keypath="group.manage-members-description">
+          <template #manage>
+            <b>{{ $t('group.manage') }}</b>
           </template>
-          <span>{{ $t('user.user-can-manage-group-hint') }}</span>
-        </v-tooltip>
-      </template>
-      <template #[`header.organize`]="{ column }">
-        {{ column.title }}
-        <v-tooltip location="bottom">
-          <template #activator="{ props: tooltipProps }">
-            <v-icon v-bind="tooltipProps" size="small" class="ms-1">
-              {{ $globals.icons.informationOutline }}
-            </v-icon>
+          <template #organize>
+            <b>{{ $t('settings.organize') }}</b>
           </template>
-          <span>{{ $t('user.user-can-organize-group-data-hint') }}</span>
-        </v-tooltip>
-      </template>
-      <template #[`header.invite`]="{ column }">
-        {{ column.title }}
-        <v-tooltip location="bottom">
-          <template #activator="{ props: tooltipProps }">
-            <v-icon v-bind="tooltipProps" size="small" class="ms-1">
-              {{ $globals.icons.informationOutline }}
-            </v-icon>
+          <template #invite>
+            <b>{{ $t('group.invite') }}</b>
           </template>
-          <span>{{ $t('user.user-can-invite-other-to-group-hint') }}</span>
-        </v-tooltip>
-      </template>
-      <template #[`header.manageHousehold`]="{ column }">
-        {{ column.title }}
-        <v-tooltip location="bottom">
-          <template #activator="{ props: tooltipProps }">
-            <v-icon v-bind="tooltipProps" size="small" class="ms-1">
-              {{ $globals.icons.informationOutline }}
-            </v-icon>
-          </template>
-          <span>{{ $t('user.user-can-manage-household-hint') }}</span>
-        </v-tooltip>
-      </template>
-      <template #[`item.avatar`]="{ item }">
-        <UserAvatar
+        </i18n-t>
+      </p>
+      <NuxtLink
+        to="/user/profile/edit"
+        class="mt-2 inline-block text-sm font-semibold text-primary no-underline hover:underline"
+      >
+        {{ $t('group.looking-to-update-your-profile') }}
+      </NuxtLink>
+    </header>
+
+    <!-- what each permission means, spelled out instead of hidden in header tooltips -->
+    <dl class="m-0 grid gap-x-6 gap-y-2 rounded-card border bg-card p-4 text-sm sm:grid-cols-2">
+      <div
+        v-for="perm in PERMISSIONS"
+        :key="perm.key"
+      >
+        <dt class="font-semibold">
+          {{ perm.label }}
+        </dt>
+        <dd class="m-0 text-muted-foreground">
+          {{ perm.hint }}
+        </dd>
+      </div>
+    </dl>
+
+    <ul class="m-0 flex list-none flex-col divide-y rounded-card border bg-card p-0">
+      <template
+        v-for="item in members"
+        :key="item?.id"
+      >
+        <li
           v-if="item"
-          :tooltip="false"
-          :user-id="item.id"
-        />
-      </template>
-      <template #[`item.admin`]="{ item }">
-        {{ item && item.admin ? $t('user.admin') : $t('user.user') }}
-      </template>
-      <template #[`item.manageHousehold`]="{ item }">
-        <div
-          v-if="item"
-          class="d-flex justify-center"
+          class="flex flex-col gap-3 p-4 lg:flex-row lg:items-center"
         >
-          <v-checkbox
-            v-model="item.canManageHousehold"
-            :disabled="item.id === sessionUser?.id || item.admin"
-            color="primary"
-            class=""
-            style="max-width: 30px"
-            hide-details
-            @change="setPermissions(item)"
-          />
-        </div>
+          <div class="flex min-w-0 flex-1 items-center gap-3">
+            <UserAvatar
+              :tooltip="false"
+              size="40"
+              :user-id="item.id"
+            />
+            <div class="min-w-0">
+              <p class="m-0 truncate font-semibold">
+                {{ item.fullName }}
+                <span
+                  v-if="item.admin"
+                  class="ms-1 rounded-full bg-subtle px-2 py-0.5 align-middle text-xs font-semibold text-subtle-foreground"
+                >{{ $t('user.admin') }}</span>
+              </p>
+              <p class="m-0 truncate text-sm text-muted-foreground">
+                {{ item.username }}
+              </p>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-x-5 gap-y-2">
+            <label
+              v-for="perm in PERMISSIONS"
+              :key="perm.key"
+              class="flex items-center gap-2 text-sm"
+              :class="isLocked(item) ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'"
+              :title="isLocked(item) ? $t('group.permissions-locked') : perm.hint"
+            >
+              <Checkbox
+                :model-value="!!item[perm.key]"
+                :disabled="isLocked(item)"
+                @update:model-value="item[perm.key] = !!$event; setPermissions(item)"
+              />
+              {{ perm.label }}
+            </label>
+          </div>
+        </li>
       </template>
-      <template #[`item.manage`]="{ item }">
-        <div
-          v-if="item"
-          class="d-flex justify-center"
-        >
-          <v-checkbox
-            v-model="item.canManage"
-            :disabled="item.id === sessionUser?.id || item.admin"
-            class=""
-            style="max-width: 30px"
-            hide-details
-            color="primary"
-            @change="setPermissions(item)"
-          />
-        </div>
-      </template>
-      <template #[`item.organize`]="{ item }">
-        <div
-          v-if="item"
-          class="d-flex justify-center"
-        >
-          <v-checkbox
-            v-model="item.canOrganize"
-            :disabled="item.id === sessionUser?.id || item.admin"
-            class=""
-            style="max-width: 30px"
-            hide-details
-            color="primary"
-            @change="setPermissions(item)"
-          />
-        </div>
-      </template>
-      <template #[`item.invite`]="{ item }">
-        <div
-          v-if="item"
-          class="d-flex justify-center"
-        >
-          <v-checkbox
-            v-model="item.canInvite"
-            :disabled="item.id === sessionUser?.id || item.admin"
-            class=""
-            style="max-width: 30px"
-            hide-details
-            color="primary"
-            @change="setPermissions(item)"
-          />
-        </div>
-      </template>
-    </v-data-table>
-  </v-container>
+    </ul>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { Checkbox } from "~/components/ui/checkbox";
 import { useUserApi } from "~/composables/api";
 import type { UserOut } from "~/lib/api/types/user";
 import UserAvatar from "~/components/Domain/User/UserAvatar.vue";
@@ -180,16 +109,21 @@ useSeoMeta({
 
 const members = ref<UserOut[] | null[]>([]);
 
-const headers = [
-  { title: "", value: "avatar", sortable: false, align: "center" },
-  { title: i18n.t("user.username"), value: "username" },
-  { title: i18n.t("user.full-name"), value: "fullName" },
-  { title: i18n.t("user.admin"), value: "admin" },
-  { title: i18n.t("group.manage"), value: "manage", sortable: false, align: "center" },
-  { title: i18n.t("settings.organize"), value: "organize", sortable: false, align: "center" },
-  { title: i18n.t("group.invite"), value: "invite", sortable: false, align: "center" },
-  { title: i18n.t("group.manage-household"), value: "manageHousehold", sortable: false, align: "center" },
+const auth = useMealieAuth();
+const sessionUser = computed(() => auth.user.value);
+
+type PermissionKey = "canManage" | "canOrganize" | "canInvite" | "canManageHousehold";
+const PERMISSIONS: { key: PermissionKey; label: string; hint: string }[] = [
+  { key: "canManage", label: i18n.t("group.manage"), hint: i18n.t("user.user-can-manage-group-hint") },
+  { key: "canOrganize", label: i18n.t("settings.organize"), hint: i18n.t("user.user-can-organize-group-data-hint") },
+  { key: "canInvite", label: i18n.t("group.invite"), hint: i18n.t("user.user-can-invite-other-to-group-hint") },
+  { key: "canManageHousehold", label: i18n.t("group.manage-household"), hint: i18n.t("user.user-can-manage-household-hint") },
 ];
+
+// You can't change your own permissions, and admins always have all of them
+function isLocked(user: UserOut) {
+  return user.id === sessionUser.value?.id || user.admin;
+}
 
 async function refreshMembers() {
   const { data } = await api.households.fetchMembers();

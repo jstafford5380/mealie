@@ -672,21 +672,20 @@
       "source": "frontend/app/components/Domain/Household/GroupWebhookEditor.vue",
       "name": "GroupWebhookEditor",
       "components": [
-        "BaseButtonGroup"
+        "Button",
+        "MdiIcon",
+        "Switch",
+        "TextField",
+        "Trash2Icon"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseButtonGroup.vue"
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-card-actions",
-        "v-card-text",
-        "v-switch",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
-        "delete: $emit('delete', webhookCopy.id)",
-        "save: handleSave",
-        "test: $emit('test', webhookCopy.id)"
+        "click: $emit('delete', webhookCopy.id)",
+        "click: $emit('test', webhookCopy.id)",
+        "click: handleSave"
       ],
       "models": [
         "scheduledTime",

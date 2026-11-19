@@ -2967,43 +2967,28 @@
       "document": "pages/household--members.md",
       "status": "reviewed",
       "components": [
-        "BasePageTitle",
+        "Checkbox",
+        "NuxtLink",
         "UserAvatar",
         "UserOut",
-        "i18n-t",
-        "nuxt-link"
+        "i18n-t"
       ],
       "dependencies": [
-        "frontend/app/components/Domain/User/UserAvatar.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/Domain/User/UserAvatar.vue"
       ],
-      "vuetify": [
-        "v-checkbox",
-        "v-container",
-        "v-data-table",
-        "v-icon",
-        "v-img",
-        "v-tooltip"
-      ],
+      "vuetify": [],
       "events": [
-        "change: setPermissions(item)"
+        "update:model-value: item[perm.key] = !!$event; setPermissions(item)"
       ],
-      "models": [
-        "item.canInvite",
-        "item.canManage",
-        "item.canManageHousehold",
-        "item.canOrganize"
-      ],
+      "models": [],
       "conditions": [
-        "item"
+        "item",
+        "item.admin"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "v-tooltip"
-      ],
+      "vuetifyAPIs": [],
       "componentClosure": [
-        "frontend/app/components/Domain/User/UserAvatar.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/Domain/User/UserAvatar.vue"
       ]
     },
     {
@@ -3013,64 +2998,53 @@
       "document": "pages/household--notifiers.md",
       "status": "reviewed",
       "components": [
-        "BaseButton",
-        "BaseButtonGroup",
+        "Accordion",
+        "AccordionContent",
+        "AccordionItem",
+        "AccordionTrigger",
         "BaseDialog",
-        "BasePageTitle"
+        "Button",
+        "Checkbox",
+        "MdiIcon",
+        "PlusIcon",
+        "Switch",
+        "TextField",
+        "Trash2Icon"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
         "frontend/app/components/global/BaseDialog.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card-actions",
-        "v-card-text",
-        "v-checkbox",
-        "v-container",
-        "v-divider",
-        "v-expansion-panel",
-        "v-expansion-panel-text",
-        "v-expansion-panel-title",
-        "v-expansion-panels",
-        "v-icon",
-        "v-img",
-        "v-spacer",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
+        "click: openDelete(notifier)",
+        "click: saveNotifier(notifier)",
         "click: state.createDialog = true",
+        "click: testNotifier(notifier)",
         "confirm: deleteNotifier(state.deleteTargetId)",
-        "delete: openDelete(notifier)",
-        "save: saveNotifier(notifier)",
         "submit: createNewNotifier",
-        "test: testNotifier(notifier)"
+        "update:model-value: (notifiers[index]!.options as Record<string, unknown>)[opt.key] = !!$event"
       ],
       "models": [
         "createNotifierData.appriseUrl",
         "createNotifierData.name",
-        "notifiers[index].appriseUrl",
-        "notifiers[index].enabled",
-        "notifiers[index].name",
-        "notifiers[index].options[opt.key]",
+        "notifiers[index]!.appriseUrl",
+        "notifiers[index]!.enabled",
+        "notifiers[index]!.name",
         "state.createDialog",
         "state.deleteDialog"
       ],
       "conditions": [
-        "notifiers"
+        "!notifier.enabled",
+        "notifiers && notifiers.length"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": [],
       "componentClosure": [
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
@@ -3080,26 +3054,19 @@
       "document": "pages/household--webhooks.md",
       "status": "reviewed",
       "components": [
-        "BaseButton",
-        "BasePageTitle",
-        "GroupWebhookEditor"
+        "Accordion",
+        "AccordionContent",
+        "AccordionItem",
+        "AccordionTrigger",
+        "Button",
+        "GroupWebhookEditor",
+        "MdiIcon",
+        "PlusIcon"
       ],
       "dependencies": [
-        "frontend/app/components/Domain/Household/GroupWebhookEditor.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/Domain/Household/GroupWebhookEditor.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card-text",
-        "v-container",
-        "v-expansion-panel",
-        "v-expansion-panel-text",
-        "v-expansion-panel-title",
-        "v-expansion-panels",
-        "v-icon",
-        "v-img"
-      ],
+      "vuetify": [],
       "events": [
         "click: actions.createOne()",
         "delete: actions.deleteOne($event)",
@@ -3107,16 +3074,15 @@
         "test: actions.testOne($event).then(() => alert.success($t('events.test-message-sent')))"
       ],
       "models": [],
-      "conditions": [],
+      "conditions": [
+        "!webhook.enabled",
+        "webhooks && webhooks.length"
+      ],
       "dynamicComponents": [],
       "vuetifyAPIs": [],
       "componentClosure": [
         "frontend/app/components/Domain/Household/GroupWebhookEditor.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseButtonGroup.vue",
-        "frontend/app/components/global/BaseMenu.vue",
-        "frontend/app/components/global/BaseMenuItems.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {

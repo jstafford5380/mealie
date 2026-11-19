@@ -1,56 +1,58 @@
 <template>
-  <div>
-    <v-card-text>
-      <v-switch
-        v-model="webhookCopy.enabled"
-        color="primary"
-        :label="$t('general.enabled')"
-      />
-      <v-text-field
-        v-model="webhookCopy.name"
-        :label="$t('settings.webhooks.webhook-name')"
-        variant="underlined"
-      />
-      <v-text-field
-        v-model="webhookCopy.url"
-        :label="$t('settings.webhooks.webhook-url')"
-        variant="underlined"
-      />
-      <v-text-field
+  <div class="flex flex-col gap-1 font-sans">
+    <label class="mb-2 flex w-fit cursor-pointer items-center gap-3 text-[15px] font-semibold">
+      <Switch v-model="webhookCopy.enabled" />
+      {{ $t('general.enabled') }}
+    </label>
+    <TextField
+      v-model="webhookCopy.name"
+      :label="$t('settings.webhooks.webhook-name')"
+    />
+    <TextField
+      v-model="webhookCopy.url"
+      type="url"
+      :label="$t('settings.webhooks.webhook-url')"
+    />
+    <div class="max-w-48">
+      <TextField
         v-model="scheduledTime"
         type="time"
-        clearable
-        variant="underlined"
+        :label="$t('settings.webhooks.scheduled-time')"
       />
-    </v-card-text>
-    <v-card-actions class="py-0 justify-end">
-      <BaseButtonGroup
-        :buttons="[
-          {
-            icon: $globals.icons.delete,
-            text: $t('general.delete'),
-            event: 'delete',
-          },
-          {
-            icon: $globals.icons.testTube,
-            text: $t('general.test'),
-            event: 'test',
-          },
-          {
-            icon: $globals.icons.save,
-            text: $t('general.save'),
-            event: 'save',
-          },
-        ]"
-        @delete="$emit('delete', webhookCopy.id)"
-        @save="handleSave"
-        @test="$emit('test', webhookCopy.id)"
-      />
-    </v-card-actions>
+    </div>
+    <div class="mt-3 flex flex-wrap items-center gap-2 border-t pt-4">
+      <Button
+        variant="ghost"
+        class="text-destructive hover:text-destructive"
+        @click="$emit('delete', webhookCopy.id)"
+      >
+        <Trash2Icon class="size-4" />
+        {{ $t('general.delete') }}
+      </Button>
+      <Button
+        variant="outline"
+        class="ms-auto"
+        @click="$emit('test', webhookCopy.id)"
+      >
+        <MdiIcon
+          :path="$globals.icons.testTube"
+          class="size-4"
+        />
+        {{ $t('general.test') }}
+      </Button>
+      <Button @click="handleSave">
+        {{ $t('general.save') }}
+      </Button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { Trash2Icon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import TextField from "~/components/ui/field/TextField.vue";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+import { Switch } from "~/components/ui/switch";
 import type { WebhookOut } from "~/lib/api/types/household";
 import { timeLocalToUTC, timeUTCToLocal } from "~/composables/use-group-webhooks";
 

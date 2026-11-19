@@ -14,6 +14,14 @@ Route: `/household/members`. Source: [members.vue](../../frontend/app/pages/hous
 - Give each checkbox an accessible label combining member name and permission; current unnamed matrix controls rely on visual row/column context.
 - No permissions were changed for catalog screenshots.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| A data table with an avatar column and four checkbox columns whose meaning lived in header tooltips. | A short legend explains Manage, Organize, Invite and Manage Household. Each member is a row with avatar, name, username and an Admin badge, followed by four labelled checkboxes (so it works on phones). |
+| Locked checkboxes for yourself and admins gave no reason. | Locked checkboxes are dimmed with a title explaining why. |
+
+
 ## Screenshots
 
 ### Full member matrix, including disabled administrator row

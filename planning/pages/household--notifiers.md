@@ -14,6 +14,15 @@ Route: `/household/notifiers`. Source: [notifiers.vue](../../frontend/app/pages/
 - Delete captures the notifier ID and opens a destructive bottom-sheet generic confirmation. Confirm deletes, refreshes, and clears target; Cancel keeps the notifier.
 - The capture fixture's create schema ignored the supplied enabled flag, so it was explicitly updated to disabled before expanded screenshots. All event options remain off; no test or external notification was sent.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Illustration title with Apprise service links spread across a row; Create button below. | Heading, description and a compact row of service links, with "New Notification" beside the heading. |
+| Expansion panels with an edit icon; enable as a checkbox; event checkboxes in a two-column block; button group actions. | Accordion rows with a bell (dimmed when disabled); an Enable switch, labelled fields, events grouped in two columns of labelled checkboxes; Delete on the left, Test and Save on the right; an empty state. |
+| Delete confirmation as a bottom sheet. | The standard confirmation dialog. |
+
+
 ## Screenshots
 
 ### Help/empty state and creation

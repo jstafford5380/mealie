@@ -1,17 +1,16 @@
 <template>
-  <v-container class="narrow-container">
+  <div class="mx-auto flex w-full max-w-[760px] flex-col px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8">
     <BaseDialog
       v-model="state.deleteDialog"
-      bottom-sheet
       color="error"
       :title="$t('general.confirm')"
       :icon="$globals.icons.alertCircle"
       can-confirm
       @confirm="deleteNotifier(state.deleteTargetId)"
     >
-      <v-card-text>
+      <p class="m-0 px-6 pb-2 text-[15px]">
         {{ $t("general.confirm-delete-generic") }}
-      </v-card-text>
+      </p>
     </BaseDialog>
     <BaseDialog
       v-model="state.createDialog"
@@ -20,170 +19,159 @@
       can-submit
       @submit="createNewNotifier"
     >
-      <v-card-text>
-        <v-text-field
+      <div class="px-6 pb-2">
+        <TextField
           v-model="createNotifierData.name"
+          autofocus
           :label="$t('general.name')"
         />
-        <v-text-field
+        <TextField
           v-model="createNotifierData.appriseUrl"
           :label="$t('events.apprise-url')"
         />
-      </v-card-text>
+      </div>
     </BaseDialog>
 
-    <BasePageTitle divider>
-      <template #header>
-        <v-img
-          width="100%"
-          max-height="125"
-          max-width="125"
-          src="/svgs/manage-notifiers.svg"
-        />
-      </template>
-      <template #title>
-        {{ $t("events.event-notifiers") }}
-      </template>
-      {{ $t("events.new-notification-form-description") }}
-
-      <div class="mt-3 d-flex flex-wrap justify-space-between mx-n2">
-        <a
-          href="https://github.com/caronc/apprise/wiki"
-          target="_blanks"
-          class="mx-2 text-primary"
-        > Apprise </a>
-        <a
-          href="https://github.com/caronc/apprise/wiki/Notify_gotify"
-          target="_blanks"
-          class="mx-2 text-primary"
-        > Gotify </a>
-        <a
-          href="https://github.com/caronc/apprise/wiki/Notify_discord"
-          target="_blanks"
-          class="mx-2 text-primary"
-        > Discord </a>
-        <a
-          href="https://github.com/caronc/apprise/wiki/Notify_homeassistant"
-          target="_blanks"
-          class="mx-2 text-primary"
-        > Home
-          Assistant
-        </a>
-        <a
-          href="https://github.com/caronc/apprise/wiki/Notify_matrix"
-          target="_blanks"
-          class="mx-2 text-primary"
-        > Matrix </a>
-        <a
-          href="https://github.com/caronc/apprise/wiki/Notify_pushover"
-          target="_blanks"
-          class="mx-2 text-primary"
-        > Pushover </a>
+    <header class="mb-6 flex flex-wrap items-end gap-3">
+      <div class="min-w-0 flex-1">
+        <h1 class="m-0 text-[26px] font-bold tracking-tight sm:text-[32px]">
+          {{ $t("events.event-notifiers") }}
+        </h1>
+        <p class="m-0 mt-1 max-w-[65ch] text-[15px] text-muted-foreground">
+          {{ $t("events.new-notification-form-description") }}
+        </p>
+        <p class="m-0 mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+          <a
+            v-for="link in APPRISE_LINKS"
+            :key="link.href"
+            :href="link.href"
+            target="_blank"
+            rel="noopener"
+            class="font-semibold text-primary no-underline hover:underline"
+          >{{ link.text }}</a>
+        </p>
       </div>
-    </BasePageTitle>
+      <Button @click="state.createDialog = true">
+        <PlusIcon class="size-4" />
+        {{ $t('events.new-notification') }}
+      </Button>
+    </header>
 
-    <BaseButton
-      create
-      @click="state.createDialog = true"
-    />
-    <v-expansion-panels
-      v-if="notifiers"
-      class="mt-2"
+    <Accordion
+      v-if="notifiers && notifiers.length"
+      type="single"
+      collapsible
+      class="rounded-card border bg-card"
     >
-      <v-expansion-panel
+      <AccordionItem
         v-for="(notifier, index) in notifiers"
-        :key="index"
-        class="my-2 left-border rounded"
+        :key="notifier.id"
+        :value="notifier.id"
+        class="px-4 last:border-b-0"
       >
-        <v-expansion-panel-title
-          disable-icon-rotate
-          class="text-h6"
-        >
-          <div class="d-flex align-center">
-            {{ notifier.name }}
-          </div>
-          <template #actions>
-            <v-btn
-              icon
-              flat
-              class="ml-2"
-            >
-              <v-icon>
-                {{ $globals.icons.edit }}
-              </v-icon>
-            </v-btn>
-          </template>
-        </v-expansion-panel-title>
-        <v-expansion-panel-text>
-          <v-text-field
-            v-model="notifiers[index].name"
-            :label="$t('general.name')"
-          />
-          <v-text-field
-            v-model="notifiers[index].appriseUrl"
-            :label="$t('events.apprise-url-skipped-if-blank')"
-            :hint="$t('events.apprise-url-is-left-intentionally-blank')"
-          />
-          <v-checkbox
-            v-model="notifiers[index].enabled"
-            :label="$t('events.enable-notifier')"
-            density="compact"
-          />
-
-          <v-divider />
-          <p class="pt-4">
-            {{ $t("events.what-events") }}
-          </p>
-          <div class="notifier-options">
-            <section
-              v-for="sec in optionsSections"
-              :key="sec.id"
-            >
-              <h4>
-                {{ sec.text }}
-              </h4>
-              <v-checkbox
-                v-for="opt in sec.options"
-                :key="opt.key"
-                v-model="notifiers[index].options[opt.key]"
-                hide-details
-                density="compact"
-                :label="opt.text"
-              />
-            </section>
-          </div>
-          <v-card-actions class="py-0">
-            <v-spacer />
-            <BaseButtonGroup
-              :buttons="[
-                {
-                  icon: $globals.icons.delete,
-                  text: $t('general.delete'),
-                  event: 'delete',
-                },
-                {
-                  icon: $globals.icons.testTube,
-                  text: $t('general.test'),
-                  event: 'test',
-                },
-                {
-                  icon: $globals.icons.save,
-                  text: $t('general.save'),
-                  event: 'save',
-                },
-              ]"
-              @delete="openDelete(notifier)"
-              @save="saveNotifier(notifier)"
-              @test="testNotifier(notifier)"
+        <AccordionTrigger class="py-3.5">
+          <span class="flex min-w-0 items-center gap-3">
+            <MdiIcon
+              :path="$globals.icons.bellPlus"
+              class="size-5 shrink-0"
+              :class="notifier.enabled ? 'text-primary' : 'text-muted-foreground'"
             />
-          </v-card-actions>
-        </v-expansion-panel-text>
-      </v-expansion-panel>
-    </v-expansion-panels>
-  </v-container>
+            <span class="min-w-0">
+              <span class="block truncate">{{ notifier.name }}</span>
+              <span
+                v-if="!notifier.enabled"
+                class="block text-sm font-normal text-muted-foreground"
+              >{{ $t('general.disabled') }}</span>
+            </span>
+          </span>
+        </AccordionTrigger>
+        <AccordionContent>
+          <div class="flex flex-col gap-1">
+            <label class="mb-2 flex w-fit cursor-pointer items-center gap-3 text-[15px] font-semibold">
+              <Switch v-model="notifiers[index]!.enabled" />
+              {{ $t('events.enable-notifier') }}
+            </label>
+            <TextField
+              v-model="notifiers[index]!.name"
+              :label="$t('general.name')"
+            />
+            <TextField
+              v-model="notifiers[index]!.appriseUrl"
+              :label="$t('events.apprise-url-skipped-if-blank')"
+              :hint="$t('events.apprise-url-is-left-intentionally-blank')"
+            />
+
+            <h3 class="m-0 mt-4 border-t pt-4 text-base font-semibold">
+              {{ $t("events.what-events") }}
+            </h3>
+            <div class="mt-2 grid gap-x-6 gap-y-4 sm:grid-cols-2">
+              <section
+                v-for="sec in optionsSections"
+                :key="sec.id"
+                class="flex flex-col gap-1.5"
+              >
+                <h4 class="m-0 text-sm font-semibold text-muted-foreground">
+                  {{ sec.text }}
+                </h4>
+                <label
+                  v-for="opt in sec.options"
+                  :key="opt.key"
+                  class="flex cursor-pointer items-center gap-2 text-[15px]"
+                >
+                  <Checkbox
+                    :model-value="!!(notifiers[index]!.options as Record<string, unknown>)[opt.key]"
+                    @update:model-value="(notifiers[index]!.options as Record<string, unknown>)[opt.key] = !!$event"
+                  />
+                  {{ opt.text }}
+                </label>
+              </section>
+            </div>
+
+            <div class="mt-4 flex flex-wrap items-center gap-2 border-t pt-4">
+              <Button
+                variant="ghost"
+                class="text-destructive hover:text-destructive"
+                @click="openDelete(notifier)"
+              >
+                <Trash2Icon class="size-4" />
+                {{ $t('general.delete') }}
+              </Button>
+              <Button
+                variant="outline"
+                class="ms-auto"
+                @click="testNotifier(notifier)"
+              >
+                <MdiIcon
+                  :path="$globals.icons.testTube"
+                  class="size-4"
+                />
+                {{ $t('general.test') }}
+              </Button>
+              <Button @click="saveNotifier(notifier)">
+                {{ $t('general.save') }}
+              </Button>
+            </div>
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+    <p
+      v-else
+      class="m-0 rounded-card border border-dashed px-4 py-8 text-center text-sm text-muted-foreground"
+    >
+      {{ $t('events.no-notifiers-yet') }}
+    </p>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { PlusIcon, Trash2Icon } from "@lucide/vue";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "~/components/ui/accordion";
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
+import TextField from "~/components/ui/field/TextField.vue";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+import { Switch } from "~/components/ui/switch";
 import { useUserApi } from "~/composables/api";
 import { useAsyncKey } from "~/composables/use-utils";
 import type { GroupEventNotifierCreate, GroupEventNotifierOut } from "~/lib/api/types/household";
@@ -209,6 +197,15 @@ const i18n = useI18n();
 useSeoMeta({
   title: i18n.t("profile.notifiers"),
 });
+
+const APPRISE_LINKS = [
+  { text: "Apprise", href: "https://github.com/caronc/apprise/wiki" },
+  { text: "Gotify", href: "https://github.com/caronc/apprise/wiki/Notify_gotify" },
+  { text: "Discord", href: "https://github.com/caronc/apprise/wiki/Notify_discord" },
+  { text: "Home Assistant", href: "https://github.com/caronc/apprise/wiki/Notify_homeassistant" },
+  { text: "Matrix", href: "https://github.com/caronc/apprise/wiki/Notify_matrix" },
+  { text: "Pushover", href: "https://github.com/caronc/apprise/wiki/Notify_pushover" },
+];
 
 const state = reactive({
   deleteDialog: false,
@@ -399,11 +396,3 @@ const optionsSections: OptionSection[] = [
   },
 ];
 </script>
-
-<style>
-.notifier-options {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-}
-</style>
