@@ -1094,7 +1094,12 @@
     "default-activity": "Default Activity",
     "default-activity-hint": "Select which page you'd like to navigate to upon logging in from this device",
     "show-password": "Show password",
-    "hide-password": "Hide password"
+    "hide-password": "Hide password",
+    "new-here": "New here?",
+    "invite-only-explained": "New accounts are by invitation. Ask someone in your household for an invite link.",
+    "back-to-sign-in": "Back to sign in",
+    "request-new-link": "Request a new link",
+    "reset-link-missing-token": "This link is missing its reset token. Open the link from your email again, or request a new one."
   },
   "language-dialog": {
     "translated": "translated",
@@ -1275,7 +1280,14 @@
     "group-details-description": "Before you create an account you'll need to create a group. Your group will only contain you, but you'll be able to invite others later. Members in your group can share meal plans, shopping lists, recipes, and more!",
     "use-seed-data": "Use Seed Data",
     "use-seed-data-description": "Mealie ships with a collection of Foods, Units, and Labels that can be used to populate your group with helpful data for organizing your recipes. These are translated into the language you currently have selected. You can always add to or modify this data later.",
-    "account-details": "Account Details"
+    "account-details": "Account Details",
+    "how-are-you-joining": "Are you joining a household that already uses Mealie, or starting your own?",
+    "join-a-group-description": "You have an invite link or code from someone already using Mealie.",
+    "create-a-new-group-description": "Start fresh with your own group and recipes.",
+    "step-of": "Step {step} of {total}",
+    "review-and-create": "Review and create",
+    "create-account": "Create account",
+    "already-have-account": "Already have an account?"
   },
   "validation": {
     "group-name-is-taken": "Group name is taken",

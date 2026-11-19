@@ -46,6 +46,20 @@ Status: source contract and visual references reviewed; runtime validation remai
 Sources: [redirect validator](../../frontend/app/lib/validators/redirect.ts), [default activity](../../frontend/app/composables/use-default-activity.ts),
 [password field](../../frontend/app/composables/use-passwords.ts), [auth composable](../../frontend/app/composables/use-mealie-auth.ts).
 
+## Redesign (implemented)
+
+Sign-in, registration and both password pages share one frame now: brand mark and name above a single card, with Sponsor/GitHub/Docs links below on sign-in.
+
+| Before | Now |
+| --- | --- |
+| Card with a primary toolbar reading "Mealie" and a large circular logo. | Marigold brand mark and name above the card; the card opens with "Sign in". |
+| Email and password fields with prepended icons and a filled style; separate eye icon. | Labelled fields; the password field has its own show/hide button. |
+| "Remember me" alone; Register and Reset Password as text buttons under the card. | "Remember me" and "Forgot password" share a row under the fields; "New here? Register" (or an invite-only explanation) closes the card. |
+| OIDC button below a divider that needed manual background colours. | "or" divider and an outline OIDC button (a filled one when password login is off). |
+| First-login defaults in an info alert with copy buttons. | The same defaults as a small two-row list with copy buttons, above the card. |
+| Reverse-proxy sign-in showed a circular progress. | A centred spinner. |
+
+
 ## State screenshots
 
 ### First login, default values, copy controls, and complete page

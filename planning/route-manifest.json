@@ -762,6 +762,7 @@
         "frontend/app/components/global/InputColor.vue",
         "frontend/app/components/global/LanguageDialog.vue",
         "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FilterSelect.vue",
         "frontend/app/components/ui/field/NumberInputField.vue",
         "frontend/app/components/ui/field/SelectField.vue",
         "frontend/app/components/ui/field/TextField.vue",
@@ -847,34 +848,32 @@
       "document": "pages/forgot-password.md",
       "status": "reviewed",
       "components": [
-        "BaseDivider",
-        "VForm"
+        "AuthFrame",
+        "Button",
+        "LoaderCircleIcon",
+        "NuxtLink",
+        "TextField"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseDivider.vue"
+        "frontend/app/components/Layout/LayoutParts/AuthFrame.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-container",
-        "v-form",
-        "v-icon",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
         "submit.prevent: requestLink()"
       ],
       "models": [
         "state.email"
       ],
-      "conditions": [],
+      "conditions": [
+        "state.loading"
+      ],
       "dynamicComponents": [],
       "vuetifyAPIs": [],
       "componentClosure": [
-        "frontend/app/components/global/BaseDivider.vue"
+        "frontend/app/components/Layout/LayoutParts/AuthFrame.vue",
+        "frontend/app/components/global/AppLogo.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
@@ -3183,33 +3182,23 @@
       "status": "reviewed",
       "components": [
         "AppButtonCopy",
-        "AppLogo",
-        "AppStartupInfo"
+        "AppStartupInfo",
+        "AuthFrame",
+        "Button",
+        "CheckboxField",
+        "LoaderCircleIcon",
+        "NuxtLink",
+        "TextField"
       ],
       "dependencies": [
+        "frontend/app/components/Layout/LayoutParts/AuthFrame.vue",
         "frontend/app/components/global/AppButtonCopy.vue",
-        "frontend/app/components/global/AppLogo.vue"
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-alert",
-        "v-btn",
-        "v-card",
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-checkbox",
-        "v-container",
-        "v-divider",
-        "v-form",
-        "v-icon",
-        "v-progress-circular",
-        "v-text-field",
-        "v-toolbar",
-        "v-toolbar-title"
-      ],
+      "vuetify": [],
       "events": [
         "click: () => oidcAuthenticate()",
-        "click:append-inner: togglePasswordShow",
         "submit.prevent: authenticate"
       ],
       "models": [
@@ -3219,19 +3208,22 @@
       ],
       "conditions": [
         "$appInfo.allowPasswordLogin",
-        "$appInfo.allowSignup && $appInfo.allowPasswordLogin",
+        "$appInfo.allowSignup",
         "$appInfo.enableOidc",
         "$appInfo.enableOidc && $appInfo.allowPasswordLogin",
         "isFirstLogin",
+        "loggingIn",
+        "oidcLoggingIn",
         "reverseProxyLoggingIn"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ],
+      "vuetifyAPIs": [],
       "componentClosure": [
+        "frontend/app/components/Layout/LayoutParts/AuthFrame.vue",
         "frontend/app/components/global/AppButtonCopy.vue",
-        "frontend/app/components/global/AppLogo.vue"
+        "frontend/app/components/global/AppLogo.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
@@ -3241,78 +3233,64 @@
       "document": "pages/register--index.md",
       "status": "reviewed",
       "components": [
-        "AppLogo",
-        "BaseButton",
+        "AuthFrame",
+        "Button",
+        "CheckboxField",
+        "ChevronLeftIcon",
+        "ChevronRightIcon",
         "LanguageDialog",
-        "UserRegistrationForm",
-        "VForm"
+        "MdiIcon",
+        "NuxtLink",
+        "TextField",
+        "UserRegistrationForm"
       ],
       "dependencies": [
         "frontend/app/components/Domain/User/UserRegistrationForm.vue",
-        "frontend/app/components/global/AppLogo.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/LanguageDialog.vue"
+        "frontend/app/components/Layout/LayoutParts/AuthFrame.vue",
+        "frontend/app/components/global/LanguageDialog.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-checkbox",
-        "v-container",
-        "v-divider",
-        "v-form",
-        "v-icon",
-        "v-list",
-        "v-list-item",
-        "v-list-item-subtitle",
-        "v-list-item-title",
-        "v-text-field",
-        "v-toolbar",
-        "v-toolbar-title"
-      ],
+      "vuetify": [],
       "events": [
         "blur: validGroupName",
-        "click: accountDetailsNext",
-        "click: groupDetails.next",
-        "click: initial.createGroup",
-        "click: initial.joinGroup",
         "click: langDialog = true",
-        "click: provideToken.next",
+        "click: option.action",
         "click: state.back",
-        "click: submitRegistration"
+        "submit.prevent: onNext"
       ],
       "models": [
         "groupDetails.groupName.value",
         "groupDetails.groupPrivate.value",
         "groupDetails.groupSeed.value",
         "isAccountFormValid",
-        "isGroupFormValid",
         "langDialog",
         "token"
       ],
       "conditions": [
-        "idx !== confirmationData.length - 1",
         "item.display",
+        "state.ctx.state !== States.Confirmation",
         "state.ctx.state === States.Confirmation",
         "state.ctx.state === States.Initial",
         "state.ctx.state === States.ProvideAccountDetails",
         "state.ctx.state === States.ProvideGroupDetails",
-        "state.ctx.state === States.ProvideToken"
+        "state.ctx.state === States.ProvideToken",
+        "stepDescription"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ],
+      "vuetifyAPIs": [],
       "componentClosure": [
         "frontend/app/components/Domain/User/UserPasswordStrength.vue",
         "frontend/app/components/Domain/User/UserRegistrationForm.vue",
+        "frontend/app/components/Layout/LayoutParts/AuthFrame.vue",
         "frontend/app/components/global/AppLogo.vue",
         "frontend/app/components/global/BaseButton.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
-        "frontend/app/components/global/LanguageDialog.vue"
+        "frontend/app/components/global/LanguageDialog.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FilterSelect.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
@@ -3322,23 +3300,17 @@
       "document": "pages/reset-password.md",
       "status": "reviewed",
       "components": [
-        "BaseDivider",
-        "VForm"
+        "AuthFrame",
+        "Button",
+        "LoaderCircleIcon",
+        "NuxtLink",
+        "TextField"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseDivider.vue"
+        "frontend/app/components/Layout/LayoutParts/AuthFrame.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-container",
-        "v-form",
-        "v-icon",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
         "submit.prevent: requestLink()"
       ],
@@ -3348,12 +3320,16 @@
         "state.passwordConfirm"
       ],
       "conditions": [
-        "state.linkInvalid"
+        "state.linkInvalid || token === ''",
+        "state.loading",
+        "token === ''"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": [],
       "componentClosure": [
-        "frontend/app/components/global/BaseDivider.vue"
+        "frontend/app/components/Layout/LayoutParts/AuthFrame.vue",
+        "frontend/app/components/global/AppLogo.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {

@@ -1,227 +1,152 @@
 <template>
-  <v-container
-    fluid
-    class="d-flex justify-center align-center flex-column fill-height"
-    :class="{
-      'bg-off-white': !$vuetify.theme.current.dark && !isDark,
-    }"
+  <div
+    v-if="reverseProxyLoggingIn"
+    class="flex min-h-dvh items-center justify-center bg-background"
+    role="status"
+    :aria-label="$t('general.loading')"
   >
-    <v-progress-circular
-      v-if="reverseProxyLoggingIn"
-      indeterminate
-      color="primary"
-      size="64"
-    />
-    <template v-else>
-      <v-alert
-        v-if="isFirstLogin"
-        class="my-4"
-        type="info"
-        :icon="$globals.icons.information"
-        :style="{ flex: 'none' }"
-      >
-        <div>
-          <p class="mb-3">
-            {{ $t('user.it-looks-like-this-is-your-first-time-logging-in') }}
-          </p>
-          <p class="mb-1">
-            <strong>{{ $t('user.username') }}: </strong>changeme@example.com
-            <AppButtonCopy
-              copy-text="changeme@example.com"
-              color="info"
-              btn-class="h-auto"
-            />
-          </p>
-          <p class="mb-3">
-            <strong>{{ $t('user.password') }}: </strong>MyPassword
-            <AppButtonCopy
-              copy-text="MyPassword"
-              color="info"
-              btn-class="h-auto"
-            />
-          </p>
-          <p>
-            {{ $t('user.dont-want-to-see-this-anymore-be-sure-to-change-your-email') }}
-          </p>
-        </div>
-      </v-alert>
-      <v-card
-        tag="section"
-        class="d-flex flex-column align-center w-100"
-        max-width="600"
-      >
-        <v-toolbar
-          color="primary"
-          class="d-flex justify-center mb-4"
-          dark
-        >
-          <v-toolbar-title class="text-h4 text-center">
-            Mealie
-          </v-toolbar-title>
-        </v-toolbar>
-        <AppLogo :size="100" />
-        <v-card-title class="text-h5 justify-center pb-3">
-          {{ $t('user.sign-in') }}
-        </v-card-title>
-        <v-card-text class="w-100">
-          <v-form @submit.prevent="authenticate">
-            <v-text-field
-              v-if="$appInfo.allowPasswordLogin"
-              id="username"
-              v-model="form.email"
-              :prepend-inner-icon="$globals.icons.email"
-              variant="solo-filled"
-              flat
-              width="100%"
-              autofocus
-              autocomplete="username"
-              name="username"
-              :label="$t('user.email-or-username')"
-              type="text"
-            />
-            <v-text-field
-              v-if="$appInfo.allowPasswordLogin"
-              id="password"
-              v-model="form.password"
-              :prepend-inner-icon="$globals.icons.lock"
-              :append-inner-icon="passwordIcon"
-              variant="solo-filled"
-              flat
-              autocomplete="current-password"
-              name="password"
-              :label="$t('user.password')"
-              :type="inputType"
-              @click:append-inner="togglePasswordShow"
-            />
-            <v-checkbox
-              v-if="$appInfo.allowPasswordLogin"
-              v-model="form.remember"
-              class="ml-2 mt-n2"
-              :label="$t('user.remember-me')"
-            />
-            <v-card-actions v-if="$appInfo.allowPasswordLogin" class="justify-center pt-0">
-              <div class="max-button">
-                <v-btn
-                  :loading="loggingIn"
-                  :disabled="oidcLoggingIn"
-                  variant="elevated"
-                  color="primary"
-                  type="submit"
-                  size="large"
-                  rounded
-                  class="rounded-xl"
-                  block
-                >
-                  {{ $t("user.login") }}
-                </v-btn>
-              </div>
-            </v-card-actions>
-
-            <div
-              v-if="$appInfo.enableOidc && $appInfo.allowPasswordLogin"
-              class="d-flex my-4 justify-center align-center"
-              width="80%"
-            >
-              <v-divider class="div-width" />
-              <span
-                class="absolute px-2"
-                :class="{
-                  'bg-white': !$vuetify.theme.current.dark && !isDark,
-                  'bg-grey-darken-4': $vuetify.theme.current.dark || isDark,
-                }"
-              >
-                {{ $t("user.or") }}
-              </span>
-            </div>
-            <v-card-actions
-              v-if="$appInfo.enableOidc"
-              class="justify-center"
-            >
-              <div class="max-button">
-                <v-btn
-                  :loading="oidcLoggingIn"
-                  color="primary"
-                  size="large"
-                  variant="elevated"
-                  rounded
-                  class="rounded-xl"
-                  block
-                  @click="() => oidcAuthenticate()"
-                >
-                  {{ $t("user.login-oidc") }} {{ $appInfo.oidcProviderName }}
-                </v-btn>
-              </div>
-            </v-card-actions>
-          </v-form>
-        </v-card-text>
-        <v-card-actions class="d-flex justify-center flex-column flex-sm-row">
-          <v-btn
-            v-if="$appInfo.allowSignup && $appInfo.allowPasswordLogin"
-            variant="text"
-            to="/register"
-          >
-            {{ $t("user.register") }}
-          </v-btn>
-          <v-btn
-            v-else
-            variant="text"
-            disabled
-          >
-            {{ $t("user.invite-only") }}
-          </v-btn>
-          <v-btn
-            v-if="$appInfo.allowPasswordLogin"
-            class="mr-auto"
-            variant="text"
-            to="/forgot-password"
-          >
-            {{ $t("user.reset-password") }}
-          </v-btn>
-        </v-card-actions>
-
-        <v-card-text class="d-flex justify-center flex-column flex-sm-row">
-          <div
-            v-for="link in [
-              {
-                text: $t('about.sponsor'),
-                icon: $globals.icons.heart,
-                href: 'https://github.com/sponsors/hay-kot',
-              },
-              {
-                text: $t('about.github'),
-                icon: $globals.icons.github,
-                href: 'https://github.com/mealie-recipes/mealie',
-              },
-              {
-                text: $t('about.docs'),
-                icon: $globals.icons.folderOutline,
-                href: 'https://docs.mealie.io/',
-              },
-            ]"
-            :key="link.text"
-            class="text-center"
-          >
-            <v-btn
-              variant="text"
-              :href="link.href"
-              target="_blank"
-            >
-              <v-icon start>
-                {{ link.icon }}
-              </v-icon>
-              {{ link.text }}
-            </v-btn>
-          </div>
-        </v-card-text>
-      </v-card>
+    <LoaderCircleIcon class="size-12 animate-spin text-primary" />
+  </div>
+  <AuthFrame
+    v-else
+    :title="$t('user.sign-in')"
+  >
+    <template
+      v-if="isFirstLogin"
+      #above
+    >
+      <!-- the default admin account, shown until its email is changed -->
+      <div class="rounded-card border border-primary/30 bg-primary/8 p-4 text-[15px]">
+        <p class="m-0 mb-3">
+          {{ $t('user.it-looks-like-this-is-your-first-time-logging-in') }}
+        </p>
+        <dl class="m-0 grid grid-cols-[auto_1fr_auto] items-center gap-x-3 gap-y-1">
+          <dt class="font-semibold">
+            {{ $t('user.username') }}
+          </dt>
+          <dd class="m-0 font-mono text-sm">
+            changeme@example.com
+          </dd>
+          <dd class="m-0">
+            <AppButtonCopy copy-text="changeme@example.com" />
+          </dd>
+          <dt class="font-semibold">
+            {{ $t('user.password') }}
+          </dt>
+          <dd class="m-0 font-mono text-sm">
+            MyPassword
+          </dd>
+          <dd class="m-0">
+            <AppButtonCopy copy-text="MyPassword" />
+          </dd>
+        </dl>
+        <p class="m-0 mt-3 text-sm text-muted-foreground">
+          {{ $t('user.dont-want-to-see-this-anymore-be-sure-to-change-your-email') }}
+        </p>
+      </div>
     </template>
-  </v-container>
+
+    <form
+      class="flex flex-col gap-2"
+      @submit.prevent="authenticate"
+    >
+      <template v-if="$appInfo.allowPasswordLogin">
+        <TextField
+          id="username"
+          v-model="form.email"
+          autofocus
+          autocomplete="username"
+          name="username"
+          type="text"
+          :label="$t('user.email-or-username')"
+        />
+        <TextField
+          id="password"
+          v-model="form.password"
+          autocomplete="current-password"
+          name="password"
+          type="password"
+          :label="$t('user.password')"
+        />
+        <div class="flex items-center justify-between gap-3">
+          <CheckboxField
+            v-model="form.remember"
+            :label="$t('user.remember-me')"
+          />
+          <NuxtLink
+            to="/forgot-password"
+            class="shrink-0 text-sm font-semibold text-primary no-underline hover:underline"
+          >
+            {{ $t('user.forgot-password') }}
+          </NuxtLink>
+        </div>
+        <Button
+          type="submit"
+          size="lg"
+          class="mt-2 w-full"
+          :disabled="loggingIn || oidcLoggingIn"
+        >
+          <LoaderCircleIcon
+            v-if="loggingIn"
+            class="size-4 animate-spin"
+          />
+          {{ $t("user.login") }}
+        </Button>
+      </template>
+
+      <div
+        v-if="$appInfo.enableOidc && $appInfo.allowPasswordLogin"
+        class="my-3 flex items-center gap-3 text-sm text-muted-foreground"
+      >
+        <span class="h-px flex-1 bg-border" />
+        {{ $t("user.or") }}
+        <span class="h-px flex-1 bg-border" />
+      </div>
+      <Button
+        v-if="$appInfo.enableOidc"
+        type="button"
+        size="lg"
+        :variant="$appInfo.allowPasswordLogin ? 'outline' : 'default'"
+        class="w-full"
+        :disabled="oidcLoggingIn"
+        @click="() => oidcAuthenticate()"
+      >
+        <LoaderCircleIcon
+          v-if="oidcLoggingIn"
+          class="size-4 animate-spin"
+        />
+        {{ $t("user.login-oidc") }} {{ $appInfo.oidcProviderName }}
+      </Button>
+    </form>
+
+    <p
+      v-if="$appInfo.allowPasswordLogin"
+      class="m-0 mt-6 border-t pt-5 text-center text-[15px] text-muted-foreground"
+    >
+      <template v-if="$appInfo.allowSignup">
+        {{ $t('user.new-here') }}
+        <NuxtLink
+          to="/register"
+          class="font-semibold text-primary no-underline hover:underline"
+        >
+          {{ $t("user.register") }}
+        </NuxtLink>
+      </template>
+      <template v-else>
+        {{ $t("user.invite-only-explained") }}
+      </template>
+    </p>
+  </AuthFrame>
 </template>
 
 <script setup lang="ts">
-import { useDark, useSessionStorage, whenever } from "@vueuse/core";
+import { LoaderCircleIcon } from "@lucide/vue";
+import { useSessionStorage, whenever } from "@vueuse/core";
+import AuthFrame from "~/components/Layout/LayoutParts/AuthFrame.vue";
+import { Button } from "~/components/ui/button";
+import CheckboxField from "~/components/ui/field/CheckboxField.vue";
+import TextField from "~/components/ui/field/TextField.vue";
 import { useLoggedInState } from "~/composables/use-logged-in-state";
-import { usePasswordField } from "~/composables/use-passwords";
 import { alert } from "~/composables/use-toast";
 import { useAsyncKey } from "~/composables/use-utils";
 import { isSafeRedirectTarget } from "~/lib/validators/redirect";
@@ -231,7 +156,6 @@ import { useUserActivityPreferences } from "~/composables/use-users/preferences"
 definePageMeta({
   layout: "blank",
 });
-const isDark = useDark();
 
 const router = useRouter();
 const route = useRoute();
@@ -313,8 +237,6 @@ const loggingIn = ref(false);
 const oidcLoggingIn = ref(false);
 const reverseProxyLoggingIn = ref($appInfo.enableReverseProxyAuth && !isDirectLogin());
 
-const { passwordIcon, inputType, togglePasswordShow } = usePasswordField();
-
 whenever(
   () => $appInfo.enableOidc && $appInfo.oidcRedirect && !isCallback() && !isDirectLogin() /* && !auth.check().valid */,
   () => oidcAuthenticate(),
@@ -390,7 +312,6 @@ async function authenticate() {
     await auth.signIn(formData);
   }
   catch (error) {
-    console.log(error);
     alertOnError(error);
   }
   loggingIn.value = false;
@@ -412,55 +333,3 @@ function alertOnError(error: any) {
   }
 }
 </script>
-
-<style lang="css" scoped>
-/* Fix password manager autofill detection - Vuetify uses opacity:0 during animation */
-:deep(.v-field__input) {
-  opacity: 1 !important;
-}
-</style>
-
-<style lang="css">
-.max-button {
-  width: 300px;
-}
-
-.icon-white {
-  fill: white;
-}
-
-.icon-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  position: relative;
-  margin-top: 3.5rem;
-}
-
-.icon-divider {
-  width: 100%;
-  margin-bottom: -3.5rem;
-}
-
-.icon-avatar {
-  border-color: rgba(0, 0, 0, 0.12);
-  border: 2px;
-}
-
-.bg-off-white {
-  background: #f5f8fa;
-}
-
-.absolute {
-  position: absolute;
-}
-
-.div-width {
-  max-width: 75%;
-}
-
-.bg-white {
-  background-color: #fff;
-}
-</style>

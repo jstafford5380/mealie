@@ -1,77 +1,61 @@
 <template>
-  <v-container
-    fill-height
-    fluid
-    class="d-flex justify-center align-center"
+  <AuthFrame
+    :title="$t('user.forgot-password')"
+    :description="$t('user.forgot-password-text')"
+    :links="false"
   >
-    <v-card
-      color="background d-flex flex-column align-center"
-      flat
-      width="600px"
+    <form
+      class="flex flex-col gap-2"
+      @submit.prevent="requestLink()"
     >
-      <v-card-title class="headline justify-center">
-        {{ $t('user.forgot-password') }}
-      </v-card-title>
-      <BaseDivider />
-      <v-card-text>
-        <v-form ref="form" @submit.prevent="requestLink()">
-          <v-text-field
-            v-model="state.email"
-            :prepend-inner-icon="$globals.icons.email"
-            variant="solo-filled"
-            flat
-            autofocus
-            name="login"
-            :label="$t('user.email')"
-            type="text"
-            :rules="[validators.email]"
-          />
-          <p class="text-center">
-            {{ $t('user.forgot-password-text') }}
-          </p>
-          <v-card-actions class="justify-center">
-            <div class="max-button">
-              <v-btn
-                :loading="state.loading"
-                color="primary"
-                type="submit"
-                size="large"
-                rounded
-                class="rounded-xl"
-                block
-              >
-                <v-icon start>
-                  {{ $globals.icons.email }}
-                </v-icon>
-                {{ $t("user.reset-password") }}
-              </v-btn>
-            </div>
-          </v-card-actions>
-        </v-form>
-      </v-card-text>
-      <v-btn
-        class="mx-auto"
-        variant="text"
-        nuxt
-        to="/login"
+      <TextField
+        v-model="state.email"
+        autofocus
+        name="login"
+        type="email"
+        autocomplete="email"
+        :label="$t('user.email')"
+        :rules="[validators.email]"
+      />
+      <Button
+        type="submit"
+        size="lg"
+        class="mt-2 w-full"
+        :disabled="state.loading"
       >
-        {{ $t("user.login") }}
-      </v-btn>
-    </v-card>
-  </v-container>
+        <LoaderCircleIcon
+          v-if="state.loading"
+          class="size-4 animate-spin"
+        />
+        {{ $t("user.reset-password") }}
+      </Button>
+    </form>
+    <p class="m-0 mt-6 border-t pt-5 text-center text-[15px]">
+      <NuxtLink
+        to="/login"
+        class="font-semibold text-primary no-underline hover:underline"
+      >
+        {{ $t("user.back-to-sign-in") }}
+      </NuxtLink>
+    </p>
+  </AuthFrame>
 </template>
 
 <script setup lang="ts">
+import { LoaderCircleIcon } from "@lucide/vue";
+import AuthFrame from "~/components/Layout/LayoutParts/AuthFrame.vue";
+import { Button } from "~/components/ui/button";
+import TextField from "~/components/ui/field/TextField.vue";
+import { provideFieldGroup } from "~/composables/forms/use-field-validation";
 import { useUserApi } from "~/composables/api";
 import { alert } from "~/composables/use-toast";
 import { validators } from "~/composables/use-validators";
-import type { VForm } from "~/types/auto-forms";
 
 definePageMeta({
-  layout: "basic",
+  layout: "blank",
 });
 
-const form = ref<VForm | null>(null);
+const form = provideFieldGroup();
 
 const state = reactive({
   email: "",
@@ -83,17 +67,13 @@ const i18n = useI18n();
 
 // Set page title
 useSeoMeta({
-  title: i18n.t("user.login"),
+  title: i18n.t("user.forgot-password"),
 });
 
 const api = useUserApi();
 
 async function requestLink() {
-  if (!form.value) {
-    return;
-  };
-
-  const { valid } = await form.value.validate();
+  const { valid } = await form.validate();
   if (!valid) {
     return;
   };

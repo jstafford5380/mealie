@@ -3885,13 +3885,9 @@
       "name": "UserPasswordStrength",
       "components": [],
       "dependencies": [],
-      "vuetify": [
-        "v-progress-linear"
-      ],
+      "vuetify": [],
       "events": [],
-      "models": [
-        "pwStrength.score.value"
-      ],
+      "models": [],
       "conditions": [],
       "dynamicComponents": [],
       "vuetifyAPIs": []
@@ -3926,24 +3922,19 @@
       "source": "frontend/app/components/Domain/User/UserRegistrationForm.vue",
       "name": "UserRegistrationForm",
       "components": [
+        "CheckboxField",
+        "TextField",
         "UserPasswordStrength"
       ],
       "dependencies": [
-        "frontend/app/components/Domain/User/UserPasswordStrength.vue"
+        "frontend/app/components/Domain/User/UserPasswordStrength.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-card-text",
-        "v-card-title",
-        "v-checkbox",
-        "v-divider",
-        "v-form",
-        "v-icon",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
         "blur: validateEmail",
-        "blur: validateUsername",
-        "click:append-inner: pwFields.togglePasswordShow"
+        "blur: validateUsername"
       ],
       "models": [
         "accountDetails.advancedOptions.value",
@@ -3951,8 +3942,7 @@
         "accountDetails.fullName.value",
         "accountDetails.username.value",
         "credentials.password1.value",
-        "credentials.password2.value",
-        "isFormValid"
+        "credentials.password2.value"
       ],
       "conditions": [],
       "dynamicComponents": [],
@@ -4238,6 +4228,27 @@
       "vuetifyAPIs": []
     },
     {
+      "source": "frontend/app/components/Layout/LayoutParts/AuthFrame.vue",
+      "name": "AuthFrame",
+      "components": [
+        "AppLogo",
+        "MdiIcon"
+      ],
+      "dependencies": [
+        "frontend/app/components/global/AppLogo.vue"
+      ],
+      "vuetify": [],
+      "events": [],
+      "models": [],
+      "conditions": [
+        "description",
+        "links",
+        "title"
+      ],
+      "dynamicComponents": [],
+      "vuetifyAPIs": []
+    },
+    {
       "source": "frontend/app/components/Layout/LayoutParts/TheSnackbar.vue",
       "name": "TheSnackbar",
       "components": [
@@ -4336,13 +4347,11 @@
     {
       "source": "frontend/app/components/global/AppLogo.vue",
       "name": "AppLogo",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-avatar",
-        "v-divider",
-        "v-img"
+      "components": [
+        "MdiIcon"
       ],
+      "dependencies": [],
+      "vuetify": [],
       "events": [],
       "models": [],
       "conditions": [
@@ -5015,20 +5024,15 @@
       "name": "LanguageDialog",
       "components": [
         "BaseDialog",
+        "FilterSelect",
         "i18n-t"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseDialog.vue"
+        "frontend/app/components/global/BaseDialog.vue",
+        "frontend/app/components/ui/field/FilterSelect.vue"
       ],
-      "vuetify": [
-        "v-autocomplete",
-        "v-card-text",
-        "v-list-item-subtitle",
-        "v-list-item-title"
-      ],
-      "events": [
-        "update:model-value: onLocaleSelect"
-      ],
+      "vuetify": [],
+      "events": [],
       "models": [
         "modelValue",
         "selectedLocale"

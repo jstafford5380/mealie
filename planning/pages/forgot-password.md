@@ -17,6 +17,14 @@ Status: source contract and visual references reviewed; runtime validation remai
 - Link back to Login and retain the header home link.
 - Retain light/dark themes, narrow-screen form access, and translated labels.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Basic layout header; flat card with a centred title, divider and filled email field. | Same frame as sign-in (no header), title with the explanation under it, a labelled email field and a full-width Reset Password button. |
+| "Login" text button. | "Back to sign in" link at the bottom of the card. |
+
+
 ## State screenshots
 
 ### Complete form

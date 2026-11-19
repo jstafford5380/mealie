@@ -5,6 +5,17 @@ Source: [register/index.vue](../../frontend/app/pages/register/index.vue).
 Layout: [blank.vue](../../frontend/app/layouts/blank.vue).
 Status: source contract and visual references reviewed; runtime validation remains in the checklists below.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| 1200px card with a primary "Mealie" toolbar and logo; two solid primary tiles for Join / Create. | Sign-in frame, wider. The first step asks how you're joining, with two option cards that explain each path. |
+| Each step had its own icon title, dividers and Back/Next buttons. | Every step shows "Step N of 3", a title and description, the fields, and one Back / Next row. Enter submits the step. |
+| Confirmation was a Vuetify list with dividers. | "Review and create" shows a two-column summary; the final button reads "Create account". |
+| Password strength as a thick coloured progress bar indented under the field. | A slim meter under the password with the strength label. |
+| Login and Choose Language buttons inside the card's footer. | "Already have an account? Sign in" and a Choose Language button under the card. The language dialog uses a searchable select. |
+
+
 ## Flow and navigation
 
 - Start with Join a Group and Create a New Group choices.

@@ -1,103 +1,88 @@
 <template>
-  <v-container
-    fill-height
-    fluid
-    class="d-flex justify-center align-center"
+  <AuthFrame
+    :title="$t('user.reset-password')"
+    :description="$t('user.please-enter-password')"
+    :links="false"
   >
-    <v-card
-      color="background d-flex flex-column align-center"
-      flat
-      width="600px"
+    <p
+      v-if="token === ''"
+      class="m-0 mb-4 rounded-control border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
     >
-      <v-card-title class="text-h5 justify-center">
+      {{ $t("user.reset-link-missing-token") }}
+    </p>
+    <form
+      class="flex flex-col gap-2"
+      @submit.prevent="requestLink()"
+    >
+      <TextField
+        v-model="state.email"
+        autofocus
+        name="login"
+        type="email"
+        autocomplete="email"
+        :label="$t('user.email')"
+      />
+      <TextField
+        v-model="state.password"
+        name="password"
+        type="password"
+        autocomplete="new-password"
+        :label="$t('user.password')"
+        :rules="[validators.required]"
+      />
+      <TextField
+        v-model="state.passwordConfirm"
+        name="password-confirm"
+        type="password"
+        autocomplete="new-password"
+        validate-on="blur"
+        :label="$t('user.confirm-password')"
+        :rules="[validators.required, passwordMatch]"
+      />
+      <Button
+        type="submit"
+        size="lg"
+        class="mt-2 w-full"
+        :disabled="state.loading || token === ''"
+      >
+        <LoaderCircleIcon
+          v-if="state.loading"
+          class="size-4 animate-spin"
+        />
         {{ $t("user.reset-password") }}
-      </v-card-title>
-      <BaseDivider />
-      <v-card-text>
-        <v-form ref="form" @submit.prevent="requestLink()">
-          <v-text-field
-            v-model="state.email"
-            :prepend-inner-icon="$globals.icons.email"
-            variant="solo-filled"
-            flat
-            autofocus
-            name="login"
-            :label="$t('user.email')"
-            type="text"
-          />
-          <v-text-field
-            v-model="state.password"
-            variant="solo-filled"
-            flat
-            :prepend-inner-icon="$globals.icons.lock"
-            name="password"
-            :label="$t('user.password')"
-            type="password"
-            :rules="[validators.required]"
-          />
-          <v-text-field
-            v-model="state.passwordConfirm"
-            variant="solo-filled"
-            flat
-            validate-on="blur"
-            :prepend-inner-icon="$globals.icons.lock"
-            name="password"
-            :label="$t('user.confirm-password')"
-            type="password"
-            :rules="[validators.required, passwordMatch]"
-          />
-          <p class="text-center">
-            {{ $t("user.please-enter-password") }}
-          </p>
-          <v-card-actions class="justify-center">
-            <div class="max-button">
-              <v-btn
-                :loading="state.loading"
-                color="primary"
-                :disabled="token === ''"
-                type="submit"
-                size="large"
-                rounded
-                class="rounded-xl"
-                block
-              >
-                <v-icon start>
-                  {{ $globals.icons.lock }}
-                </v-icon>
-                {{ token === "" ? "Token Required" : $t("user.reset-password") }}
-              </v-btn>
-            </div>
-          </v-card-actions>
-        </v-form>
-      </v-card-text>
-      <v-btn
-        v-if="state.linkInvalid"
-        class="mx-auto"
-        variant="text"
+      </Button>
+    </form>
+    <p class="m-0 mt-6 flex flex-wrap justify-center gap-x-6 gap-y-1 border-t pt-5 text-[15px]">
+      <NuxtLink
+        v-if="state.linkInvalid || token === ''"
         to="/forgot-password"
+        class="font-semibold text-primary no-underline hover:underline"
       >
-        {{ $t("user.forgot-password") }}
-      </v-btn>
-      <v-btn
-        class="mx-auto"
-        variant="text"
+        {{ $t("user.request-new-link") }}
+      </NuxtLink>
+      <NuxtLink
         to="/login"
+        class="font-semibold text-primary no-underline hover:underline"
       >
-        {{ $t("user.login") }}
-      </v-btn>
-    </v-card>
-  </v-container>
+        {{ $t("user.back-to-sign-in") }}
+      </NuxtLink>
+    </p>
+  </AuthFrame>
 </template>
 
 <script setup lang="ts">
+import { LoaderCircleIcon } from "@lucide/vue";
+import AuthFrame from "~/components/Layout/LayoutParts/AuthFrame.vue";
+import { Button } from "~/components/ui/button";
+import TextField from "~/components/ui/field/TextField.vue";
+import { provideFieldGroup } from "~/composables/forms/use-field-validation";
 import { useUserApi } from "~/composables/api";
 import { alert } from "~/composables/use-toast";
 import { validators } from "@/composables/use-validators";
 import { useRouteQuery } from "~/composables/use-router";
-import type { VForm } from "~/types/auto-forms";
 
 definePageMeta({
-  layout: "basic",
+  layout: "blank",
 });
 
 const state = reactive({
@@ -109,7 +94,7 @@ const state = reactive({
   linkInvalid: false,
 });
 
-const form = ref<VForm | null>(null);
+const form = provideFieldGroup();
 
 const i18n = useI18n();
 const passwordMatch = () => state.password === state.passwordConfirm || i18n.t("user.password-must-match");
@@ -127,11 +112,7 @@ const token = useRouteQuery("token", "");
 // API
 const api = useUserApi();
 async function requestLink() {
-  if (!form.value) {
-    return;
-  };
-
-  const { valid } = await form.value.validate();
+  const { valid } = await form.validate();
   if (!valid) {
     return;
   };

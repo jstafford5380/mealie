@@ -24,6 +24,15 @@ Status: source contract and visual references reviewed; runtime validation remai
 Sources: [route query helper](../../frontend/app/composables/use-router.ts),
 [validators](../../frontend/app/composables/use-validators.ts).
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Without a token the button read "Token Required" (untranslated). | A red note explains the link is missing its token, the button is disabled, and "Request a new link" is offered. |
+| Flat card with filled fields. | Sign-in frame with labelled fields (each password field has show/hide). |
+| Forgot Password / Login text buttons. | "Request a new link" (when the link is invalid or missing) and "Back to sign in". |
+
+
 ## State screenshots
 
 ### Missing token
