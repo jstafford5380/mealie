@@ -26,6 +26,13 @@ Current-source audit notes:
 - The capture observed HTTP `201` and a created recipe. A direct visit captured the resulting editor.
 - Recheck automatic post-create navigation as a separate acceptance check; do not infer it from the editor screenshot.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Each method was a flat card: title, paragraphs with cross-links, a rounded filled field, checkboxes stacked down the page and a centred pill Submit with the status text under it. | Each method is one panel: title and one-line explanation, labelled field, options in two columns, and a footer with the status on the left and a named action ("Import recipe", "Create recipe", "Debug") on the right. Links to the other methods sit under the panel. |
+
+
 ## Screenshots
 
 ### Empty form and disabled Create

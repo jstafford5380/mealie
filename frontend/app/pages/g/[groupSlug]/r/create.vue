@@ -1,49 +1,60 @@
 <template>
-  <div>
-    <v-container class="flex-column">
-      <BasePageTitle divider>
-        <template #header>
-          <v-img
-            width="100%"
-            max-height="175"
-            max-width="175"
-            src="/svgs/recipes-create.svg"
-          />
-        </template>
-        <template #title>
-          {{ $t('recipe.recipe-creation') }}
-        </template>
-        <template #content>
-          <div class="flex-1-1 d-flex flex-column justify-center align-center ga-2">
-            <p>{{ $t('recipe.select-one-of-the-various-ways-to-create-a-recipe') }}</p>
-            <div class="ml-auto">
-              <BaseOverflowButton
-                v-model="subpage"
-                rounded
-                :items="subpages"
-              />
-            </div>
-          </div>
-        </template>
-      </BasePageTitle>
-      <section>
-        <NuxtPage />
-      </section>
-    </v-container>
+  <div class="mx-auto w-full max-w-[860px] px-4 pb-16 pt-3 font-sans sm:px-6 lg:pt-8">
+    <header class="mb-4">
+      <h1 class="m-0 text-[26px] font-bold tracking-tight sm:text-[32px]">
+        {{ $t('recipe.recipe-creation') }}
+      </h1>
+      <p class="m-0 mt-1 text-[15px] text-muted-foreground">
+        {{ $t('recipe.select-one-of-the-various-ways-to-create-a-recipe') }}
+      </p>
+    </header>
+
+    <!-- one tab per way in; scrolls sideways on phones -->
+    <nav
+      class="-mx-4 mb-6 overflow-x-auto border-b px-4 sm:mx-0 sm:px-0"
+      :aria-label="$t('recipe.recipe-creation')"
+    >
+      <ul class="m-0 flex w-max list-none items-center gap-1 p-0">
+        <li
+          v-for="page in visibleSubpages"
+          :key="page.value"
+        >
+          <NuxtLink
+            :to="{ path: `/g/${groupSlug}/r/create/${page.value}`, query: route.query }"
+            class="-mb-px inline-flex h-11 items-center gap-2 border-b-2 px-3 text-[15px] font-medium whitespace-nowrap no-underline transition-colors"
+            :class="subpage === page.value ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'"
+            :aria-current="subpage === page.value ? 'page' : undefined"
+          >
+            <MdiIcon
+              :path="page.icon"
+              class="size-4"
+            />
+            {{ page.text }}
+          </NuxtLink>
+        </li>
+      </ul>
+    </nav>
+
+    <section>
+      <NuxtPage />
+    </section>
 
     <AdvancedOnly>
-      <v-container class="d-flex justify-center align-center my-4">
-        <router-link
-          :to="`/group/migrations`"
-          class="text-primary"
-        > {{ $t('recipe.looking-for-migrations') }}</router-link>
-      </v-container>
+      <p class="m-0 mt-10 text-center text-sm">
+        <NuxtLink
+          to="/group/migrations"
+          class="font-semibold text-primary no-underline hover:underline"
+        >
+          {{ $t('recipe.looking-for-migrations') }}
+        </NuxtLink>
+      </p>
     </AdvancedOnly>
   </div>
 </template>
 
 <script setup lang="ts">
 import type { MenuItem } from "~/components/global/BaseOverflowButton.vue";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import AdvancedOnly from "~/components/global/AdvancedOnly.vue";
 import { useGroupSelf } from "~/composables/use-groups";
 
@@ -111,4 +122,6 @@ const subpage = computed({
     return route.path.split("/").pop() ?? "url";
   },
 });
+
+const visibleSubpages = computed(() => subpages.value.filter(page => !page.hide) as (MenuItem & { value: string; icon: string })[]);
 </script>

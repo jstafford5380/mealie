@@ -1024,32 +1024,22 @@
       "status": "reviewed",
       "components": [
         "AdvancedOnly",
-        "BaseOverflowButton",
-        "BasePageTitle",
+        "MdiIcon",
         "MenuItem",
-        "NuxtPage",
-        "router-link"
+        "NuxtLink",
+        "NuxtPage"
       ],
       "dependencies": [
-        "frontend/app/components/global/AdvancedOnly.vue",
-        "frontend/app/components/global/BaseOverflowButton.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/global/AdvancedOnly.vue"
       ],
-      "vuetify": [
-        "v-container",
-        "v-img"
-      ],
+      "vuetify": [],
       "events": [],
-      "models": [
-        "subpage"
-      ],
+      "models": [],
       "conditions": [],
       "dynamicComponents": [],
       "vuetifyAPIs": [],
       "componentClosure": [
-        "frontend/app/components/global/AdvancedOnly.vue",
-        "frontend/app/components/global/BaseOverflowButton.vue",
-        "frontend/app/components/global/BasePageTitle.vue"
+        "frontend/app/components/global/AdvancedOnly.vue"
       ]
     },
     {
@@ -1059,35 +1049,28 @@
       "document": "pages/g--groupSlug--r--create--ai.md",
       "status": "reviewed",
       "components": [
-        "BaseButton",
+        "Button",
+        "CheckboxField",
+        "FieldScope",
+        "LoaderCircleIcon",
+        "MdiIcon",
+        "NuxtLink",
         "RecipeImportImages",
         "RecipeJsonEditor",
-        "VForm",
-        "router-link"
+        "Switch",
+        "TextField"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipeImportImages.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/RecipeJsonEditor.vue"
+        "frontend/app/components/global/RecipeJsonEditor.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FieldScope.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-alert",
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-checkbox",
-        "v-divider",
-        "v-expand-transition",
-        "v-form",
-        "v-icon",
-        "v-switch",
-        "v-text-field",
-        "v-textarea",
-        "v-tooltip"
-      ],
+      "vuetify": [],
       "events": [
-        "change: handleIsEditJson",
-        "submit.prevent: createRecipe"
+        "submit.prevent: createRecipe",
+        "update:model-value: handleIsEditJson"
       ],
       "models": [
         "createNewOrganizers",
@@ -1101,22 +1084,23 @@
       ],
       "conditions": [
         "!aiEnabled",
-        "aiEnabled",
+        "createStatus",
         "imagesEnabled",
         "state.error",
         "state.isEditJSON",
+        "state.loading",
         "videosEnabled"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "v-tooltip"
-      ],
+      "vuetifyAPIs": [],
       "componentClosure": [
         "frontend/app/components/Domain/Recipe/RecipeImportImages.vue",
         "frontend/app/components/global/AppButtonUpload.vue",
-        "frontend/app/components/global/BaseButton.vue",
         "frontend/app/components/global/ImageCropper.vue",
-        "frontend/app/components/global/RecipeJsonEditor.vue"
+        "frontend/app/components/global/RecipeJsonEditor.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FieldScope.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
@@ -1126,48 +1110,39 @@
       "document": "pages/g--groupSlug--r--create--bulk.md",
       "status": "reviewed",
       "components": [
-        "BaseButton",
-        "BaseCardSectionTitle",
+        "Button",
+        "Checkbox",
+        "PlusIcon",
         "RecipeDialogBulkAdd",
         "RecipeOrganizerSelector",
         "ReportSummary",
-        "ReportTable"
+        "ReportTable",
+        "Trash2Icon"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipeDialogBulkAdd.vue",
         "frontend/app/components/Domain/Recipe/RecipeOrganizerSelector.vue",
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/ReportTable.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-checkbox",
-        "v-col",
-        "v-icon",
-        "v-row",
-        "v-spacer",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
         "bulk-data: assignUrls",
-        "click: \n                bulkUrls = [];\n                lockBulkImport = false;\n              ",
         "click: bulkCreate",
+        "click: bulkUrls = []; lockBulkImport = false",
         "click: bulkUrls.push({ url: '', categories: [], tags: [] })",
         "click: bulkUrls.splice(idx, 1)",
         "delete: deleteReport"
       ],
       "models": [
-        "bulkUrls[idx].categories",
-        "bulkUrls[idx].tags",
-        "bulkUrls[idx].url",
+        "bulkUrls[idx]!.categories",
+        "bulkUrls[idx]!.tags",
+        "bulkUrls[idx]!.url",
         "state.bulkDialog",
         "state.showCatTags"
       ],
       "conditions": [
+        "!bulkUrls.length",
+        "bulkUrls.length",
         "state.showCatTags"
       ],
       "dynamicComponents": [],
@@ -1177,7 +1152,6 @@
         "frontend/app/components/Domain/Recipe/RecipeOrganizerDialog.vue",
         "frontend/app/components/Domain/Recipe/RecipeOrganizerSelector.vue",
         "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/BaseCardSectionTitle.vue",
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/BaseDialogContent.vue",
         "frontend/app/components/global/ReportTable.vue",
@@ -1192,22 +1166,20 @@
       "document": "pages/g--groupSlug--r--create--debug.md",
       "status": "reviewed",
       "components": [
-        "BaseButton",
+        "Button",
+        "CheckboxField",
+        "LoaderCircleIcon",
         "RecipeDraft",
-        "RecipeJsonEditor"
+        "RecipeJsonEditor",
+        "Switch",
+        "TextField"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/RecipeJsonEditor.vue"
+        "frontend/app/components/global/RecipeJsonEditor.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-checkbox",
-        "v-form",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
         "submit.prevent: debugUrl(recipeUrl)"
       ],
@@ -1219,13 +1191,15 @@
       ],
       "conditions": [
         "debugData",
-        "group?.aiProviderSettings?.aiEnabled"
+        "group?.aiProviderSettings?.aiEnabled",
+        "state.loading"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": [],
       "componentClosure": [
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/RecipeJsonEditor.vue"
+        "frontend/app/components/global/RecipeJsonEditor.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
@@ -1235,32 +1209,26 @@
       "document": "pages/g--groupSlug--r--create--html.md",
       "status": "reviewed",
       "components": [
-        "BaseButton",
+        "Button",
+        "CheckboxField",
+        "FieldScope",
+        "LoaderCircleIcon",
+        "MdiIcon",
+        "NuxtLink",
         "RecipeJsonEditor",
-        "VForm",
-        "router-link"
+        "Switch",
+        "TextField"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/RecipeJsonEditor.vue"
+        "frontend/app/components/global/RecipeJsonEditor.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FieldScope.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-alert",
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-checkbox",
-        "v-divider",
-        "v-expand-transition",
-        "v-form",
-        "v-icon",
-        "v-switch",
-        "v-text-field",
-        "v-textarea"
-      ],
+      "vuetify": [],
       "events": [
-        "change: handleIsEditJson",
-        "submit.prevent: createFromHtmlOrJson(newRecipeData, importKeywordsAsTags, importCategories, newRecipeUrl)"
+        "submit.prevent: createFromHtmlOrJson(newRecipeData, importKeywordsAsTags, importCategories, newRecipeUrl)",
+        "update:model-value: handleIsEditJson"
       ],
       "models": [
         "importCategories",
@@ -1273,14 +1241,18 @@
       ],
       "conditions": [
         "aiEnabled",
+        "createStatus",
         "state.error",
-        "state.isEditJSON"
+        "state.isEditJSON",
+        "state.loading"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": [],
       "componentClosure": [
-        "frontend/app/components/global/BaseButton.vue",
-        "frontend/app/components/global/RecipeJsonEditor.vue"
+        "frontend/app/components/global/RecipeJsonEditor.vue",
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FieldScope.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
@@ -1322,31 +1294,27 @@
       "document": "pages/g--groupSlug--r--create--new.md",
       "status": "reviewed",
       "components": [
-        "BaseButton",
-        "VForm"
+        "Button",
+        "LoaderCircleIcon",
+        "TextField"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseButton.vue"
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-form",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
-        "click: createByName(newRecipeName)",
-        "keyup.enter: createByName(newRecipeName)"
+        "submit.prevent: createByName(newRecipeName)"
       ],
       "models": [
         "newRecipeName"
       ],
-      "conditions": [],
+      "conditions": [
+        "state.loading"
+      ],
       "dynamicComponents": [],
       "vuetifyAPIs": [],
       "componentClosure": [
-        "frontend/app/components/global/BaseButton.vue"
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
@@ -1356,25 +1324,20 @@
       "document": "pages/g--groupSlug--r--create--url.md",
       "status": "reviewed",
       "components": [
-        "BaseButton",
-        "VForm",
-        "router-link"
+        "Button",
+        "CheckboxField",
+        "FieldScope",
+        "LoaderCircleIcon",
+        "MdiIcon",
+        "NuxtLink",
+        "TextField"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseButton.vue"
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FieldScope.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ],
-      "vuetify": [
-        "v-alert",
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-checkbox",
-        "v-divider",
-        "v-expand-transition",
-        "v-form",
-        "v-icon",
-        "v-text-field"
-      ],
+      "vuetify": [],
       "events": [
         "submit.prevent: createByUrl(recipeUrl, importKeywordsAsTags, importCategories)"
       ],
@@ -1387,13 +1350,17 @@
       ],
       "conditions": [
         "aiEnabled",
+        "createStatus",
         "group?.aiProviderSettings?.audioProviderEnabled",
-        "state.error"
+        "state.error",
+        "state.loading"
       ],
       "dynamicComponents": [],
       "vuetifyAPIs": [],
       "componentClosure": [
-        "frontend/app/components/global/BaseButton.vue"
+        "frontend/app/components/ui/field/CheckboxField.vue",
+        "frontend/app/components/ui/field/FieldScope.vue",
+        "frontend/app/components/ui/field/TextField.vue"
       ]
     },
     {
@@ -1403,30 +1370,30 @@
       "document": "pages/g--groupSlug--r--create--zip.md",
       "status": "reviewed",
       "components": [
-        "BaseButton",
-        "File"
+        "AppButtonUpload",
+        "Button",
+        "File",
+        "LoaderCircleIcon",
+        "XIcon"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseButton.vue"
+        "frontend/app/components/global/AppButtonUpload.vue"
       ],
-      "vuetify": [
-        "v-card-actions",
-        "v-card-text",
-        "v-card-title",
-        "v-file-input",
-        "v-form"
-      ],
+      "vuetify": [],
       "events": [
-        "click: createByZip"
+        "click: newRecipeZip = null",
+        "submit.prevent: createByZip",
+        "uploaded: newRecipeZip = $event"
       ],
-      "models": [
-        "newRecipeZip"
+      "models": [],
+      "conditions": [
+        "newRecipeZip",
+        "state.loading"
       ],
-      "conditions": [],
       "dynamicComponents": [],
       "vuetifyAPIs": [],
       "componentClosure": [
-        "frontend/app/components/global/BaseButton.vue"
+        "frontend/app/components/global/AppButtonUpload.vue"
       ]
     },
     {

@@ -42,6 +42,14 @@ The importer creates Catalog Lentil Soup (1) and opens its recipe route.
 - [ ] Verify genuine single-recipe import, duplicate-name handling, and invalid archive feedback.
 - [ ] Verify duplicate-submit protection and loading feedback; the baseline handler never sets loading true.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Each method was a flat card: title, paragraphs with cross-links, a rounded filled field, checkboxes stacked down the page and a centred pill Submit with the status text under it. | Each method is one panel: title and one-line explanation, labelled field, options in two columns, and a footer with the status on the left and a named action ("Import recipe", "Create recipe", "Debug") on the right. Links to the other methods sit under the panel. |
+| Vuetify file input. | A "Choose .zip file" button with the chosen file name and a clear button. |
+
+
 ## Shadcn Vue replacement checklist
 
 - [ ] Replace the FileInput, form layout, card sections, hint, icon, and Create button.

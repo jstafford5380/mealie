@@ -1754,18 +1754,15 @@
       "name": "RecipeImportImages",
       "components": [
         "AppButtonUpload",
-        "ImageCropper"
+        "Button",
+        "ImageCropper",
+        "MdiIcon"
       ],
       "dependencies": [
         "frontend/app/components/global/AppButtonUpload.vue",
         "frontend/app/components/global/ImageCropper.vue"
       ],
-      "vuetify": [
-        "v-btn",
-        "v-col",
-        "v-icon",
-        "v-row"
-      ],
+      "vuetify": [],
       "events": [
         "click: () => setCoverImage(index)",
         "delete: clearImage(index)",
@@ -4924,23 +4921,14 @@
       "source": "frontend/app/components/global/ImageCropper.vue",
       "name": "ImageCropper",
       "components": [
+        "Button",
         "Control",
-        "Cropper"
+        "Cropper",
+        "MdiIcon",
+        "Trash2Icon"
       ],
       "dependencies": [],
-      "vuetify": [
-        "v-btn",
-        "v-card",
-        "v-card-text",
-        "v-icon",
-        "v-list",
-        "v-list-item",
-        "v-list-item-group",
-        "v-list-item-icon",
-        "v-menu",
-        "v-row",
-        "v-spacer"
-      ],
+      "vuetify": [],
       "events": [
         "change: changed = changed + 1",
         "click: $emit('delete')",

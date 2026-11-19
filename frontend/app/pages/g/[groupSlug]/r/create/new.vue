@@ -1,51 +1,46 @@
 <template>
-  <div>
-    <v-card-title class="headline">
+  <form
+    class="rounded-panel border bg-card p-5 font-sans sm:p-6"
+    @submit.prevent="createByName(newRecipeName)"
+  >
+    <h2 class="m-0 text-xl font-bold tracking-tight">
       {{ $t('recipe.create-recipe') }}
-    </v-card-title>
-    <v-card-text>
+    </h2>
+    <p class="m-0 mt-1 text-[15px] text-muted-foreground">
       {{ $t('recipe.create-a-recipe-by-providing-the-name-all-recipes-must-have-unique-names') }}
-      <v-form
-        ref="domCreateByName"
-        @submit.prevent
+    </p>
+    <div class="mt-4">
+      <TextField
+        v-model="newRecipeName"
+        autofocus
+        validate-on="blur"
+        :label="$t('recipe.recipe-name')"
+        :rules="[validators.required]"
+        :hint="$t('recipe.new-recipe-names-must-be-unique')"
+      />
+    </div>
+    <div class="mt-5 flex flex-wrap items-center justify-end gap-3 border-t pt-4">
+      <Button
+        type="submit"
+        :disabled="newRecipeName.trim() === '' || state.loading"
       >
-        <v-text-field
-          v-model="newRecipeName"
-          :label="$t('recipe.recipe-name')"
-          :prepend-inner-icon="$globals.icons.primary"
-          validate-on="blur"
-          autofocus
-          variant="solo-filled"
-          clearable
-          class="rounded-lg mt-2"
-          color="primary"
-          rounded
-          :rules="[validators.required]"
-          :hint="$t('recipe.new-recipe-names-must-be-unique')"
-          persistent-hint
-          @keyup.enter="createByName(newRecipeName)"
+        <LoaderCircleIcon
+          v-if="state.loading"
+          class="size-4 animate-spin"
         />
-      </v-form>
-    </v-card-text>
-    <v-card-actions class="justify-center">
-      <div style="width: 250px">
-        <BaseButton
-          :disabled="newRecipeName.trim() === ''"
-          rounded
-          block
-          :loading="state.loading"
-          @click="createByName(newRecipeName)"
-        />
-      </div>
-    </v-card-actions>
-  </div>
+        {{ $t('recipe.create-recipe') }}
+      </Button>
+    </div>
+  </form>
 </template>
 
 <script setup lang="ts">
+import { LoaderCircleIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import TextField from "~/components/ui/field/TextField.vue";
 import type { AxiosResponse } from "axios";
 import { useUserApi } from "~/composables/api";
 import { validators } from "~/composables/use-validators";
-import type { VForm } from "~/types/auto-forms";
 
 const state = reactive({
   error: false,
@@ -68,10 +63,9 @@ function handleResponse(response: AxiosResponse<string> | null, edit = false) {
 }
 
 const newRecipeName = ref("");
-const domCreateByName = ref<VForm | null>(null);
 
 async function createByName(name: string) {
-  if (!domCreateByName.value?.validate() || name === "") {
+  if (name.trim() === "") {
     return;
   }
   const { response } = await api.recipes.createOne({ name });

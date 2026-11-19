@@ -816,7 +816,16 @@
     "step-options": "Step options",
     "image-left": "Image on the left",
     "image-right": "Image on the right",
-    "image-hidden": "No image"
+    "image-hidden": "No image",
+    "import-recipe": "Import recipe",
+    "choose-zip-file": "Choose .zip file",
+    "bulk-no-urls-yet": "No URLs yet. Add them one at a time, or paste a list with Bulk Add.",
+    "add-url": "Add URL",
+    "import-count": "Import | Import 1 recipe | Import {count} recipes",
+    "flip-horizontal": "Flip horizontally",
+    "flip-vertical": "Flip vertically",
+    "rotate-left": "Rotate left",
+    "rotate-right": "Rotate right"
   },
   "recipe-finder": {
     "recipe-finder": "Recipe Finder",

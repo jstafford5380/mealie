@@ -1,161 +1,113 @@
 <template>
-  <div>
-    <div>
-      <v-card-title class="headline">
+  <div class="flex flex-col gap-8 font-sans">
+    <section class="rounded-panel border bg-card p-5 sm:p-6">
+      <h2 class="m-0 text-xl font-bold tracking-tight">
         {{ $t('recipe.recipe-bulk-importer') }}
-      </v-card-title>
-      <v-card-text>
+      </h2>
+      <p class="m-0 mt-1 text-[15px] text-muted-foreground">
         {{ $t('recipe.recipe-bulk-importer-description') }}
-      </v-card-text>
-      <div class="px-4">
-        <section class="mt-2">
-          <v-row
-            v-for="(_, idx) in bulkUrls"
-            :key="'bulk-url' + idx"
-            class="my-1"
-            density="compact"
+      </p>
+
+      <ol class="m-0 mt-4 flex list-none flex-col gap-3 p-0">
+        <li
+          v-for="(_, idx) in bulkUrls"
+          :key="'bulk-url' + idx"
+          class="flex flex-col gap-2"
+          :class="state.showCatTags && 'rounded-card border p-3'"
+        >
+          <div class="flex items-center gap-2">
+            <span class="w-6 shrink-0 text-end text-sm text-muted-foreground tabular-nums">{{ idx + 1 }}</span>
+            <input
+              v-model="bulkUrls[idx]!.url"
+              type="url"
+              autofocus
+              :placeholder="$t('new-recipe.recipe-url')"
+              :aria-label="`${$t('new-recipe.recipe-url')} ${idx + 1}`"
+              class="h-10 min-w-0 flex-1 rounded-control border border-input bg-card px-3 text-[15px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/25"
+            >
+            <button
+              type="button"
+              class="inline-flex size-9 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              :aria-label="$t('general.delete')"
+              @click="bulkUrls.splice(idx, 1)"
+            >
+              <Trash2Icon class="size-4" />
+            </button>
+          </div>
+          <div
+            v-if="state.showCatTags"
+            class="grid gap-2 ps-8 sm:grid-cols-2"
           >
-            <v-col
-              cols="12"
-              xs="12"
-              sm="12"
-              md="12"
-            >
-              <v-text-field
-                v-model="bulkUrls[idx].url"
-                :label="$t('new-recipe.recipe-url')"
-                density="compact"
-                single-line
-                validate-on="blur"
-                autofocus
-                variant="solo-filled"
-                hide-details
-                clearable
-                :prepend-inner-icon="$globals.icons.link"
-                rounded
-                class="rounded-lg"
-              >
-                <template #append>
-                  <v-btn
-                    style="margin-top: -2px"
-                    icon
-                    size="small"
-                    @click="bulkUrls.splice(idx, 1)"
-                  >
-                    <v-icon>
-                      {{ $globals.icons.delete }}
-                    </v-icon>
-                  </v-btn>
-                </template>
-              </v-text-field>
-            </v-col>
-            <template v-if="state.showCatTags">
-              <v-col
-                cols="12"
-                xs="12"
-                sm="6"
-                class="py-0"
-              >
-                <RecipeOrganizerSelector
-                  v-model="bulkUrls[idx].categories"
-                  selector-type="categories"
-                  :input-attrs="{
-                    variant: 'filled',
-                    singleLine: true,
-                    density: 'compact',
-                    rounded: true,
-                    class: 'rounded-lg',
-                    hideDetails: true,
-                    clearable: true,
-                  }"
-                />
-              </v-col>
-              <v-col
-                cols="12"
-                xs="12"
-                sm="6"
-                class="pt-0 pb-4"
-              >
-                <RecipeOrganizerSelector
-                  v-model="bulkUrls[idx].tags"
-                  selector-type="tags"
-                  :input-attrs="{
-                    variant: 'filled',
-                    singleLine: true,
-                    density: 'compact',
-                    rounded: true,
-                    class: 'rounded-lg',
-                    hideDetails: true,
-                    clearable: true,
-                  }"
-                />
-              </v-col>
-            </template>
-          </v-row>
-          <v-card-actions class="justify-end flex-wrap mt-3 pa-0">
-            <BaseButton
-              class="mt-1 pr-4"
-              delete
-              @click="
-                bulkUrls = [];
-                lockBulkImport = false;
-              "
-            >
-              {{ $t('general.clear') }}
-            </BaseButton>
-            <v-spacer />
-            <BaseButton
-              class="mr-1 mb-1"
-              color="info"
-              @click="bulkUrls.push({ url: '', categories: [], tags: [] })"
-            >
-              <template #icon>
-                {{ $globals.icons.createAlt }}
-              </template>
-              {{ $t('general.new') }}
-            </BaseButton>
-            <RecipeDialogBulkAdd
-              v-model="state.bulkDialog"
-              class="mr-1 mr-sm-0 mb-1"
-              @bulk-data="assignUrls"
+            <RecipeOrganizerSelector
+              v-model="bulkUrls[idx]!.categories"
+              selector-type="categories"
             />
-          </v-card-actions>
-          <div class="px-0">
-            <v-checkbox
-              v-model="state.showCatTags"
-              hide-details
-              :label="$t('recipe.set-categories-and-tags')"
+            <RecipeOrganizerSelector
+              v-model="bulkUrls[idx]!.tags"
+              selector-type="tags"
             />
           </div>
-          <v-card-actions class="justify-center">
-            <div style="width: 250px">
-              <BaseButton
-                :text="$t('general.create')"
-                :disabled="bulkUrls.length === 0 || lockBulkImport"
-                rounded
-                block
-                @click="bulkCreate"
-              >
-                <template #icon>
-                  {{ $globals.icons.check }}
-                </template>
-              </BaseButton>
-            </div>
-          </v-card-actions>
-        </section>
-        <section class="mt-12">
-          <BaseCardSectionTitle :title="$t('recipe.bulk-imports')" />
-          <ReportTable
-            :items="reports"
-            @delete="deleteReport"
-          />
-        </section>
+        </li>
+      </ol>
+      <p
+        v-if="!bulkUrls.length"
+        class="m-0 mt-4 rounded-card border border-dashed px-4 py-6 text-center text-sm text-muted-foreground"
+      >
+        {{ $t('recipe.bulk-no-urls-yet') }}
+      </p>
+
+      <div class="mt-3 flex flex-wrap items-center gap-2">
+        <Button
+          variant="outline"
+          @click="bulkUrls.push({ url: '', categories: [], tags: [] })"
+        >
+          <PlusIcon class="size-4" />
+          {{ $t('recipe.add-url') }}
+        </Button>
+        <RecipeDialogBulkAdd
+          v-model="state.bulkDialog"
+          @bulk-data="assignUrls"
+        />
+        <Button
+          v-if="bulkUrls.length"
+          variant="ghost"
+          class="ms-auto text-destructive hover:text-destructive"
+          @click="bulkUrls = []; lockBulkImport = false"
+        >
+          {{ $t('general.clear') }}
+        </Button>
       </div>
-    </div>
+
+      <div class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t pt-4">
+        <label class="flex cursor-pointer items-center gap-2 text-sm">
+          <Checkbox v-model="state.showCatTags" />
+          {{ $t('recipe.set-categories-and-tags') }}
+        </label>
+        <Button
+          :disabled="bulkUrls.length === 0 || lockBulkImport"
+          @click="bulkCreate"
+        >
+          {{ $t('recipe.import-count', bulkUrls.length) }}
+        </Button>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="m-0 mb-3 text-base font-semibold">
+        {{ $t('recipe.bulk-imports') }}
+      </h2>
+      <ReportTable
+        :items="reports"
+        @delete="deleteReport"
+      />
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
+import { PlusIcon, Trash2Icon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
 import { whenever } from "@vueuse/shared";
 import { useUserApi } from "~/composables/api";
 import { alert } from "~/composables/use-toast";

@@ -1,7 +1,6 @@
 <template>
-  <div>
+  <div class="flex flex-col gap-3 font-sans">
     <AppButtonUpload
-      class="ml-auto"
       url="none"
       file-name="images"
       accept="image/*"
@@ -12,49 +11,47 @@
       :disabled="disabled"
       @uploaded="uploadImages"
     />
-    <div v-if="images.length" class="mt-3">
-      <p class="my-2">
+    <template v-if="images.length">
+      <p class="m-0 text-sm text-muted-foreground">
         {{ $t("recipe.crop-and-rotate-the-image") }}
       </p>
-      <v-row>
-        <v-col
+      <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div
           v-for="(imageUrl, index) in previewUrls"
           :key="index"
-          cols="12"
-          sm="6"
-          lg="4"
-          xl="3"
+          class="flex flex-col gap-2"
         >
-          <v-col>
-            <ImageCropper
-              :img="imageUrl"
-              cropper-width="100%"
-              :submitted="disabled"
-              class="mt-4 mb-2"
-              @save="(croppedImage: Blob) => updateImage(index, croppedImage)"
-              @delete="clearImage(index)"
+          <ImageCropper
+            :img="imageUrl"
+            cropper-width="100%"
+            :submitted="disabled"
+            @save="(croppedImage: Blob) => updateImage(index, croppedImage)"
+            @delete="clearImage(index)"
+          />
+          <Button
+            v-if="images.length > 1"
+            type="button"
+            size="sm"
+            :variant="index === 0 ? 'default' : 'outline'"
+            :disabled="disabled || index === 0"
+            @click="() => setCoverImage(index)"
+          >
+            <MdiIcon
+              :path="index === 0 ? $globals.icons.check : $globals.icons.fileImage"
+              class="size-4"
             />
-
-            <v-btn
-              v-if="images.length > 1"
-              :disabled="disabled || index === 0"
-              color="primary"
-              @click="() => setCoverImage(index)"
-            >
-              <v-icon start>
-                {{ index === 0 ? $globals.icons.check : $globals.icons.fileImage }}
-              </v-icon>
-
-              {{ index === 0 ? $t("recipe.cover-image") : $t("recipe.set-as-cover-image") }}
-            </v-btn>
-          </v-col>
-        </v-col>
-      </v-row>
-    </div>
+            {{ index === 0 ? $t("recipe.cover-image") : $t("recipe.set-as-cover-image") }}
+          </Button>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
+import { Button } from "~/components/ui/button";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+
 withDefaults(defineProps<{
   disabled?: boolean;
 }>(), {

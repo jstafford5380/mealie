@@ -47,6 +47,14 @@ Current-source audit note: the handler calls `validate()` without awaiting it.
 Do not claim that the visible field rule prevents every invalid network request.
 Record stronger submit-time validation as a deliberate improvement.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Each method was a flat card: title, paragraphs with cross-links, a rounded filled field, checkboxes stacked down the page and a centred pill Submit with the status text under it. | Each method is one panel: title and one-line explanation, labelled field, options in two columns, and a footer with the status on the left and a named action ("Import recipe", "Create recipe", "Debug") on the right. Links to the other methods sit under the panel. |
+| The failure message was a red alert with white text and a row of links. | A red-bordered panel with the robot icon, the suggestions (raw HTML, AI), and the reference links. |
+
+
 ## Screenshots
 
 ### Complete importer, remembered options, and alternative-method links

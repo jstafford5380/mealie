@@ -30,6 +30,13 @@ Status: source contract and visual references reviewed; runtime validation remai
 The parent selector does not replace the child forms. Preserve each child's full function checklist.
 The old `image` route redirects to AI Import; it is not a separate current import method.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Illustration title with a rounded overflow button to pick the method. | Heading and explanation, then one tab per method (with icons) that scrolls sideways on phones; AI only shows when it is enabled. |
+
+
 ## Screenshots
 
 ### Parent header with its default URL-import child

@@ -39,6 +39,14 @@ The capture reproduced an i18n compilation error instead of the intended generic
 This is a baseline defect, not required design behavior. Preserve the recovery information and correct its rendering during implementation.
 The screenshot below labels the actual observed overlay; it does not claim the intended alert rendered successfully.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Each method was a flat card: title, paragraphs with cross-links, a rounded filled field, checkboxes stacked down the page and a centred pill Submit with the status text under it. | Each method is one panel: title and one-line explanation, labelled field, options in two columns, and a footer with the status on the left and a named action ("Import recipe", "Create recipe", "Debug") on the right. Links to the other methods sit under the panel. |
+| JSON editor toggle sat above the URL field. | The URL comes first; the "JSON editor" switch sits on the label row of the data box it changes. |
+
+
 ## Screenshots
 
 ### Paste mode and all options

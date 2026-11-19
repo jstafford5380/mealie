@@ -1,61 +1,59 @@
 <template>
-  <div>
-    <v-form
-      ref="domUrlForm"
+  <div class="flex flex-col gap-6 font-sans">
+    <form
+      class="rounded-panel border bg-card p-5 sm:p-6"
       @submit.prevent="debugUrl(recipeUrl)"
     >
-      <div>
-        <v-card-title class="headline">
-          {{ $t('recipe.recipe-debugger') }}
-        </v-card-title>
-        <v-card-text>
-          {{ $t('recipe.recipe-debugger-description') }}
-          <v-text-field
-            v-model="recipeUrl"
-            :label="$t('new-recipe.recipe-url')"
-            validate-on="blur"
-            :prepend-inner-icon="$globals.icons.link"
-            autofocus
-            variant="solo-filled"
-            clearable
-            rounded
-            class="rounded-lg mt-2"
-            :rules="[validators.url]"
-            :hint="$t('new-recipe.url-form-hint')"
-            persistent-hint
-          />
-        </v-card-text>
-        <v-card-text v-if="group?.aiProviderSettings?.aiEnabled">
-          {{ $t('recipe.recipe-debugger-use-ai-description') }}
-          <v-checkbox
-            v-model="state.useOpenAI"
-            :label="$t('recipe.use-ai')"
-          />
-        </v-card-text>
-        <v-card-actions class="justify-center">
-          <div style="width: 250px">
-            <BaseButton
-              :disabled="recipeUrl === null"
-              rounded
-              block
-              type="submit"
-              color="info"
-              :loading="state.loading"
-            >
-              <template #icon>
-                {{ $globals.icons.robot }}
-              </template>
-              {{ $t('recipe.debug') }}
-            </BaseButton>
-          </div>
-        </v-card-actions>
+      <h2 class="m-0 text-xl font-bold tracking-tight">
+        {{ $t('recipe.recipe-debugger') }}
+      </h2>
+      <p class="m-0 mt-1 text-[15px] text-muted-foreground">
+        {{ $t('recipe.recipe-debugger-description') }}
+      </p>
+      <div class="mt-4">
+        <TextField
+          v-model="recipeUrl"
+          type="url"
+          autofocus
+          validate-on="blur"
+          clearable
+          :label="$t('new-recipe.recipe-url')"
+          :prepend-icon="$globals.icons.link"
+          :rules="[validators.url]"
+          :hint="$t('new-recipe.url-form-hint')"
+        />
       </div>
-    </v-form>
-    <section v-if="debugData">
-      <v-checkbox
-        v-model="debugTreeView"
-        :label="$t('recipe.tree-view')"
-      />
+      <div
+        v-if="group?.aiProviderSettings?.aiEnabled"
+        class="mt-2"
+      >
+        <CheckboxField
+          v-model="state.useOpenAI"
+          :label="$t('recipe.use-ai')"
+          :hint="$t('recipe.recipe-debugger-use-ai-description')"
+        />
+      </div>
+      <div class="mt-5 flex flex-wrap items-center justify-end gap-3 border-t pt-4">
+        <Button
+          type="submit"
+          :disabled="recipeUrl === null || state.loading"
+        >
+          <LoaderCircleIcon
+            v-if="state.loading"
+            class="size-4 animate-spin"
+          />
+          {{ $t('recipe.debug') }}
+        </Button>
+      </div>
+    </form>
+    <section
+      v-if="debugData"
+      class="flex flex-col gap-2"
+    >
+      <label class="flex w-fit cursor-pointer items-center gap-2 text-sm">
+        <Switch v-model="debugTreeView" />
+        {{ $t('recipe.tree-view') }}
+      </label>
       <RecipeJsonEditor
         v-model="debugData"
         height="700px"
@@ -68,6 +66,11 @@
 </template>
 
 <script setup lang="ts">
+import { LoaderCircleIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import CheckboxField from "~/components/ui/field/CheckboxField.vue";
+import TextField from "~/components/ui/field/TextField.vue";
+import { Switch } from "~/components/ui/switch";
 import { useUserApi } from "~/composables/api";
 import { useGroupSelf } from "~/composables/use-groups";
 import { validators } from "~/composables/use-validators";

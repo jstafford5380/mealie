@@ -1,172 +1,165 @@
 <template>
-  <v-form
-    ref="domUrlForm"
-    @submit.prevent="createFromHtmlOrJson(newRecipeData, importKeywordsAsTags, importCategories, newRecipeUrl)"
-  >
-    <div>
-      <v-card-title class="headline">
-        {{ $t('recipe.import-from-html-or-json') }}
-      </v-card-title>
-      <v-card-text>
-        <p>
+  <div class="flex flex-col gap-6 font-sans">
+    <FieldScope ref="domUrlForm">
+      <form
+        class="rounded-panel border bg-card p-5 sm:p-6"
+        @submit.prevent="createFromHtmlOrJson(newRecipeData, importKeywordsAsTags, importCategories, newRecipeUrl)"
+      >
+        <h2 class="m-0 text-xl font-bold tracking-tight">
+          {{ $t('recipe.import-from-html-or-json') }}
+        </h2>
+        <p class="m-0 mt-1 text-[15px] text-muted-foreground">
           {{ $t("recipe.import-from-html-or-json-description") }}
         </p>
-        <p>
+        <p class="m-0 mt-1 text-sm text-muted-foreground">
           {{ $t("recipe.json-import-format-description-colon") }}
           <a
             href="https://schema.org/Recipe"
             target="_blank"
-            class="text-primary"
-          >https://schema.org/Recipe</a>
+            rel="noopener"
+            class="font-semibold text-primary"
+          >schema.org/Recipe</a>
         </p>
-        <p v-if="aiEnabled">
-          {{ $t("recipe.import-from-html-or-json-have-ai-read-it") }}
-          <router-link :to="aiImporterTarget" class="text-primary">{{ $t("recipe.import-with-ai") }}</router-link>.
-        </p>
-        <v-switch
-          v-model="state.isEditJSON"
-          :label="$t('recipe.json-editor')"
-          color="primary"
-          class="mt-2"
-          @change="handleIsEditJson"
-        />
-        <v-text-field
-          v-model="newRecipeUrl"
-          :label="$t('new-recipe.recipe-url')"
-          :prepend-inner-icon="$globals.icons.link"
-          validate-on="blur"
-          variant="solo-filled"
-          clearable
-          rounded
-          :rules="[validators.urlOptional]"
-          :hint="$t('new-recipe.copy-and-paste-the-source-url-of-your-data-optional')"
-          persistent-hint
-          class="mt-10 mb-4"
-          style="max-width: 500px"
-        />
-        <RecipeJsonEditor
-          v-if="state.isEditJSON"
-          v-model="newRecipeData"
-          height="250px"
-          mode="code"
-          :main-menu-bar="false"
-        />
-        <v-textarea
-          v-else
-          v-model="newRecipeData"
-          :label="$t('new-recipe.recipe-html-or-json')"
-          :prepend-inner-icon="$globals.icons.codeTags"
-          validate-on="blur"
-          autofocus
-          variant="solo-filled"
-          clearable
-          rounded
-        />
-        <v-checkbox
-          v-model="importKeywordsAsTags"
-          color="primary"
-          hide-details
-          :label="$t('recipe.import-original-keywords-as-tags')"
-        />
-        <v-checkbox
-          v-model="importCategories"
-          color="primary"
-          hide-details
-          :label="$t('recipe.import-original-categories')"
-        />
-        <v-checkbox
-          v-model="stayInEditMode"
-          color="primary"
-          hide-details
-          :label="$t('recipe.stay-in-edit-mode')"
-        />
-        <v-checkbox
-          v-model="parseRecipe"
-          color="primary"
-          hide-details
-          :label="$t('recipe.parse-recipe-ingredients-after-import')"
-        />
-      </v-card-text>
-      <v-card-actions class="justify-center">
-        <div style="width: 100%" class="text-center">
-          <div style="width: 250px; margin: 0 auto">
-            <BaseButton
-              :disabled="!newRecipeData"
-              rounded
-              block
-              type="submit"
-              :loading="state.loading"
-            />
-          </div>
-          <v-card-text class="py-2">
-            <!-- render &nbsp; to maintain layout -->
-            {{ createStatus }}&nbsp;
-          </v-card-text>
-        </div>
-      </v-card-actions>
-      <v-expand-transition>
-        <v-alert
-          v-if="state.error"
-          color="error"
-          class="mt-6 white--text"
-        >
-          <v-card-title class="ma-0 pa-0">
-            <v-icon
-              start
-              color="white"
-              size="x-large"
-            >
-              {{ $globals.icons.robot }}
-            </v-icon>
-            {{ $t("new-recipe.error-title") }}
-          </v-card-title>
-          <v-divider class="my-3 mx-2" />
 
-          <div class="force-url-white">
-            <p>
-              {{ errorDetails || $t("new-recipe.html-or-json-error-details") }}
-            </p>
-          </div>
-          <div class="d-flex row justify-space-around my-3 force-url-white">
-            <a
-              class="text-primary"
-              href="https://developers.google.com/search/docs/data-types/recipe"
-              target="_blank"
-              rel="noreferrer nofollow"
-            >
-              {{ $t("new-recipe.google-ld-json-info") }}
-            </a>
-            <a
-              class="text-primary"
-              href="https://github.com/mealie-recipes/mealie/issues"
-              target="_blank"
-              rel="noreferrer nofollow"
-            >
-              {{ $t("new-recipe.github-issues") }}
-            </a>
-            <a
-              class="text-primary"
-              href="https://schema.org/Recipe"
-              target="_blank"
-              rel="noreferrer nofollow"
-            >
-              {{ $t("new-recipe.recipe-markup-specification") }}
-            </a>
-          </div>
-        </v-alert>
-      </v-expand-transition>
-    </div>
-  </v-form>
+        <div class="mt-4 max-w-lg">
+          <TextField
+            v-model="newRecipeUrl"
+            type="url"
+            validate-on="blur"
+            clearable
+            :label="$t('new-recipe.recipe-url')"
+            :prepend-icon="$globals.icons.link"
+            :rules="[validators.urlOptional]"
+            :hint="$t('new-recipe.copy-and-paste-the-source-url-of-your-data-optional')"
+          />
+        </div>
+
+        <div class="mt-3 flex items-center justify-between gap-3">
+          <span class="text-sm font-semibold">{{ $t('new-recipe.recipe-html-or-json') }}</span>
+          <label class="flex cursor-pointer items-center gap-2 text-sm">
+            <Switch
+              v-model="state.isEditJSON"
+              @update:model-value="handleIsEditJson"
+            />
+            {{ $t('recipe.json-editor') }}
+          </label>
+        </div>
+        <div class="mt-1.5">
+          <RecipeJsonEditor
+            v-if="state.isEditJSON"
+            v-model="newRecipeData"
+            height="250px"
+            mode="code"
+            :main-menu-bar="false"
+          />
+          <textarea
+            v-else
+            v-model="newRecipeData"
+            rows="8"
+            autofocus
+            :aria-label="$t('new-recipe.recipe-html-or-json')"
+            class="w-full resize-y rounded-control border border-input bg-card px-3 py-2 font-mono text-[13.5px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/25 disabled:opacity-60"
+          />
+        </div>
+
+        <div class="mt-2 grid gap-x-6 gap-y-1 sm:grid-cols-2">
+          <CheckboxField
+            v-model="importKeywordsAsTags"
+            :label="$t('recipe.import-original-keywords-as-tags')"
+          />
+          <CheckboxField
+            v-model="importCategories"
+            :label="$t('recipe.import-original-categories')"
+          />
+          <CheckboxField
+            v-model="stayInEditMode"
+            :label="$t('recipe.stay-in-edit-mode')"
+          />
+          <CheckboxField
+            v-model="parseRecipe"
+            :label="$t('recipe.parse-recipe-ingredients-after-import')"
+          />
+        </div>
+        <div class="mt-5 flex flex-wrap items-center justify-end gap-3 border-t pt-4">
+          <span
+            v-if="createStatus"
+            class="me-auto text-sm text-muted-foreground"
+            role="status"
+          >{{ createStatus }}</span>
+          <Button
+            type="submit"
+            :disabled="!newRecipeData || state.loading"
+          >
+            <LoaderCircleIcon
+              v-if="state.loading"
+              class="size-4 animate-spin"
+            />
+            {{ $t('recipe.import-recipe') }}
+          </Button>
+        </div>
+      </form>
+    </FieldScope>
+
+    <section
+      v-if="state.error"
+      class="rounded-panel border border-destructive/40 bg-destructive/5 p-5 text-[15px] sm:p-6"
+      role="alert"
+    >
+      <h2 class="m-0 mb-2 flex items-center gap-2 text-lg font-bold text-destructive">
+        <MdiIcon
+          :path="$globals.icons.robot"
+          class="size-6"
+        />
+        {{ $t("new-recipe.error-title") }}
+      </h2>
+      <p class="m-0">
+        {{ errorDetails || $t("new-recipe.html-or-json-error-details") }}
+      </p>
+      <p class="m-0 mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+        <a
+          v-for="link in ERROR_LINKS"
+          :key="link.href"
+          :href="link.href"
+          target="_blank"
+          rel="noreferrer nofollow"
+          class="font-semibold text-primary"
+        >{{ $t(link.text) }}</a>
+      </p>
+    </section>
+
+    <p
+      v-if="aiEnabled"
+      class="m-0 text-sm text-muted-foreground"
+    >
+      {{ $t("recipe.import-from-html-or-json-have-ai-read-it") }}
+      <NuxtLink
+        :to="aiImporterTarget"
+        class="font-semibold text-primary no-underline hover:underline"
+      >{{ $t("recipe.import-with-ai") }}</NuxtLink>.
+    </p>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { LoaderCircleIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import CheckboxField from "~/components/ui/field/CheckboxField.vue";
+import FieldScope from "~/components/ui/field/FieldScope.vue";
+import TextField from "~/components/ui/field/TextField.vue";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+import { Switch } from "~/components/ui/switch";
 import type { AxiosResponse } from "axios";
 import { useTagStore } from "~/composables/store/use-tag-store";
 import { useUserApi } from "~/composables/api";
 import { useGroupSelf } from "~/composables/use-groups";
 import { useNewRecipeOptions } from "~/composables/use-new-recipe-options";
 import { validators } from "~/composables/use-validators";
-import type { VForm } from "~/types/auto-forms";
+
+const ERROR_LINKS = [
+  { text: "new-recipe.google-ld-json-info", href: "https://developers.google.com/search/docs/data-types/recipe" },
+  { text: "new-recipe.github-issues", href: "https://github.com/mealie-recipes/mealie/issues" },
+  { text: "new-recipe.recipe-markup-specification", href: "https://schema.org/Recipe" },
+];
 
 const state = reactive({
   error: false,
@@ -183,7 +176,7 @@ const errorDetails = computed(() =>
 const auth = useMealieAuth();
 const route = useRoute();
 const groupSlug = computed(() => route.params.groupSlug as string || auth.user.value?.groupSlug || "");
-const domUrlForm = ref<VForm | null>(null);
+const domUrlForm = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 
 const { group } = useGroupSelf();
 const aiImporterTarget = computed(() => `/g/${groupSlug.value}/r/create/ai`);
@@ -273,9 +266,3 @@ async function createFromHtmlOrJson(htmlOrJsonData: string | object | null, impo
   handleResponse(response, importKeywordsAsTags);
 }
 </script>
-
-<style scoped>
-.force-url-white a {
-  color: white !important;
-}
-</style>

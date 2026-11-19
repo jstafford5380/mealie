@@ -1,61 +1,58 @@
 <template>
-  <v-card class="ma-0 pt-2" :elevation="4">
-    <v-card-text>
-      <!-- Controls Row (Menu) -->
-      <v-row class="mb-2 mx-1">
-        <v-btn
-          color="error"
-          :icon="$globals.icons.delete"
-          :disabled="submitted"
-          @click="$emit('delete')"
+  <div class="overflow-hidden rounded-card border bg-card font-sans">
+    <div class="flex items-center gap-1 border-b px-2 py-1.5">
+      <button
+        v-for="control in controls.flat()"
+        :key="control.label"
+        type="button"
+        class="inline-flex size-8 items-center justify-center rounded-item text-muted-foreground hover:bg-highlight hover:text-foreground disabled:opacity-40"
+        :disabled="submitted"
+        :aria-label="$t(control.label)"
+        :title="$t(control.label)"
+        @click="control.callback()"
+      >
+        <MdiIcon
+          :path="control.icon"
+          class="size-[18px]"
         />
-        <v-spacer />
-        <v-btn
-          v-if="changed"
-          class="mr-2"
-          color="success"
-          :icon="$globals.icons.save"
-          :disabled="submitted"
-          @click="save"
-        />
-        <v-menu offset-y :close-on-content-click="false" location="bottom center">
-          <template #activator="{ props: slotProps }">
-            <v-btn color="info" v-bind="slotProps" :icon="$globals.icons.edit" :disabled="submitted" />
-          </template>
-          <v-list class="mt-1">
-            <template v-for="(row, keyRow) in controls" :key="keyRow">
-              <v-list-item-group>
-                <v-list-item
-                  v-for="(control, keyControl) in row"
-                  :key="keyControl"
-                  :disabled="submitted"
-                  @click="control.callback()"
-                >
-                  <v-list-item-icon>
-                    <v-icon :color="control.color" :icon="control.icon" />
-                  </v-list-item-icon>
-                </v-list-item>
-              </v-list-item-group>
-            </template>
-          </v-list>
-        </v-menu>
-      </v-row>
-
-      <!-- Image Row -->
-      <Cropper
-        ref="cropper"
-        class="cropper"
-        :src="img"
-        :default-size="defaultSize"
-        :style="`width: ${cropperWidth}; aspect-ratio: ${aspectRatio};`"
-        @change="changed = changed + 1"
-        @ready="onReady"
-      />
-    </v-card-text>
-  </v-card>
+      </button>
+      <span class="flex-1" />
+      <Button
+        v-if="changed"
+        type="button"
+        size="sm"
+        :disabled="submitted"
+        @click="save"
+      >
+        {{ $t('general.save') }}
+      </Button>
+      <button
+        type="button"
+        class="inline-flex size-8 items-center justify-center rounded-item text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-40"
+        :disabled="submitted"
+        :aria-label="$t('general.delete')"
+        :title="$t('general.delete')"
+        @click="$emit('delete')"
+      >
+        <Trash2Icon class="size-4" />
+      </button>
+    </div>
+    <Cropper
+      ref="cropper"
+      class="cropper"
+      :src="img"
+      :default-size="defaultSize"
+      :style="`width: ${cropperWidth}; aspect-ratio: ${aspectRatio};`"
+      @change="changed = changed + 1"
+      @ready="onReady"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
+import { Trash2Icon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import { Cropper } from "vue-advanced-cropper";
 import "vue-advanced-cropper/dist/style.css";
 
@@ -92,6 +89,7 @@ function onReady() {
 
 type Control = {
   color: string;
+  label: string;
   icon: string;
   callback: CallableFunction;
 };
@@ -123,11 +121,13 @@ const controls = ref<Control[][]>([
   [
     {
       color: "info",
+      label: "recipe.flip-horizontal",
       icon: $globals.icons.flipHorizontal,
       callback: () => flip(true, false),
     },
     {
       color: "info",
+      label: "recipe.flip-vertical",
       icon: $globals.icons.flipVertical,
       callback: () => flip(false, true),
     },
@@ -135,11 +135,13 @@ const controls = ref<Control[][]>([
   [
     {
       color: "info",
+      label: "recipe.rotate-left",
       icon: $globals.icons.rotateLeft,
       callback: () => rotate(-90),
     },
     {
       color: "info",
+      label: "recipe.rotate-right",
       icon: $globals.icons.rotateRight,
       callback: () => rotate(90),
     },

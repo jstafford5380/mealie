@@ -49,6 +49,15 @@ Source: [ReportTable.vue](../../frontend/app/components/global/ReportTable.vue).
 - On HTTP `200`, refresh reports. Otherwise show report-deletion failure.
 - Keep the [report-detail page](group--reports--id.md), including exception expansion.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| URL rows as rounded filled fields with a delete icon inside; categories/tags in a grid under each. | Numbered URL rows with a delete button; with "Set categories and tags" on, each row becomes a bordered block with its two selectors. |
+| Clear / New / Bulk Add in a row; Create as a centred pill. | Add URL and Bulk Add on the left, Clear on the right; the footer holds the categories/tags option and an "Import N recipes" button. An empty state explains how to add URLs. |
+| Bulk imports under a section title in a data table. | Bulk imports as linked report rows (see migrations). |
+
+
 ## Screenshots
 
 ### Initial form and reports area

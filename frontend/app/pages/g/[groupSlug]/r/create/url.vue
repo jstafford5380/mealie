@@ -1,163 +1,163 @@
 <template>
-  <div>
-    <v-form
-      ref="domUrlForm"
-      @submit.prevent="createByUrl(recipeUrl, importKeywordsAsTags, importCategories)"
-    >
-      <div>
-        <v-card-title class="headline">
+  <div class="flex flex-col gap-6 font-sans">
+    <FieldScope ref="domUrlForm">
+      <form
+        class="rounded-panel border bg-card p-5 sm:p-6"
+        @submit.prevent="createByUrl(recipeUrl, importKeywordsAsTags, importCategories)"
+      >
+        <h2 class="m-0 text-xl font-bold tracking-tight">
           {{ $t('recipe.scrape-recipe') }}
-        </v-card-title>
-        <v-card-text>
-          <v-card-text class="pa-0">
-            <p>{{ $t('recipe.scrape-recipe-description') }}</p>
-            <p v-if="group?.aiProviderSettings?.audioProviderEnabled">
-              {{ $t('recipe.scrape-recipe-description-transcription') }}
-            </p>
-          </v-card-text>
-          <v-card-text class="px-0">
-            <p>
-              {{ $t('recipe.scrape-recipe-have-a-lot-of-recipes') }}
-              <router-link :to="bulkImporterTarget" class="text-primary">{{ $t('recipe.scrape-recipe-suggest-bulk-importer') }}</router-link>.
-            </p>
-            <p>
-              {{ $t('recipe.scrape-recipe-have-raw-html-or-json-data') }}
-              <router-link :to="htmlOrJsonImporterTarget" class="text-primary">{{ $t('recipe.scrape-recipe-you-can-import-from-raw-data-directly') }}</router-link>.
-            </p>
-            <p v-if="aiEnabled">
-              {{ $t('recipe.scrape-recipe-have-ai-read-the-page') }}
-              <router-link :to="aiImporterTarget" class="text-primary">{{ $t('recipe.import-with-ai') }}</router-link>.
-            </p>
-          </v-card-text>
-          <v-text-field
+        </h2>
+        <p class="m-0 mt-1 text-[15px] text-muted-foreground">
+          {{ $t('recipe.scrape-recipe-description') }}
+          <template v-if="group?.aiProviderSettings?.audioProviderEnabled">
+            {{ $t('recipe.scrape-recipe-description-transcription') }}
+          </template>
+        </p>
+
+        <div class="mt-4">
+          <TextField
             v-model="recipeUrl"
-            :label="$t('new-recipe.recipe-url')"
-            :prepend-inner-icon="$globals.icons.link"
-            validate-on="blur"
+            type="url"
             autofocus
-            variant="solo-filled"
-            clearable
-            class="rounded-lg mt-2"
-            rounded
+            validate-on="blur"
+            :label="$t('new-recipe.recipe-url')"
+            :prepend-icon="$globals.icons.link"
             :rules="[validators.url]"
             :hint="$t('new-recipe.url-form-hint')"
-            persistent-hint
+            clearable
           />
-        </v-card-text>
-        <v-checkbox
-          v-model="importKeywordsAsTags"
-          color="primary"
-          hide-details
-          :label="$t('recipe.import-original-keywords-as-tags')"
-        />
-        <v-checkbox
-          v-model="importCategories"
-          color="primary"
-          hide-details
-          :label="$t('recipe.import-original-categories')"
-        />
-        <v-checkbox
-          v-model="stayInEditMode"
-          color="primary"
-          hide-details
-          :label="$t('recipe.stay-in-edit-mode')"
-        />
-        <v-checkbox
-          v-model="parseRecipe"
-          color="primary"
-          hide-details
-          :label="$t('recipe.parse-recipe-ingredients-after-import')"
-        />
-        <v-card-actions class="justify-center">
-          <div style="width: 100%" class="text-center">
-            <div style="width: 250px; margin: 0 auto">
-              <BaseButton
-                :disabled="recipeUrl === null"
-                rounded
-                block
-                type="submit"
-                :loading="state.loading"
-              />
-            </div>
-            <v-card-text class="py-2">
-              <!-- render &nbsp; to maintain layout -->
-              {{ createStatus }}&nbsp;
-            </v-card-text>
-          </div>
-        </v-card-actions>
-      </div>
-    </v-form>
-    <v-expand-transition>
-      <v-alert
-        v-if="state.error"
-        color="error"
-        class="mt-6 white--text"
-      >
-        <v-card-title class="ma-0 pa-0">
-          <v-icon
-            start
-            color="white"
-            size="x-large"
-          >
-            {{ $globals.icons.robot }}
-          </v-icon>
-          {{ $t("new-recipe.error-title") }}
-        </v-card-title>
-        <v-divider class="my-3 mx-2" />
+        </div>
 
-        <div class="force-url-white">
-          <p>
-            {{ $t("recipe.scrape-recipe-website-being-blocked") }}
-            <router-link :to="htmlOrJsonImporterTarget">{{ $t("recipe.scrape-recipe-try-importing-raw-html-instead") }}</router-link>
-          </p>
-          <p v-if="aiEnabled">
-            {{ $t("recipe.scrape-recipe-have-ai-read-the-page") }}
-            <router-link :to="aiImporterTarget">{{ $t("recipe.import-with-ai") }}</router-link>.
-          </p>
-          <br>
-          <p>
-            {{ $t("new-recipe.error-details") }}
-          </p>
+        <div class="mt-2 grid gap-x-6 gap-y-1 sm:grid-cols-2">
+          <CheckboxField
+            v-model="importKeywordsAsTags"
+            :label="$t('recipe.import-original-keywords-as-tags')"
+          />
+          <CheckboxField
+            v-model="importCategories"
+            :label="$t('recipe.import-original-categories')"
+          />
+          <CheckboxField
+            v-model="stayInEditMode"
+            :label="$t('recipe.stay-in-edit-mode')"
+          />
+          <CheckboxField
+            v-model="parseRecipe"
+            :label="$t('recipe.parse-recipe-ingredients-after-import')"
+          />
         </div>
-        <div class="d-flex row justify-space-around my-3 force-url-white">
-          <a
-            class="dark text-primary"
-            href="https://developers.google.com/search/docs/data-types/recipe"
-            target="_blank"
-            rel="noreferrer nofollow"
+
+        <div class="mt-5 flex flex-wrap items-center justify-end gap-3 border-t pt-4">
+          <span
+            v-if="createStatus"
+            class="me-auto text-sm text-muted-foreground"
+            role="status"
+          >{{ createStatus }}</span>
+          <Button
+            type="submit"
+            :disabled="recipeUrl === null || state.loading"
           >
-            {{ $t("new-recipe.google-ld-json-info") }}
-          </a>
-          <a
-            class="text-primary"
-            href="https://github.com/mealie-recipes/mealie/issues"
-            target="_blank"
-            rel="noreferrer nofollow"
-          >
-            {{ $t("new-recipe.github-issues") }}
-          </a>
-          <a
-            class="text-primary"
-            href="https://schema.org/Recipe"
-            target="_blank"
-            rel="noreferrer nofollow"
-          >
-            {{ $t("new-recipe.recipe-markup-specification") }}
-          </a>
+            <LoaderCircleIcon
+              v-if="state.loading"
+              class="size-4 animate-spin"
+            />
+            {{ $t('recipe.import-recipe') }}
+          </Button>
         </div>
-      </v-alert>
-    </v-expand-transition>
+      </form>
+    </FieldScope>
+
+    <section
+      v-if="state.error"
+      class="rounded-panel border border-destructive/40 bg-destructive/5 p-5 text-[15px] sm:p-6"
+      role="alert"
+    >
+      <h2 class="m-0 mb-2 flex items-center gap-2 text-lg font-bold text-destructive">
+        <MdiIcon
+          :path="$globals.icons.robot"
+          class="size-6"
+        />
+        {{ $t("new-recipe.error-title") }}
+      </h2>
+      <p class="m-0">
+        {{ $t("recipe.scrape-recipe-website-being-blocked") }}
+        <NuxtLink
+          :to="htmlOrJsonImporterTarget"
+          class="font-semibold text-primary"
+        >{{ $t("recipe.scrape-recipe-try-importing-raw-html-instead") }}</NuxtLink>
+      </p>
+      <p
+        v-if="aiEnabled"
+        class="m-0 mt-2"
+      >
+        {{ $t("recipe.scrape-recipe-have-ai-read-the-page") }}
+        <NuxtLink
+          :to="aiImporterTarget"
+          class="font-semibold text-primary"
+        >{{ $t("recipe.import-with-ai") }}</NuxtLink>.
+      </p>
+      <p class="m-0 mt-3 text-sm text-muted-foreground">
+        {{ $t("new-recipe.error-details") }}
+      </p>
+      <p class="m-0 mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm">
+        <a
+          v-for="link in ERROR_LINKS"
+          :key="link.href"
+          :href="link.href"
+          target="_blank"
+          rel="noreferrer nofollow"
+          class="font-semibold text-primary"
+        >{{ $t(link.text) }}</a>
+      </p>
+    </section>
+
+    <!-- other ways in -->
+    <ul class="m-0 flex list-none flex-col gap-1.5 p-0 text-sm text-muted-foreground">
+      <li>
+        {{ $t('recipe.scrape-recipe-have-a-lot-of-recipes') }}
+        <NuxtLink
+          :to="bulkImporterTarget"
+          class="font-semibold text-primary no-underline hover:underline"
+        >{{ $t('recipe.scrape-recipe-suggest-bulk-importer') }}</NuxtLink>.
+      </li>
+      <li>
+        {{ $t('recipe.scrape-recipe-have-raw-html-or-json-data') }}
+        <NuxtLink
+          :to="htmlOrJsonImporterTarget"
+          class="font-semibold text-primary no-underline hover:underline"
+        >{{ $t('recipe.scrape-recipe-you-can-import-from-raw-data-directly') }}</NuxtLink>.
+      </li>
+      <li v-if="aiEnabled">
+        {{ $t('recipe.scrape-recipe-have-ai-read-the-page') }}
+        <NuxtLink
+          :to="aiImporterTarget"
+          class="font-semibold text-primary no-underline hover:underline"
+        >{{ $t('recipe.import-with-ai') }}</NuxtLink>.
+      </li>
+    </ul>
   </div>
 </template>
 
 <script setup lang="ts">
+import { LoaderCircleIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import CheckboxField from "~/components/ui/field/CheckboxField.vue";
+import FieldScope from "~/components/ui/field/FieldScope.vue";
+import TextField from "~/components/ui/field/TextField.vue";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import type { AxiosResponse } from "axios";
 import { useUserApi } from "~/composables/api";
 import { useGroupSelf } from "~/composables/use-groups";
 import { useTagStore } from "~/composables/store/use-tag-store";
 import { useNewRecipeOptions } from "~/composables/use-new-recipe-options";
 import { validators } from "~/composables/use-validators";
-import type { VForm } from "~/types/auto-forms";
+
+const ERROR_LINKS = [
+  { text: "new-recipe.google-ld-json-info", href: "https://developers.google.com/search/docs/data-types/recipe" },
+  { text: "new-recipe.github-issues", href: "https://github.com/mealie-recipes/mealie/issues" },
+  { text: "new-recipe.recipe-markup-specification", href: "https://schema.org/Recipe" },
+];
 
 definePageMeta({
   key: route => route.path,
@@ -258,7 +258,7 @@ onMounted(() => {
   }
 });
 
-const domUrlForm = ref<VForm | null>(null);
+const domUrlForm = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 
 // Remove import URL from query params when leaving the page
 const isLeaving = ref(false);
@@ -291,9 +291,3 @@ async function createByUrl(url: string | null, importKeywordsAsTags: boolean, im
   handleResponse(response, importKeywordsAsTags);
 }
 </script>
-
-<style scoped>
-.force-url-white a {
-  color: white !important;
-}
-</style>

@@ -32,6 +32,14 @@ Current-source notes:
 Source: [RecipeJsonEditor.vue](../../frontend/app/components/global/RecipeJsonEditor.vue).
 The backend debugger can return an object or a diagnostic string; retain a useful read-only presentation for both.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Each method was a flat card: title, paragraphs with cross-links, a rounded filled field, checkboxes stacked down the page and a centred pill Submit with the status text under it. | Each method is one panel: title and one-line explanation, labelled field, options in two columns, and a footer with the status on the left and a named action ("Import recipe", "Create recipe", "Debug") on the right. Links to the other methods sit under the panel. |
+| Tree-view as a checkbox above the JSON viewer. | A "Tree view" switch above the viewer; the AI option explains itself in its hint. |
+
+
 ## Screenshots
 
 ### Input and conditional AI option

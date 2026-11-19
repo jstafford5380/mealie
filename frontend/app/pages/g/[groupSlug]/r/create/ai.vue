@@ -1,176 +1,181 @@
 <template>
-  <v-form ref="domUrlForm" @submit.prevent="createRecipe">
-    <div>
-      <v-card-title class="headline">
-        {{ $t('recipe.import-with-ai') }}
-      </v-card-title>
-      <v-card-text v-if="!aiEnabled">
-        <v-alert type="info" variant="tonal">
-          {{ $t('recipe.import-with-ai-provider-required') }}
-        </v-alert>
-      </v-card-text>
-      <v-card-text v-else>
-        <p>{{ $t('recipe.import-with-ai-description') }}</p>
-        <p v-if="videosEnabled">
-          {{ $t('recipe.import-with-ai-video-description') }}
+  <div class="flex flex-col gap-6 font-sans">
+    <p
+      v-if="!aiEnabled"
+      class="m-0 rounded-card border border-primary/30 bg-primary/8 p-4 text-[15px]"
+    >
+      {{ $t('recipe.import-with-ai-provider-required') }}
+    </p>
+    <FieldScope
+      v-else
+      ref="domUrlForm"
+    >
+      <form
+        class="rounded-panel border bg-card p-5 sm:p-6"
+        @submit.prevent="createRecipe"
+      >
+        <h2 class="m-0 text-xl font-bold tracking-tight">
+          {{ $t('recipe.import-with-ai') }}
+        </h2>
+        <p class="m-0 mt-1 text-[15px] text-muted-foreground">
+          {{ $t('recipe.import-with-ai-description') }}
+          <template v-if="videosEnabled">
+            {{ $t('recipe.import-with-ai-video-description') }}
+          </template>
         </p>
-        <br>
-        <p>
-          {{ $t('recipe.import-with-ai-without-ai-question') }}
-          <router-link :to="urlImporterTarget" class="text-primary">{{ $t('recipe.import-with-ai-use-url-import') }}</router-link>.
-        </p>
-        <p>
-          {{ $t('recipe.scrape-recipe-have-raw-html-or-json-data') }}
-          <router-link :to="htmlOrJsonImporterTarget" class="text-primary">{{ $t('recipe.scrape-recipe-you-can-import-from-raw-data-directly') }}</router-link>.
-        </p>
 
-        <v-text-field
-          v-model="recipeUrl"
-          :label="$t('new-recipe.recipe-url')"
-          :prepend-inner-icon="$globals.icons.link"
-          validate-on="blur"
-          variant="solo-filled"
-          clearable
-          rounded
-          :rules="[validators.urlOptional]"
-          :hint="$t('recipe.import-with-ai-url-hint')"
-          persistent-hint
-          class="mt-8 mb-4"
-          :disabled="state.loading"
-        />
-
-        <v-switch
-          v-model="state.isEditJSON"
-          :label="$t('recipe.json-editor')"
-          color="primary"
-          class="mt-2"
-          :disabled="state.loading"
-          @change="handleIsEditJson"
-        />
-        <RecipeJsonEditor
-          v-if="state.isEditJSON"
-          v-model="newRecipeData"
-          height="250px"
-          mode="code"
-          :main-menu-bar="false"
-        />
-        <v-textarea
-          v-else
-          v-model="newRecipeData"
-          :label="$t('recipe.import-with-ai-content')"
-          :prepend-inner-icon="$globals.icons.textBox"
-          validate-on="blur"
-          variant="solo-filled"
-          clearable
-          rounded
-          :hint="$t('recipe.import-with-ai-content-hint')"
-          persistent-hint
-          :disabled="state.loading"
-        />
-
-        <div v-if="imagesEnabled" class="mt-6">
-          <RecipeImportImages v-model="uploadedImages" :disabled="state.loading" />
-        </div>
-        <v-alert
-          v-else
-          type="info"
-          variant="tonal"
-          class="mt-6"
-        >
-          {{ $t('recipe.import-with-ai-image-provider-required') }}
-        </v-alert>
-
-        <v-checkbox
-          v-model="translateRecipe"
-          color="primary"
-          hide-details
-          :label="$t('recipe.should-translate-description')"
-          :disabled="state.loading"
-        />
-        <div class="d-flex align-center">
-          <v-checkbox
-            v-model="createNewOrganizers"
-            color="primary"
-            hide-details
-            :label="$t('recipe.create-new-organizers')"
+        <div class="mt-4">
+          <TextField
+            v-model="recipeUrl"
+            type="url"
+            validate-on="blur"
+            clearable
+            :label="$t('new-recipe.recipe-url')"
+            :prepend-icon="$globals.icons.link"
+            :rules="[validators.urlOptional]"
+            :hint="$t('recipe.import-with-ai-url-hint')"
             :disabled="state.loading"
           />
-          <v-tooltip location="bottom" max-width="300">
-            <template #activator="{ props: tooltipProps }">
-              <v-icon v-bind="tooltipProps" size="small" class="ms-2">
-                {{ $globals.icons.help }}
-              </v-icon>
-            </template>
-            <span>{{ $t('recipe.create-new-organizers-hint') }}</span>
-          </v-tooltip>
         </div>
-        <v-checkbox
-          v-model="stayInEditMode"
-          color="primary"
-          hide-details
-          :label="$t('recipe.stay-in-edit-mode')"
-          :disabled="state.loading"
-        />
-        <v-checkbox
-          v-model="parseRecipe"
-          color="primary"
-          hide-details
-          :label="$t('recipe.parse-recipe-ingredients-after-import')"
-          :disabled="state.loading"
-        />
-      </v-card-text>
-      <v-card-actions v-if="aiEnabled" class="justify-center">
-        <div style="width: 100%" class="text-center">
-          <div style="width: 250px; margin: 0 auto">
-            <BaseButton
-              :disabled="!hasSource"
-              rounded
-              block
-              type="submit"
-              :loading="state.loading"
+
+        <div class="mt-3 flex items-center justify-between gap-3">
+          <span class="text-sm font-semibold">{{ $t('recipe.import-with-ai-content') }}</span>
+          <label class="flex cursor-pointer items-center gap-2 text-sm">
+            <Switch
+              v-model="state.isEditJSON"
+              :disabled="state.loading"
+              @update:model-value="handleIsEditJson"
             />
-          </div>
-          <v-card-text class="py-2">
-            <!-- render &nbsp; to maintain layout -->
-            {{ createStatus }}&nbsp;
-          </v-card-text>
+            {{ $t('recipe.json-editor') }}
+          </label>
         </div>
-      </v-card-actions>
+        <div class="mt-1.5">
+          <RecipeJsonEditor
+            v-if="state.isEditJSON"
+            v-model="newRecipeData"
+            height="250px"
+            mode="code"
+            :main-menu-bar="false"
+          />
+          <textarea
+            v-else
+            v-model="newRecipeData"
+            rows="6"
+            :disabled="state.loading"
+            :aria-label="$t('recipe.import-with-ai-content')"
+            class="w-full resize-y rounded-control border border-input bg-card px-3 py-2 font-mono text-[13.5px] outline-none focus:border-ring focus:ring-3 focus:ring-ring/25 disabled:opacity-60 font-sans text-[15px]"
+          />
+          <p class="m-0 mt-1 text-sm text-muted-foreground">
+            {{ $t('recipe.import-with-ai-content-hint') }}
+          </p>
+        </div>
 
-      <v-expand-transition>
-        <v-alert
-          v-if="state.error"
-          color="error"
-          class="mt-6 white--text"
-        >
-          <v-card-title class="ma-0 pa-0">
-            <v-icon
-              start
-              color="white"
-              size="x-large"
-            >
-              {{ $globals.icons.robot }}
-            </v-icon>
-            {{ $t("new-recipe.error-title") }}
-          </v-card-title>
-          <v-divider class="my-3 mx-2" />
+        <div class="mt-4">
+          <RecipeImportImages
+            v-if="imagesEnabled"
+            v-model="uploadedImages"
+            :disabled="state.loading"
+          />
+          <p
+            v-else
+            class="m-0 rounded-control border border-primary/30 bg-primary/8 px-3 py-2 text-sm"
+          >
+            {{ $t('recipe.import-with-ai-image-provider-required') }}
+          </p>
+        </div>
 
-          <div class="force-url-white">
-            <p>{{ state.errorMessage || $t("recipe.import-with-ai-error-details") }}</p>
-          </div>
-        </v-alert>
-      </v-expand-transition>
-    </div>
-  </v-form>
+        <div class="mt-3 grid gap-x-6 gap-y-1 sm:grid-cols-2">
+          <CheckboxField
+            v-model="translateRecipe"
+            :label="$t('recipe.should-translate-description')"
+            :disabled="state.loading"
+          />
+          <CheckboxField
+            v-model="createNewOrganizers"
+            :label="$t('recipe.create-new-organizers')"
+            :hint="$t('recipe.create-new-organizers-hint')"
+            :disabled="state.loading"
+          />
+          <CheckboxField
+            v-model="stayInEditMode"
+            :label="$t('recipe.stay-in-edit-mode')"
+            :disabled="state.loading"
+          />
+          <CheckboxField
+            v-model="parseRecipe"
+            :label="$t('recipe.parse-recipe-ingredients-after-import')"
+            :disabled="state.loading"
+          />
+        </div>
+        <div class="mt-5 flex flex-wrap items-center justify-end gap-3 border-t pt-4">
+          <span
+            v-if="createStatus"
+            class="me-auto text-sm text-muted-foreground"
+            role="status"
+          >{{ createStatus }}</span>
+          <Button
+            type="submit"
+            :disabled="!hasSource || state.loading"
+          >
+            <LoaderCircleIcon
+              v-if="state.loading"
+              class="size-4 animate-spin"
+            />
+            {{ $t('recipe.import-recipe') }}
+          </Button>
+        </div>
+      </form>
+    </FieldScope>
+
+    <section
+      v-if="state.error"
+      class="rounded-panel border border-destructive/40 bg-destructive/5 p-5 text-[15px] sm:p-6"
+      role="alert"
+    >
+      <h2 class="m-0 mb-2 flex items-center gap-2 text-lg font-bold text-destructive">
+        <MdiIcon
+          :path="$globals.icons.robot"
+          class="size-6"
+        />
+        {{ $t("new-recipe.error-title") }}
+      </h2>
+      <p class="m-0">
+        {{ state.errorMessage || $t("recipe.import-with-ai-error-details") }}
+      </p>
+    </section>
+
+    <ul class="m-0 flex list-none flex-col gap-1.5 p-0 text-sm text-muted-foreground">
+      <li>
+        {{ $t('recipe.import-with-ai-without-ai-question') }}
+        <NuxtLink
+          :to="urlImporterTarget"
+          class="font-semibold text-primary no-underline hover:underline"
+        >{{ $t('recipe.import-with-ai-use-url-import') }}</NuxtLink>.
+      </li>
+      <li>
+        {{ $t('recipe.scrape-recipe-have-raw-html-or-json-data') }}
+        <NuxtLink
+          :to="htmlOrJsonImporterTarget"
+          class="font-semibold text-primary no-underline hover:underline"
+        >{{ $t('recipe.scrape-recipe-you-can-import-from-raw-data-directly') }}</NuxtLink>.
+      </li>
+    </ul>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { LoaderCircleIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import CheckboxField from "~/components/ui/field/CheckboxField.vue";
+import FieldScope from "~/components/ui/field/FieldScope.vue";
+import TextField from "~/components/ui/field/TextField.vue";
+import { MdiIcon } from "~/components/ui/mdi-icon";
+import { Switch } from "~/components/ui/switch";
 import { useUserApi } from "~/composables/api";
 import { useGroupSelf } from "~/composables/use-groups";
 import { useTagStore } from "~/composables/store/use-tag-store";
 import { useNewRecipeOptions } from "~/composables/use-new-recipe-options";
 import { validators } from "~/composables/use-validators";
-import type { VForm } from "~/types/auto-forms";
 
 definePageMeta({
   key: route => route.path,
@@ -197,7 +202,7 @@ const aiEnabled = computed(() => !!group.value?.aiProviderSettings?.aiEnabled);
 const imagesEnabled = computed(() => !!group.value?.aiProviderSettings?.imageProviderEnabled);
 const videosEnabled = computed(() => !!group.value?.aiProviderSettings?.audioProviderEnabled);
 
-const domUrlForm = ref<VForm | null>(null);
+const domUrlForm = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null);
 const recipeUrl = ref<string | null>(null);
 const newRecipeData = ref<string | object | null>(null);
 const uploadedImages = ref<(Blob | File)[]>([]);
@@ -291,9 +296,3 @@ async function createRecipe() {
   navigateToRecipe(data, groupSlug.value, `/g/${groupSlug.value}/r/create/ai`);
 }
 </script>
-
-<style scoped>
-.force-url-white a {
-  color: white !important;
-}
-</style>

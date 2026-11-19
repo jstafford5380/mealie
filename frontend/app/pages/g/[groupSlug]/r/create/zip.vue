@@ -1,42 +1,58 @@
 <template>
-  <v-form>
-    <div>
-      <v-card-title class="headline">
-        {{ $t('recipe.import-from-zip') }}
-      </v-card-title>
-      <v-card-text>
-        {{ $t('recipe.import-from-zip-description') }}
-        <v-file-input
-          v-model="newRecipeZip"
-          accept=".zip"
-          label=".zip"
-          variant="solo-filled"
-          clearable
-          class="rounded-lg mt-2"
-          rounded
-          truncate-length="100"
-          :hint="$t('recipe.zip-files-must-have-been-exported-from-mealie')"
-          persistent-hint
-          prepend-icon=""
-          :prepend-inner-icon="$globals.icons.zip"
-        />
-      </v-card-text>
-      <v-card-actions class="justify-center">
-        <div style="width: 250px">
-          <BaseButton
-            :disabled="newRecipeZip === null"
-            rounded
-            block
-            :loading="state.loading"
-            @click="createByZip"
-          />
-        </div>
-      </v-card-actions>
+  <form
+    class="rounded-panel border bg-card p-5 font-sans sm:p-6"
+    @submit.prevent="createByZip"
+  >
+    <h2 class="m-0 text-xl font-bold tracking-tight">
+      {{ $t('recipe.import-from-zip') }}
+    </h2>
+    <p class="m-0 mt-1 text-[15px] text-muted-foreground">
+      {{ $t('recipe.import-from-zip-description') }}
+    </p>
+    <div class="mt-4 flex flex-wrap items-center gap-3">
+      <AppButtonUpload
+        accept=".zip"
+        :post="false"
+        file-name="file"
+        :text="$t('recipe.choose-zip-file')"
+        :text-btn="false"
+        @uploaded="newRecipeZip = $event"
+      />
+      <span
+        class="min-w-0 truncate text-sm"
+        :class="newRecipeZip ? 'font-semibold' : 'text-muted-foreground'"
+      >{{ newRecipeZip?.name || $t('migration.no-file-selected') }}</span>
+      <button
+        v-if="newRecipeZip"
+        type="button"
+        class="inline-flex size-8 items-center justify-center rounded-full text-muted-foreground hover:bg-highlight"
+        :aria-label="$t('general.clear')"
+        @click="newRecipeZip = null"
+      >
+        <XIcon class="size-4" />
+      </button>
     </div>
-  </v-form>
+    <p class="m-0 mt-2 text-sm text-muted-foreground">
+      {{ $t('recipe.zip-files-must-have-been-exported-from-mealie') }}
+    </p>
+    <div class="mt-5 flex flex-wrap items-center justify-end gap-3 border-t pt-4">
+      <Button
+        type="submit"
+        :disabled="newRecipeZip === null || state.loading"
+      >
+        <LoaderCircleIcon
+          v-if="state.loading"
+          class="size-4 animate-spin"
+        />
+        {{ $t('recipe.import-recipe') }}
+      </Button>
+    </div>
+  </form>
 </template>
 
 <script setup lang="ts">
+import { LoaderCircleIcon, XIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
 import { useUserApi } from "~/composables/api";
 import { useGlobalI18n } from "~/composables/use-global-i18n";
 import { alert } from "~/composables/use-toast";

@@ -58,6 +58,15 @@ Its key is a non-secret placeholder. No external provider receives data or incur
 The images come from the repository's existing test fixtures.
 The provider error screenshot demonstrates the failure path, not actual AI extraction quality.
 
+## Redesign (implemented)
+
+| Before | Now |
+| --- | --- |
+| Each method was a flat card: title, paragraphs with cross-links, a rounded filled field, checkboxes stacked down the page and a centred pill Submit with the status text under it. | Each method is one panel: title and one-line explanation, labelled field, options in two columns, and a footer with the status on the left and a named action ("Import recipe", "Create recipe", "Debug") on the right. Links to the other methods sit under the panel. |
+| Create-new-organizers explained in a hover tooltip. | The explanation is the checkbox hint, so it reads on phones. |
+| Provider-required notices as Vuetify info alerts. | Sage note panels. |
+
+
 ## Screenshots
 
 ### Default provider required
