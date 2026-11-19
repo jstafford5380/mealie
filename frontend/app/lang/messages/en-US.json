@@ -179,7 +179,9 @@
     "value": "Value",
     "cant-create-permission": "Can't create. Please contact your administrator to get permission.",
     "request-failed-with-status": "The request failed with status {status}. Your changes may not have been saved.",
-    "request-failed-no-response": "The server could not be reached. Your changes may not have been saved."
+    "request-failed-no-response": "The server could not be reached. Your changes may not have been saved.",
+    "increase": "Increase",
+    "decrease": "Decrease"
   },
   "group": {
     "create-group": "Create Group",
@@ -994,7 +996,9 @@
     "reset-link-invalid": "This reset link expired or is not valid. Request a new link.",
     "changes-reflected-immediately": "Changes to this user will be reflected immediately.",
     "default-activity": "Default Activity",
-    "default-activity-hint": "Select which page you'd like to navigate to upon logging in from this device"
+    "default-activity-hint": "Select which page you'd like to navigate to upon logging in from this device",
+    "show-password": "Show password",
+    "hide-password": "Hide password"
   },
   "language-dialog": {
     "translated": "translated",

@@ -29,6 +29,8 @@ Visual direction: [design canvas](https://claude.ai/artifact/XWeEjRbrLRHd3gkb3Cx
 7. **Stacking.** Mealie's app bar sits at z-index 2010. Reka dialogs and sheets use 2050/2051; Reka popovers, menus, selects and tooltips use 2400; Vuetify menus and tooltips are raised to 2400 (`plugins/theme.ts`) so they open above a Reka dialog. Toasts sit above everything.
 8. **Vuetify controls inside Reka dialogs.** `lib/vuetify-coexistence.ts` keeps a Reka dialog open when the user clicks or focuses inside a Vuetify menu (rendered in `.v-overlay-container`), and lets Escape close an open Vuetify menu before the dialog. BaseDialog replaces Reka's focus trap with one that allows focus inside Vuetify menus.
 
+9. **Form fields and legacy forms.** The new fields (`components/ui/field/*Field.vue`) validate with the same `rules` arrays as Vuetify and register with the nearest `<v-form>` through Vuetify's injection key (`composables/forms/use-field-validation.ts`), so `validate()`, `reset()` and form `v-model` validity include them. `provideFieldGroup()` stands in for a nested form (AutoForm) and registers with an outer form as one item.
+
 Remove rules 1–4, 7 and 8 when Vuetify is removed: import Tailwind's preflight, delete the exclusions and the layer statement, and rename the radius utilities back if wanted.
 
 ## Adapting Shadcn Vue primitives
@@ -42,4 +44,7 @@ When adding a primitive from the registry (or with the CLI): replace `rounded-md
 | Default primary colour is basil `#2E6A4F` (light) / `#5FAE87` (dark) instead of `#E58325`, in backend settings, API schema defaults, Nuxt runtime config and docs. | New palette; marigold stays as the brand highlight. Instances that set `THEME_*_PRIMARY` keep their colour. |
 | Enter in a BaseDialog no longer submits when focus is in a textarea or rich-text field, or on a button or link. | Enter there inserts a new line or activates the control; previously it did that *and* submitted (a focused button ran twice). |
 | BaseDialog has a close (×) button in the header. | Visible way to dismiss; it emits `cancel` exactly like Escape. |
+| A page-level `<v-form>` now validates the fields of an AutoForm inside it (admin create/edit user, household, group, setup). | Vuetify ignored fields of a nested form, so those pages could submit with empty required AutoForm fields and rely on server errors. |
+| AutoForm column widths apply from the `sm` breakpoint; on phones every field is full width. | Two fields side by side were too narrow on phones. |
+| Password fields have a show/hide toggle. | Accessibility and fewer typos; new `user.show-password`/`user.hide-password` strings. |
 | Vuetify background/surface use the new palette (`#F5F7F3`/`#FFFFFF` light, `#141816`/`#1C211E` dark). | Old and new pages share one background during the migration. |
