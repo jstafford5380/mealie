@@ -1,52 +1,55 @@
 <template>
-  <v-card
-    variant="outlined"
-    color="info"
-    class="d-flex justify-space-between align-center"
-    @click="$emit('parse')"
-  >
-    <v-card-text>
+  <div class="flex flex-wrap items-center gap-2 rounded-card border border-primary/30 bg-highlight/40 px-4 py-2.5 font-sans">
+    <button
+      type="button"
+      class="min-w-0 flex-1 text-left text-sm font-medium text-primary hover:underline"
+      @click="$emit('parse')"
+    >
       {{ $t('recipe.parser.try-again-with-parser', { parser: currentParserText }) }}
-    </v-card-text>
-    <v-card-actions>
-      <BaseButton edit minor @click.stop="open = true">
-        {{ $t('recipe.parser.select-parser') }}
-      </BaseButton>
-    </v-card-actions>
-  </v-card>
-  <v-alert
+    </button>
+    <Button
+      variant="ghost"
+      size="sm"
+      @click="open = true"
+    >
+      <MdiIcon
+        :path="$globals.icons.edit"
+        class="size-4"
+      />
+      {{ $t('recipe.parser.select-parser') }}
+    </Button>
+  </div>
+  <p
     v-if="showNlpLanguageHint"
-    type="info"
-    variant="tonal"
-    density="compact"
-    class="mt-3 text-body-2"
+    class="m-0 mt-3 rounded-control bg-muted px-3 py-2 text-sm text-muted-foreground"
   >
     {{ $t("recipe.parser.natural-language-processor-english-only") }}
-  </v-alert>
+  </p>
   <BaseDialog
     v-model="open"
-    bottom-sheet
     :title="$t('recipe.parser.select-parser')"
     :icon="$globals.icons.fileSign"
   >
-    <v-list>
-      <v-list-item
+    <div class="flex flex-col gap-1 px-6 pb-4 font-sans">
+      <button
         v-for="(parser) in availableParsers.filter(({ hide }) => !hide)"
         :key="parser.value"
-        link
-        :append-icon="$globals.icons.chevronRight"
-        @click="
-          currentParser = parser.value as Parser;
-          $emit('parse')
-        "
+        type="button"
+        class="flex items-center justify-between rounded-control px-3 py-2.5 text-left text-[15px] hover:bg-highlight"
+        :class="parser.value === currentParser && 'bg-highlight/60 font-semibold'"
+        @click="currentParser = parser.value as Parser; open = false; $emit('parse')"
       >
         {{ parser.text }}
-      </v-list-item>
-    </v-list>
+        <ChevronRightIcon class="size-4 text-muted-foreground" />
+      </button>
+    </div>
   </BaseDialog>
 </template>
 
 <script setup lang="ts">
+import { ChevronRightIcon } from "@lucide/vue";
+import { Button } from "~/components/ui/button";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import type { MenuItem } from "~/components/global/BaseOverflowButton.vue";
 import type { Parser } from "~/lib/api/user/recipes/recipe";
 

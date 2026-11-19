@@ -178,3 +178,44 @@
 @utility display-none {
   display: none;
 }
+
+/* JSON editor (vanilla-jsoneditor) in the app's colours, light and dark. */
+@layer components {
+  .recipe-json-editor {
+    --jse-theme-color: var(--primary);
+    --jse-theme-color-highlight: color-mix(in oklab, var(--primary) 85%, white);
+    --jse-background-color: var(--card);
+    --jse-text-color: var(--foreground);
+    --jse-text-readonly: var(--muted-foreground);
+    --jse-panel-background: var(--muted);
+    --jse-panel-color: var(--foreground);
+    --jse-panel-color-readonly: var(--muted-foreground);
+    --jse-panel-border: var(--border);
+    --jse-main-border: 1px solid var(--border);
+    --jse-menu-color: var(--primary-foreground);
+    --jse-font-family: var(--font-sans);
+    --jse-font-family-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --jse-font-size-mono: 13.5px;
+    --jse-selection-background-color: color-mix(in oklab, var(--primary) 22%, transparent);
+    --jse-selection-background-inactive-color: color-mix(in oklab, var(--primary) 12%, transparent);
+    --jse-context-menu-background: var(--popover);
+    --jse-context-menu-color: var(--popover-foreground);
+    --jse-modal-background: var(--card);
+    --jse-input-background: var(--card);
+    --jse-input-border: 1px solid var(--input);
+    --jse-delimiter-color: var(--muted-foreground);
+  }
+  .dark .recipe-json-editor {
+    --jse-key-color: #9cdcfe;
+    --jse-value-color: #8fd18f;
+    --jse-value-color-number: #b5cea8;
+    --jse-value-color-boolean: #569cd6;
+    --jse-value-color-null: #569cd6;
+    --jse-value-color-string: #ce9178;
+    --jse-value-color-url: #ce9178;
+    --jse-tag-background: var(--muted);
+    --jse-tag-color: var(--muted-foreground);
+    --jse-hover-background-color: color-mix(in oklab, var(--foreground) 6%, transparent);
+    --jse-active-line-background-color: color-mix(in oklab, var(--foreground) 5%, transparent);
+  }
+}

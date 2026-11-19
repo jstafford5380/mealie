@@ -6,27 +6,22 @@
     @update:model-value="(newParser) => parser = newParser"
     @parse="parseIngredients"
   />
-  <v-card-text v-if="currentIng" class="pb-0 mb-0 d-flex flex-column ga-2">
+  <div
+    v-if="currentIng"
+    class="mt-4 flex flex-col gap-3 font-sans"
+  >
+    <p class="m-0 rounded-panel bg-muted px-6 py-4 text-center font-serif text-xl">
+      {{ currentIng.input }}
+    </p>
     <div
-      class="text-center px-8 py-4 mb-6 rounded-pill"
-      :class="$vuetify.theme.current.dark ? 'bg-background-lighten-1' : 'bg-background-darken-1'"
+      class="flex items-center gap-2 text-sm font-medium"
+      :class="(currentIng.confidence?.average || 0) < confidenceThreshold ? 'text-destructive' : 'text-primary'"
     >
-      <p class="text-h5 font-italic">
-        {{ currentIng.input }}
-      </p>
-    </div>
-    <div class="d-flex align-center pa-0 ma-0">
-      <v-icon
-        :color="(currentIng.confidence?.average || 0) < confidenceThreshold ? 'error' : 'success'"
-      >
-        {{ (currentIng.confidence?.average || 0) < confidenceThreshold ? $globals.icons.alert : $globals.icons.check }}
-      </v-icon>
-      <span
-        class="ml-2"
-        :color="currentIngHasError ? 'error-text' : 'success-text'"
-      >
-        {{ $t("recipe.parser.confidence-score") }}: {{ currentIng.confidence ? asPercentage(currentIng.confidence?.average!) : "" }}
-      </span>
+      <MdiIcon
+        :path="(currentIng.confidence?.average || 0) < confidenceThreshold ? $globals.icons.alert : $globals.icons.check"
+        class="size-4"
+      />
+      {{ $t("recipe.parser.confidence-score") }}: {{ currentIng.confidence ? asPercentage(currentIng.confidence?.average!) : "" }}
     </div>
     <RecipeIngredientEditor
       v-model="currentIng.ingredient"
@@ -35,69 +30,71 @@
       :food-error="!!currentMissingFood"
       :food-error-tooltip="$t('recipe.parser.this-food-could-not-be-parsed-automatically')"
     />
-    <v-card-actions class="flex-wrap">
-      <v-checkbox
-        v-model="currentIngShouldDelete"
-        color="error"
-        hide-details
-        density="compact"
-        class="mt-8"
-        :label="$t('recipe.parser.delete-item')"
-      />
-      <v-spacer />
-      <BaseButton
+    <div class="mt-2 flex flex-wrap items-center gap-2">
+      <label class="me-auto flex cursor-pointer items-center gap-2 text-sm font-medium text-destructive">
+        <Checkbox v-model="currentIngShouldDelete" />
+        {{ $t("recipe.parser.delete-item") }}
+      </label>
+      <Button
         v-if="currentMissingUnit && !currentIng.ingredient.unit?.id"
-        :icon="$globals.icons.units"
-        color="warning"
-        size="small"
-        :loading="state.loading.unit"
+        variant="outline"
+        size="sm"
+        :disabled="state.loading.unit"
         @click="createMissingUnit"
       >
+        <MdiIcon
+          :path="$globals.icons.units"
+          class="size-4"
+        />
         {{ $t("recipe.parser.missing-unit", { unit: currentMissingUnit }) }}
-      </BaseButton>
-      <BaseButton
-        v-if="
-          currentMissingUnit
-            && currentIng.ingredient.unit?.id
-            && currentMissingUnit.toLowerCase() != currentIng.ingredient.unit?.name.toLowerCase()
-        "
-        :icon="$globals.icons.units"
-        color="warning"
-        size="small"
-        :loading="state.loading.unit"
+      </Button>
+      <Button
+        v-if="currentMissingUnit && currentIng.ingredient.unit?.id && currentMissingUnit.toLowerCase() != currentIng.ingredient.unit?.name.toLowerCase()"
+        variant="outline"
+        size="sm"
+        :disabled="state.loading.unit"
         @click="addMissingUnitAsAlias"
       >
+        <MdiIcon
+          :path="$globals.icons.units"
+          class="size-4"
+        />
         {{ $t("recipe.parser.add-text-as-alias-for-item", { text: currentMissingUnit, item: currentIng.ingredient.unit.name }) }}
-      </BaseButton>
-      <BaseButton
+      </Button>
+      <Button
         v-if="currentMissingFood && !currentIng.ingredient.food?.id"
-        :icon="$globals.icons.foods"
-        color="warning"
-        size="small"
-        :loading="state.loading.food"
+        variant="outline"
+        size="sm"
+        :disabled="state.loading.food"
         @click="createMissingFood"
       >
+        <MdiIcon
+          :path="$globals.icons.foods"
+          class="size-4"
+        />
         {{ $t("recipe.parser.missing-food", { food: currentMissingFood }) }}
-      </BaseButton>
-      <BaseButton
-        v-if="
-          currentMissingFood
-            && currentIng.ingredient.food?.id
-            && currentMissingFood.toLowerCase() != currentIng.ingredient.food?.name.toLowerCase()
-        "
-        :icon="$globals.icons.foods"
-        color="warning"
-        size="small"
-        :loading="state.loading.food"
+      </Button>
+      <Button
+        v-if="currentMissingFood && currentIng.ingredient.food?.id && currentMissingFood.toLowerCase() != currentIng.ingredient.food?.name.toLowerCase()"
+        variant="outline"
+        size="sm"
+        :disabled="state.loading.food"
         @click="addMissingFoodAsAlias"
       >
+        <MdiIcon
+          :path="$globals.icons.foods"
+          class="size-4"
+        />
         {{ $t("recipe.parser.add-text-as-alias-for-item", { text: currentMissingFood, item: currentIng.ingredient.food.name }) }}
-      </BaseButton>
-    </v-card-actions>
-  </v-card-text>
+      </Button>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { Button } from "~/components/ui/button";
+import { Checkbox } from "~/components/ui/checkbox";
+import { MdiIcon } from "~/components/ui/mdi-icon";
 import type { useParseIngredientsDialog } from "~/composables/recipes/use-parse-ingredients-dialog";
 
 const props = defineProps<{
@@ -112,7 +109,6 @@ const {
   currentIngShouldDelete,
   parser,
   confidenceThreshold,
-  currentIngHasError,
   currentMissingFood,
   currentMissingUnit,
   parseIngredients,

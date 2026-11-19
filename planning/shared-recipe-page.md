@@ -74,6 +74,13 @@ The same row is used in the parser dialog, and the substitution editor (also sha
 | Assets editor: a card with its own title, a list with a ⋮ menu (View, Download, Copy, Delete) and a "+" icon in the header. | A plain list inside the Assets section with the same ⋮ actions, an empty state, and a "New Asset" button. The reader's asset list has a Download button on each row again. |
 | New asset dialog: name, an icon select, and an icon-only upload button. | "Choose file" with the chosen file name shown, then Name (defaults to the file name) and Icon. Create stays disabled until a file is chosen. |
 
+### Parser and JSON mode (implemented)
+
+| Before | Now |
+| --- | --- |
+| Parser screens built from Vuetify cards, chips, alerts and checkboxes. | Same three steps in the app's style: an intro with a result summary (auto-parsed / to review pills), one ingredient at a time (original text in the recipe serif, confidence score, the ingredient row, "Delete item" and the create-missing / add-as-alias buttons), then the full review list. Choosing a parser closes the picker and re-runs the parse. |
+| JSON mode: the stock editor theme at a fixed 1500px height. | The editor uses the app's colours and fonts (including dark mode) and fills the window under the editor bar. |
+
 ## Page mode, draft, and save
 
 Source: [RecipePage](../frontend/app/components/Domain/Recipe/RecipePage/RecipePage.vue).

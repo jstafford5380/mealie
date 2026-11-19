@@ -4,9 +4,10 @@
     :title="$t('recipe.parse-ingredients')"
     :icon="$globals.icons.fileSign"
     disable-submit-on-enter
+    max-width="900px"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <v-container fluid class="pa-2 ma-0">
+    <div class="px-6 pb-2 font-sans">
       <SwipeTransition direction="left">
         <!-- These wrapping divs appear to be load-bearing in making sure the transition renders correctly -->
         <div v-if="state.step === ParseStep.LOADING">
@@ -32,7 +33,7 @@
           />
         </div>
       </SwipeTransition>
-    </v-container>
+    </div>
     <template v-if="state.step !== ParseStep.LOADING" #custom-card-action>
       <SwipeTransition direction="left">
         <BaseButton

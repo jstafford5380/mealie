@@ -18,7 +18,7 @@
           <DialogOverlay
             v-if="dialog"
             force-mount
-            class="fixed inset-0 z-[2050] bg-black/45"
+            class="fixed inset-0 z-[2050] bg-black/45 dark:bg-black/70"
           />
         </Transition>
         <Transition

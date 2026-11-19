@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex flex-column ga-4">
+  <div class="flex flex-col gap-4 font-sans">
     <ParseDialogChangeParser
       v-model="state.parser"
       :available-parsers="availableParsers"
@@ -7,48 +7,45 @@
       @update:model-value="$emit('changeParser', $event)"
       @parse="$emit('parse')"
     />
-    <div>
-      <v-card-title class="text-center pt-0 pb-8">
-        {{ $t("recipe.parser.review-parsed-ingredients") }}
-      </v-card-title>
-      <v-card-text>
-        <VueDraggable
-          v-model="parsedIngs"
-          handle=".handle"
-          :delay="250"
-          :delay-on-touch-only="true"
-          v-bind="{
-            animation: 200,
-            group: 'recipe-ingredients',
-            disabled: false,
-            ghostClass: 'ghost',
-          }"
-          @start="drag = true"
-          @end="drag = false"
-        >
-          <TransitionGroup type="transition">
-            <v-lazy v-for="(ingredient, index) in parsedIngs" :key="index">
-              <RecipeIngredientEditor
-                v-model="ingredient.ingredient"
-                enable-drag-handle
-                enable-context-menu
-                :delete-disabled="parsedIngs.length <= 1"
-                class="mb-5"
-                @delete="parsedIngs.splice(index, 1)"
-                @insert-above="insertNewIngredient(index)"
-                @insert-below="insertNewIngredient(index + 1)"
-              >
-                <template #before-divider>
-                  <p v-if="ingredient.input" class="py-0 my-0 text-caption">
-                    {{ $t("recipe.original-text-with-value", { originalText: ingredient.input }) }}
-                  </p>
-                </template>
-              </RecipeIngredientEditor>
-            </v-lazy>
-          </TransitionGroup>
-        </VueDraggable>
-      </v-card-text>
-    </div>
+    <h3 class="m-0 text-center text-lg font-semibold">
+      {{ $t("recipe.parser.review-parsed-ingredients") }}
+    </h3>
+    <VueDraggable
+      v-model="parsedIngs"
+      handle=".handle"
+      :delay="250"
+      :delay-on-touch-only="true"
+      class="flex flex-col gap-4"
+      v-bind="{
+        animation: 200,
+        group: 'recipe-ingredients',
+        disabled: false,
+        ghostClass: 'ghost',
+      }"
+      @start="drag = true"
+      @end="drag = false"
+    >
+      <RecipeIngredientEditor
+        v-for="(ingredient, index) in parsedIngs"
+        :key="ingredient.ingredient.referenceId ?? index"
+        v-model="ingredient.ingredient"
+        enable-drag-handle
+        enable-context-menu
+        :delete-disabled="parsedIngs.length <= 1"
+        @delete="parsedIngs.splice(index, 1)"
+        @insert-above="insertNewIngredient(index)"
+        @insert-below="insertNewIngredient(index + 1)"
+      >
+        <template #before-divider>
+          <p
+            v-if="ingredient.input"
+            class="m-0 mt-1 text-xs text-muted-foreground"
+          >
+            {{ $t("recipe.original-text-with-value", { originalText: ingredient.input }) }}
+          </p>
+        </template>
+      </RecipeIngredientEditor>
+    </VueDraggable>
   </div>
 </template>
 

@@ -2846,26 +2846,20 @@
       "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeParseDialog/ParseDialogChangeParser.vue",
       "name": "ParseDialogChangeParser",
       "components": [
-        "BaseButton",
         "BaseDialog",
+        "Button",
+        "ChevronRightIcon",
+        "MdiIcon",
         "Parser"
       ],
       "dependencies": [
-        "frontend/app/components/global/BaseButton.vue",
         "frontend/app/components/global/BaseDialog.vue"
       ],
-      "vuetify": [
-        "v-alert",
-        "v-card",
-        "v-card-actions",
-        "v-card-text",
-        "v-list",
-        "v-list-item"
-      ],
+      "vuetify": [],
       "events": [
-        "click.stop: open = true",
-        "click: \n          currentParser = parser.value as Parser;\n          $emit('parse')\n        ",
-        "click: $emit('parse')"
+        "click: $emit('parse')",
+        "click: currentParser = parser.value as Parser; open = false; $emit('parse')",
+        "click: open = true"
       ],
       "models": [
         "open"
@@ -2879,13 +2873,14 @@
     {
       "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeParseDialog/ParseDialogInfo.vue",
       "name": "ParseDialogInfo",
-      "components": [],
-      "dependencies": [],
-      "vuetify": [
-        "v-checkbox",
-        "v-chip",
-        "v-empty-state"
+      "components": [
+        "CheckboxField",
+        "MdiIcon"
       ],
+      "dependencies": [
+        "frontend/app/components/ui/field/CheckboxField.vue"
+      ],
+      "vuetify": [],
       "events": [],
       "models": [
         "dontShowAgain"
@@ -2900,22 +2895,17 @@
       "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeParseDialog/ParseDialogParse.vue",
       "name": "ParseDialogParse",
       "components": [
-        "BaseButton",
+        "Button",
+        "Checkbox",
+        "MdiIcon",
         "ParseDialogChangeParser",
         "RecipeIngredientEditor"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipeIngredientEditor.vue",
-        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeParseDialog/ParseDialogChangeParser.vue",
-        "frontend/app/components/global/BaseButton.vue"
+        "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeParseDialog/ParseDialogChangeParser.vue"
       ],
-      "vuetify": [
-        "v-card-actions",
-        "v-card-text",
-        "v-checkbox",
-        "v-icon",
-        "v-spacer"
-      ],
+      "vuetify": [],
       "events": [
         "click: addMissingFoodAsAlias",
         "click: addMissingUnitAsAlias",
@@ -2930,16 +2920,14 @@
         "parser"
       ],
       "conditions": [
-        "\n          currentMissingFood\n            && currentIng.ingredient.food?.id\n            && currentMissingFood.toLowerCase() != currentIng.ingredient.food?.name.toLowerCase()\n        ",
-        "\n          currentMissingUnit\n            && currentIng.ingredient.unit?.id\n            && currentMissingUnit.toLowerCase() != currentIng.ingredient.unit?.name.toLowerCase()\n        ",
         "currentIng",
         "currentMissingFood && !currentIng.ingredient.food?.id",
-        "currentMissingUnit && !currentIng.ingredient.unit?.id"
+        "currentMissingFood && currentIng.ingredient.food?.id && currentMissingFood.toLowerCase() != currentIng.ingredient.food?.name.toLowerCase()",
+        "currentMissingUnit && !currentIng.ingredient.unit?.id",
+        "currentMissingUnit && currentIng.ingredient.unit?.id && currentMissingUnit.toLowerCase() != currentIng.ingredient.unit?.name.toLowerCase()"
       ],
       "dynamicComponents": [],
-      "vuetifyAPIs": [
-        "$vuetify"
-      ]
+      "vuetifyAPIs": []
     },
     {
       "source": "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeParseDialog/ParseDialogReview.vue",
@@ -2948,18 +2936,13 @@
         "ParseDialogChangeParser",
         "ParsedIngredient",
         "RecipeIngredientEditor",
-        "TransitionGroup",
         "VueDraggable"
       ],
       "dependencies": [
         "frontend/app/components/Domain/Recipe/RecipeIngredientEditor.vue",
         "frontend/app/components/Domain/Recipe/RecipePage/RecipePageParts/RecipeParseDialog/ParseDialogChangeParser.vue"
       ],
-      "vuetify": [
-        "v-card-text",
-        "v-card-title",
-        "v-lazy"
-      ],
+      "vuetify": [],
       "events": [
         "delete: parsedIngs.splice(index, 1)",
         "end: drag = false",
@@ -3002,9 +2985,7 @@
         "frontend/app/components/global/BaseDialog.vue",
         "frontend/app/components/global/Transition/SwipeTransition.vue"
       ],
-      "vuetify": [
-        "v-container"
-      ],
+      "vuetify": [],
       "events": [
         "change-parser: (newParser) => parser = newParser",
         "click: nextIngredient",

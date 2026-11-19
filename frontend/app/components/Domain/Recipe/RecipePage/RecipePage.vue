@@ -95,7 +95,8 @@
       <RecipeJsonEditor
         v-if="isEditJSON"
         v-model="recipe"
-        class="overflow-hidden rounded-panel border"
+        class="recipe-json-editor overflow-hidden rounded-panel border"
+        height="calc(100dvh - 12rem)"
         mode="text"
         :main-menu-bar="false"
       />
