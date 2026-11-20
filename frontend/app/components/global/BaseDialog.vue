@@ -162,8 +162,10 @@ const contentClass = computed(() => cn(
   "fixed z-[2051] flex flex-col overflow-hidden border bg-popover shadow-2xl outline-none",
   asSheet.value && "inset-x-0 bottom-0 max-h-[92dvh] rounded-t-[20px] border-b-0",
   fullscreen.value && "inset-0 rounded-none border-0",
-  !asSheet.value && !fullscreen.value && "left-1/2 max-h-[min(90dvh,900px)] -translate-x-1/2 rounded-panel",
-  !asSheet.value && !fullscreen.value && (props.top ? "top-6" : "top-1/2 -translate-y-1/2"),
+  // centred with auto margins rather than translate(-50%): a translate lands on half pixels
+  // when the size is odd, and the browser then blurs the text
+  !asSheet.value && !fullscreen.value && "inset-x-0 mx-auto h-fit max-h-[min(90dvh,900px)] rounded-panel",
+  !asSheet.value && !fullscreen.value && (props.top ? "top-6" : "inset-y-0 my-auto"),
 ));
 
 const contentStyle = computed(() => {
