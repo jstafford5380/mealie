@@ -9,7 +9,7 @@ from urllib.parse import urlparse
 from uuid import UUID
 
 from dateutil.tz import tzlocal
-from pydantic import PlainSerializer, field_validator
+from pydantic import PlainSerializer, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from mealie.core.settings.branding import Branding
@@ -170,6 +170,7 @@ class AppSettings(AppLoggingSettings):
     MCP_OAUTH_JWKS_URL: str | None = None
     MCP_OAUTH_SUBJECT: str | None = None
     MCP_USER_ID: UUID | None = None
+    MCP_TUNNEL_ACCESS_TOKEN: SecretStr | None = None
 
     @field_validator("MCP_USER_ID", mode="before")
     @classmethod

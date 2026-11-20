@@ -43,3 +43,11 @@ The OAuth identity must present a valid access token on every MCP request. Tool 
 5. Ask ChatGPT to list recipes. In a test household, ask it to create a test recipe and add it to a planned meal. Confirm both records in Mealie.
 
 If ChatGPT reports a timeout on a write, verify the recipe or meal in Mealie before asking it to try again. Weekly plans are saved one entry at a time, so a partially successful plan can be completed by adding just the missing entries.
+
+## Coolify Compose
+
+The `docker/docker-compose.coolify.yml` file includes an optional `mealie-tunnel` service. It uses Mealie's network namespace to reach the app through loopback.
+
+Set `OPENAI_MCP_TUNNEL_ID` to the tunnel ID. Set `OPENAI_MCP_TUNNEL_KEY` to the restricted runtime key. Generate a separate random secret for `MCP_TUNNEL_ACCESS_TOKEN`. Store both secrets as runtime-only values in Coolify. The shared token makes MCP and its discovery route return 404 unless the request includes the token. OAuth still protects the tools.
+
+Set `COMPOSE_PROFILES=mcp-tunnel` in the environment that runs Compose after you configure the secrets and the OAuth values. Set `MCP_ENABLED=true` and deploy. Check the tunnel logs for successful polling before you submit the ChatGPT form.

@@ -1,5 +1,6 @@
 """Authenticated Streamable HTTP transport for the Mealie MCP tools."""
 
+from hmac import compare_digest
 from urllib.parse import urlsplit, urlunsplit
 from uuid import UUID
 
@@ -8,7 +9,7 @@ from mcp.server.transport_security import TransportSecuritySettings
 from starlette.concurrency import run_in_threadpool
 from starlette.datastructures import Headers
 from starlette.requests import Request
-from starlette.responses import JSONResponse
+from starlette.responses import JSONResponse, Response
 from starlette.routing import Route
 from starlette.types import ASGIApp, Receive, Scope, Send
 
@@ -18,6 +19,20 @@ from mealie.mcp.context import current_user_id
 
 MCP_PATH = "/mcp"
 MCP_SCOPE = "mealie:mcp"
+TUNNEL_HEADER = "X-Mealie-Tunnel-Token"
+
+
+class PrivateTunnelRoute:
+    def __init__(self, app: ASGIApp, token: str) -> None:
+        self.app = app
+        self.token = token.encode()
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        supplied = Headers(scope=scope).get(TUNNEL_HEADER, "").encode()
+        if not compare_digest(supplied, self.token):
+            await Response(status_code=404)(scope, receive, send)
+            return
+        await self.app(scope, receive, send)
 
 
 def _https_url(value: str | None, setting: str) -> str:
@@ -150,6 +165,9 @@ def build_mcp_server(settings: AppSettings) -> tuple[AuditedMCP, tuple[Route, Ro
 
     metadata_path = f"/.well-known/oauth-protected-resource{MCP_PATH}"
     metadata_url = urlunsplit((resource_parts.scheme, resource_parts.netloc, metadata_path, "", ""))
+    tunnel_token = settings.MCP_TUNNEL_ACCESS_TOKEN
+    if tunnel_token and tunnel_token.get_secret_value():
+        metadata_url = f"http://127.0.0.1:{settings.API_PORT}{metadata_path}"
 
     async def metadata(_: Request) -> JSONResponse:
         return JSONResponse(
@@ -161,10 +179,14 @@ def build_mcp_server(settings: AppSettings) -> tuple[AuditedMCP, tuple[Route, Ro
             }
         )
 
-    endpoint = AuthenticatedMCP(
+    endpoint: ASGIApp = AuthenticatedMCP(
         server.streamable_http_app(),
         verifier=OAuthAccessTokenVerifier(issuer=issuer, audience=audience, jwks_url=jwks_url, subject=subject),
         user_id=user_id,
         metadata_url=metadata_url,
     )
-    return server, (Route(MCP_PATH, endpoint, methods=["GET", "POST", "DELETE"]), Route(metadata_path, metadata))
+    metadata_route = Route(metadata_path, metadata)
+    if tunnel_token and (token := tunnel_token.get_secret_value()):
+        endpoint = PrivateTunnelRoute(endpoint, token)
+        metadata_route = Route(metadata_path, PrivateTunnelRoute(metadata_route.app, token), methods=["GET"])
+    return server, (Route(MCP_PATH, endpoint, methods=["GET", "POST", "DELETE"]), metadata_route)

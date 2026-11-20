@@ -7,11 +7,12 @@ import jwt
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi import FastAPI
+from pydantic import SecretStr
 from starlette.testclient import TestClient
 
 from mealie.core.config import get_app_settings
 from mealie.mcp.context import current_user_id
-from mealie.mcp.server import MCP_SCOPE, OAuthAccessTokenVerifier, build_mcp_server
+from mealie.mcp.server import MCP_SCOPE, TUNNEL_HEADER, OAuthAccessTokenVerifier, build_mcp_server
 from tests.utils import TestUser
 
 ISSUER = "https://identity.example.com/"
@@ -73,6 +74,7 @@ def test_mcp_http_authenticated_read_and_write(
 ) -> None:
     user_id = unique_user.user_id
     tunnel_audience = "https://api.openai.com/v1/mcp/tunnel_test"
+    tunnel_headers = {TUNNEL_HEADER: "test-tunnel-token"}
     settings = get_app_settings().model_copy(
         update={
             "MCP_RESOURCE_URL": RESOURCE,
@@ -81,6 +83,7 @@ def test_mcp_http_authenticated_read_and_write(
             "MCP_OAUTH_JWKS_URL": JWKS,
             "MCP_OAUTH_SUBJECT": SUBJECT,
             "MCP_USER_ID": user_id,
+            "MCP_TUNNEL_ACCESS_TOKEN": SecretStr(tunnel_headers[TUNNEL_HEADER]),
         }
     )
     server, routes = build_mcp_server(settings)
@@ -99,11 +102,13 @@ def test_mcp_http_authenticated_read_and_write(
 
     with TestClient(app, base_url="http://localhost:9000") as client:
         metadata_path = "/.well-known/oauth-protected-resource/mcp"
-        metadata = client.get(metadata_path)
+        assert client.get(metadata_path).status_code == 404
+        assert client.post("/mcp").status_code == 404
+        metadata = client.get(metadata_path, headers=tunnel_headers)
         assert metadata.status_code == 200
         assert metadata.json()["resource"] == RESOURCE
 
-        headers = {"Accept": "application/json, text/event-stream"}
+        headers = {"Accept": "application/json, text/event-stream", **tunnel_headers}
         init = {
             "jsonrpc": "2.0",
             "id": 1,
