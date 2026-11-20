@@ -10,21 +10,21 @@ const volumePrefix = "mealie-aspire-" + checkout;
 const builder = await createBuilder();
 
 const password = await builder.addParameter("postgres-password", { value: "mealie-local-dev", secret: true });
-const postgres = await builder.addPostgres("postgres", { password })
+const postgres = await builder.addPostgres("postgres", { password, port: 5432 })
   .withImageTag("15")
   .withDataVolume({ name: volumePrefix + "-postgres" });
 const database = await postgres.addDatabase("database", { databaseName: "mealie" });
 
 const mailpit = await builder.addContainer("mailpit", "axllent/mailpit:v1.27.8")
-  .withHttpEndpoint({ targetPort: 8025 })
-  .withEndpoint({ name: "smtp", targetPort: 1025 })
+  .withHttpEndpoint({ port: 8025, targetPort: 8025 })
+  .withEndpoint({ name: "smtp", port: 1025, targetPort: 1025 })
   .withHttpHealthCheck({ path: "/readyz" });
 
 const frontend = await builder.addDockerfile("frontend", root, { dockerfilePath: "dev/aspire/frontend.Dockerfile" })
   .withBindMount(join(root, "mealie/repos/seed/resources/units/locales"), "/workspace/mealie/repos/seed/resources/units/locales", { isReadOnly: true })
   .withEnvironment("NODE_ENV", "development")
   .withEnvironment("NUXT_TELEMETRY_DISABLED", "1")
-  .withHttpEndpoint({ targetPort: 3000 });
+  .withHttpEndpoint({ port: 3000, targetPort: 3000 });
 
 for (const source of ["app", "public", "server", "eslint-rules", "nuxt.config.ts", "tsconfig.json", "eslint.config.mjs", "vuetify.options.js"]) {
   await frontend.withBindMount(join(root, "frontend", source), "/workspace/frontend/" + source, { isReadOnly: true });
@@ -53,7 +53,7 @@ const backend = await builder.addDockerfile("backend", root, { dockerfilePath: "
   .withEnvironmentCallback(async context => {
     await context.environment().set("BASE_URL", await frontend.getEndpoint("http").url());
   })
-  .withHttpEndpoint({ targetPort: 9000 })
+  .withHttpEndpoint({ port: 9000, targetPort: 9000 })
   .withHttpHealthCheck({ path: "/api/app/about" })
   .waitFor(database)
   .waitFor(mailpit);

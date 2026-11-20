@@ -8,11 +8,11 @@
   },
   "profiles": {
     "http": {
-      "applicationUrl": "http://127.0.0.1:0",
+      "applicationUrl": "http://127.0.0.1:18888",
       "environmentVariables": {
         "ASPIRE_ALLOW_UNSECURED_TRANSPORT": "true",
-        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "http://127.0.0.1:0",
-        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "http://127.0.0.1:0"
+        "ASPIRE_DASHBOARD_OTLP_ENDPOINT_URL": "http://127.0.0.1:18889",
+        "ASPIRE_RESOURCE_SERVICE_ENDPOINT_URL": "http://127.0.0.1:18890"
       }
     }
   },

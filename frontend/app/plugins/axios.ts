@@ -148,7 +148,7 @@ export default defineNuxtPlugin((nuxtApp) => {
       }
 
       const errorMessage = getErrorDetailMessage(error?.response?.data?.detail);
-      if (errorMessage) {
+      if (errorMessage && !config?.suppressAlert) {
         alert.error(errorMessage);
       }
       else if (isUnreportedWriteFailure(error, config)) {
@@ -162,9 +162,10 @@ export default defineNuxtPlugin((nuxtApp) => {
       // its own SPA redirect instead of reloading the page over it. The reload would also wipe any
       // toast the preceding request raised, which is how "password updated" used to vanish.
       const isLoggingOut = config?.url?.startsWith("/api/auth/logout") ?? false;
+      const isSigningIn = config?.url === "/api/auth/token";
 
       // If we receive a 401 Unauthorized response, clear the token cookie and redirect to login
-      if (error?.response?.status === 401 && !isLoggingOut) {
+      if (error?.response?.status === 401 && !isLoggingOut && !isSigningIn) {
         // If tokenCookie is not set, we may just be an unauthenticated user using the wrong API, so don't redirect
         if (readTokenCookie(tokenName)) {
           nuxtApp.runWithContext(() => useAuthBackend().setToken(null));

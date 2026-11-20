@@ -134,6 +134,26 @@ export default defineNuxtConfig({
 
   vite: {
     plugins: [tailwindcss()],
+    optimizeDeps: {
+      // Pre-bundle the dependencies discovered on sign-in and the first recipe view.
+      // Discovering them on demand can reload the page during sign-in in dev.
+      include: [
+        "@lucide/vue",
+        "@mdi/js",
+        "@vueuse/core",
+        "axios",
+        "class-variance-authority",
+        "clsx",
+        "date-fns",
+        "dompurify",
+        "fuse.js",
+        "marked",
+        "reka-ui",
+        "sse.js",
+        "tailwind-merge",
+        "vue-sonner",
+      ],
+    },
     server: {
       fs: {
         // app/lang/locales/*.ts import the seeded unit names from mealie/, which is outside

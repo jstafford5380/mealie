@@ -80,6 +80,13 @@
             {{ $t('user.forgot-password') }}
           </NuxtLink>
         </div>
+        <p
+          v-if="loginError"
+          role="alert"
+          class="rounded-item border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+        >
+          {{ loginError }}
+        </p>
         <Button
           type="submit"
           size="lg"
@@ -141,6 +148,7 @@
 
 <script setup lang="ts">
 import { LoaderCircleIcon } from "@lucide/vue";
+import { isAxiosError } from "axios";
 import { useSessionStorage, whenever } from "@vueuse/core";
 import AuthFrame from "~/components/Layout/LayoutParts/AuthFrame.vue";
 import { Button } from "~/components/ui/button";
@@ -186,6 +194,7 @@ const form = reactive({
   // Maybe we can revisit this in the future.
   remember: true,
 });
+const loginError = ref("");
 
 useAsyncData(useAsyncKey(), async () => {
   const data = await $axios.get<AppStartupInfo>("/api/app/about/startup-info");
@@ -297,8 +306,9 @@ async function oidcAuthenticate(callback = false) {
 }
 
 async function authenticate() {
+  loginError.value = "";
   if (form.email.length === 0 || form.password.length === 0) {
-    alert.error(i18n.t("user.please-enter-your-email-and-password"));
+    loginError.value = i18n.t("user.please-enter-your-email-and-password");
     return;
   }
 
@@ -312,24 +322,22 @@ async function authenticate() {
     await auth.signIn(formData);
   }
   catch (error) {
-    alertOnError(error);
+    loginError.value = getLoginError(error);
   }
   loggingIn.value = false;
 }
 
 function alertOnError(error: any) {
-  // TODO Check if error is an AxiosError, but isAxiosError is not working right now
-  // See https://github.com/nuxt-community/axios-module/issues/550
-  // Import $axios from useContext()
-  // if ($axios.isAxiosError(error) && error.response?.status === 401) {
-  if (error.response?.status === 401) {
-    alert.error(i18n.t("user.invalid-credentials"));
+  alert.error(getLoginError(error));
+}
+
+function getLoginError(error: unknown) {
+  if (isAxiosError(error) && error.response?.status === 401) {
+    return i18n.t("user.invalid-credentials");
   }
-  else if (error.response?.status === 423) {
-    alert.error(i18n.t("user.account-locked-please-try-again-later"));
+  if (isAxiosError(error) && error.response?.status === 423) {
+    return i18n.t("user.account-locked-please-try-again-later");
   }
-  else {
-    alert.error(i18n.t("events.something-went-wrong"));
-  }
+  return i18n.t("events.something-went-wrong");
 }
 </script>

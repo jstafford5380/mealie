@@ -140,6 +140,7 @@ export const useAuthBackend = function (): AuthState {
 
     try {
       const response = await $axios.post("/api/auth/token", credentials, {
+        suppressAlert: true,
         headers: {
           "Content-Type": "multipart/form-data",
         },

@@ -15,16 +15,17 @@ The first run builds the application images and downloads dependencies.
 Later runs use the Docker build cache.
 The command starts these services:
 
-| Service | Purpose |
-| --- | --- |
-| frontend | Nuxt development server with hot reload |
-| backend | FastAPI development server with hot reload |
-| postgres | PostgreSQL 15 with automatic database setup and migrations |
-| mailpit | Local SMTP server and email inbox |
+| Service | Address | Purpose |
+| --- | --- | --- |
+| frontend | http://localhost:3000 | Nuxt development server with hot reload |
+| backend | http://localhost:9000 | FastAPI development server with hot reload; API docs at `/docs` |
+| postgres | localhost:5432 | PostgreSQL 15 with automatic database setup and migrations |
+| mailpit | http://localhost:8025; SMTP localhost:1025 | Local SMTP server and email inbox |
+| dashboard | http://127.0.0.1:18888 | Aspire service health and console logs |
 
-Open the dashboard URL from the command output.
-Select the frontend HTTP URL to open Mealie.
-Aspire assigns available ports to the services.
+Open http://localhost:3000 to use Mealie.
+Open the dashboard login URL from the command output to access Aspire.
+The default ports stay the same across restarts. Ports 18889 and 18890 are reserved for Aspire telemetry and its resource service.
 The frontend sends API requests through its Nuxt proxy.
 The dashboard shows service health and console logs.
 
@@ -48,6 +49,9 @@ Volume names start with `mealie-aspire-` and include a hash of the checkout path
 Data persists across restarts in that checkout.
 Use one Aspire instance per checkout.
 Use a separate checkout or worktree for another instance with separate data.
+If running multiple instances simultaneously, use `npm run dev:aspire -- --isolated` in the additional checkout.
+That opt-in mode randomizes ports; use its dashboard URLs instead of the default addresses above.
+If a default port is already occupied, stop the conflicting service or use isolated mode.
 
 The containers use read-only source mounts.
 The frontend image contains dependencies, and its container stores build files.

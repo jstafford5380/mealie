@@ -40,7 +40,7 @@ async function run(command, args, cwd) {
 
 try {
   await run(process.execPath, [npmCli, "ci", "--include=dev", "--no-audit", "--no-fund"], apphost);
-  await run("aspire", ["run", "--isolated", "--apphost", "dev/aspire/apphost.mts", ...process.argv.slice(2)], root);
+  await run("aspire", ["run", "--apphost", "dev/aspire/apphost.mts", ...process.argv.slice(2)], root);
 } catch (error) {
   console.error(error.message);
   process.exitCode = 1;

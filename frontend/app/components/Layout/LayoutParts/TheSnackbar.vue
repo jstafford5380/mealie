@@ -2,6 +2,8 @@
   <Toaster
     position="top-center"
     :close-button="true"
+    :close-button-aria-label="$t('general.close')"
+    close-button-position="top-right"
     :visible-toasts="3"
     :toast-options="toastOptions"
   />
@@ -52,7 +54,8 @@ const DEFAULT_TIMEOUT = 2000;
 
 const toastOptions = {
   classes: {
-    toast: "font-sans !rounded-card !gap-3 !text-[15px]",
+    toast: "font-sans !rounded-card !gap-3 !text-[15px] !pe-12",
+    closeButton: "!inset-s-auto !inset-e-2 !top-1/2 !size-8 !-translate-y-1/2 !transform-none !rounded-item !border-0 !bg-transparent !text-popover-foreground hover:!bg-highlight focus-visible:!outline-2",
     description: "!text-muted-foreground",
     actionButton: "!bg-primary !text-primary-foreground !font-semibold !rounded-item",
     error: "[&_[data-icon]]:text-destructive",
