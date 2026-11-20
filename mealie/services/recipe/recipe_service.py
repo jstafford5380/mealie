@@ -36,7 +36,10 @@ from mealie.schema.recipe.recipe_step import RecipeStep
 from mealie.schema.recipe.recipe_timeline_events import RecipeTimelineEventCreate, TimelineEventType
 from mealie.schema.recipe.request_helpers import RecipeDuplicate
 from mealie.schema.user.user import PrivateUser, UserRatingSave
+from mealie.services import urls
 from mealie.services._base_service import BaseService
+from mealie.services.event_bus_service.event_bus_service import EventBusService
+from mealie.services.event_bus_service.event_types import EventOperation, EventRecipeData, EventTypes
 from mealie.services.household_services.household_service import HouseholdService
 from mealie.services.parser_services._base import DataMatcher
 from mealie.services.recipe.mealie_export import InvalidMealieExportError
@@ -74,6 +77,28 @@ class RecipeServiceBase(BaseService):
 
 
 class RecipeService(RecipeServiceBase):
+    def publish_change(
+        self,
+        event_bus: EventBusService,
+        integration_id: str,
+        group_slug: str,
+        recipe: RecipeOut,
+        operation: EventOperation,
+    ) -> None:
+        created = operation == EventOperation.create
+        event_bus.dispatch(
+            integration_id=integration_id,
+            group_id=recipe.group_id,
+            household_id=recipe.household_id,
+            event_type=EventTypes.recipe_created if created else EventTypes.recipe_updated,
+            document_data=EventRecipeData(operation=operation, recipe_slug=recipe.slug),
+            message=self.t(
+                "notifications.generic-created-with-url" if created else "notifications.generic-updated-with-url",
+                name=recipe.name,
+                url=urls.recipe_url(group_slug, recipe.slug, self.settings.BASE_URL),
+            ),
+        )
+
     def _get_recipe(self, data: str | UUID, key: str | None = None) -> RecipeOut:
         recipe = self.group_recipes.get_one(data, key)
         if recipe is None:

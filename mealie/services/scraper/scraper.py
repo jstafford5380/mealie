@@ -32,6 +32,8 @@ async def create_from_html(
     on_progress: Callable[[str], Awaitable[None]] | None = None,
     include_tags: bool = False,
     include_categories: bool = False,
+    *,
+    structured_only: bool = False,
 ) -> tuple[RecipeDraft, ScrapedExtras | None]:
     """Main entry point for generating a recipe from a URL. Pass in a URL and
     a RecipeDraft object will be returned if successful. Optionally pass in the HTML to skip fetching it.
@@ -44,7 +46,7 @@ async def create_from_html(
     Returns:
         RecipeDraft: RecipeDraft Object
     """
-    scraper = RecipeScraper(repos, translator)
+    scraper = RecipeScraper(repos, translator, structured_only=structured_only)
 
     if not html:
         extracted_url = regex_search(r"(https?://|www\.)[^\s]+", url)
@@ -63,6 +65,9 @@ async def create_from_html(
     if not new_recipe:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, {"details": ParserErrors.BAD_RECIPE_DATA.value})
 
+    if structured_only:
+        # MCP imports persist the structured recipe only, without a second download for media.
+        new_recipe.image = None
     new_recipe = await finalize_scraped_recipe(new_recipe, translator, on_progress=on_progress)
     return new_recipe, extras
 

@@ -20,6 +20,7 @@ class ScrapedExtras:
         self._tags: list[str] = []
         self._categories: list[str] = []
         self._tools: list[str] = []
+        self.nutrition_serving_size: str | None = None
 
     def set_tags(self, tags: list[str]) -> None:
         self._tags = tags

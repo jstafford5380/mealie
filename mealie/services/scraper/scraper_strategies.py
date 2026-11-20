@@ -300,6 +300,11 @@ class RecipeScraperPackage(ABCScraperStrategy):
 
         extras.set_tags(try_get_default(scraped_data.keywords, "keywords", "", cleaner.clean_tags))
         extras.set_categories(try_get_default(scraped_data.category, "recipeCategory", "", cleaner.clean_categories))
+        nutrition_data = scraped_data.schema.data.get("nutrition")
+        if isinstance(nutrition_data, dict):
+            serving_size = nutrition_data.get("servingSize")
+            if isinstance(serving_size, str) and serving_size.strip():
+                extras.nutrition_serving_size = serving_size.strip()
 
         recipe = RecipeDraft(
             name=try_get_default(scraped_data.title, "name", "No Name Found", cleaner.clean_string),

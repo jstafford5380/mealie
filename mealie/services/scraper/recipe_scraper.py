@@ -30,6 +30,7 @@ DEFAULT_SCRAPER_STRATEGIES: list[type[ABCScraperStrategy]] = [
     RecipeScraperOpenAI,
     RecipeScraperOpenGraph,
 ]
+MAX_STRUCTURED_RECIPE_PAGE_BYTES = 5 * 1024**2
 
 
 class RecipeScraper:
@@ -41,12 +42,20 @@ class RecipeScraper:
     scrapers: list[type[ABCScraperStrategy]]
 
     def __init__(
-        self, repos: AllRepositories, translator: Translator, scrapers: list[type[ABCScraperStrategy]] | None = None
+        self,
+        repos: AllRepositories,
+        translator: Translator,
+        scrapers: list[type[ABCScraperStrategy]] | None = None,
+        *,
+        structured_only: bool = False,
     ) -> None:
-        if scrapers is None:
+        if structured_only:
+            scrapers = [RecipeScraperPackage]
+        elif scrapers is None:
             scrapers = DEFAULT_SCRAPER_STRATEGIES
 
         self.scrapers = scrapers
+        self.structured_only = structured_only
         self.repos = repos
         self.translator = translator
         self.logger = get_logger()
@@ -74,12 +83,15 @@ class RecipeScraper:
             if on_progress:
                 await on_progress(self.translator.t("recipe.create-progress.fetching-webpage"))
 
-            fetched = await resilient_fetch(url)
+            if self.structured_only:
+                fetched = await resilient_fetch(url, public_only=True, max_bytes=MAX_STRUCTURED_RECIPE_PAGE_BYTES)
+            else:
+                fetched = await resilient_fetch(url)
             if not fetched or not fetched.text:
                 return None, None
             html = fetched.text
             resolved_url = fetched.url
-            can_escalate = not fetched.via_flaresolverr
+            can_escalate = not self.structured_only and not fetched.via_flaresolverr
 
         async def run(
             strategies: list[type[ABCScraperStrategy]], page_html: str, page_url: str | None
@@ -144,7 +156,7 @@ class RecipeScraper:
                 self.logger.exception(f"Failed to scrape HTML with {scraper.__class__.__name__}")
                 result = None
 
-            if result is None or result[0] is None:
+            if result is None or result[0] is None or result[1] is None:
                 continue
 
             recipe_result, extras = result
@@ -154,7 +166,7 @@ class RecipeScraper:
                 self.logger.exception(f"Failed to clean recipe data from {scraper.__class__.__name__}")
                 continue
 
-            if not ScraperClass.uses_ai and self._should_enrich():
+            if not self.structured_only and not ScraperClass.uses_ai and self._should_enrich():
                 await self._enrich(
                     recipe,
                     extras,

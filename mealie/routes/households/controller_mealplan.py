@@ -1,6 +1,5 @@
 from datetime import date
 from functools import cached_property
-from uuid import UUID
 
 from dateutil.tz import tzlocal
 from fastapi import APIRouter, Depends
@@ -12,27 +11,16 @@ from mealie.routes._base import controller
 from mealie.routes._base.base_controllers import BaseCrudController
 from mealie.routes._base.mixins import HttpRepo
 from mealie.routes._base.permissions import not_found
-from mealie.schema import mapper
 from mealie.schema.meal_plan import PlanEntryCreate, PlanEntryOut, PlanEntrySave, PlanEntryUpdate
 from mealie.schema.meal_plan.new_meal import PlanEntryPagination, PlanEntryType, RandomPlanEntryCreate
 from mealie.schema.meal_plan.plan_rules import PlanRulesDay
 from mealie.schema.recipe.recipe import RecipeOut
 from mealie.schema.response.pagination import PaginationQuery
-from mealie.services.event_bus_service.event_types import (
-    EventMealplanData,
-    EventOperation,
-    EventTypes,
-)
+from mealie.services.event_bus_service.event_types import EventOperation
+from mealie.services.meal_plan_service import MealPlanEntryNotFound, MealPlanRecipeNotFound, MealPlanService
 from mealie.services.query_filter.builder import QueryFilterBuilder
 
 router = APIRouter(prefix="/households/mealplans", tags=["Households: Meal Plans"])
-
-MEALPLAN_NOTIFICATION_KEYS: dict[EventOperation, tuple[str, str]] = {
-    EventOperation.create: ("notifications.mealplan-entry-created", "notifications.mealplan-range-entry-created"),
-    EventOperation.update: ("notifications.mealplan-entry-updated", "notifications.mealplan-range-entry-updated"),
-    EventOperation.delete: ("notifications.mealplan-entry-deleted", "notifications.mealplan-range-entry-deleted"),
-}
-"""Notification message translation keys per operation, as `(day entry key, date range entry key)`"""
 
 
 @controller(router)
@@ -42,26 +30,8 @@ class GroupMealplanController(BaseCrudController):
         return self.repos.meals
 
     @cached_property
-    def group_recipes(self):
-        # Entries may reference recipes from any household in the group, so the household-scoped repo is too narrow.
-        return get_repositories(self.session, group_id=self.group_id, household_id=None).recipes
-
-    def _require_group_recipe(self, recipe_id: UUID | None) -> None:
-        if recipe_id is not None and self.group_recipes.get_one(recipe_id, "id") is None:
-            raise not_found()
-
-    def _translated_entry_type(self, entry_type) -> str:
-        value = getattr(entry_type, "value", entry_type)
-        return self.t(f"mealplan.entry-type.{value}", default=str(value))
-
-    def _notification_message(self, operation: EventOperation, entry: PlanEntryOut) -> str:
-        day_key, range_key = MEALPLAN_NOTIFICATION_KEYS[operation]
-        return self.t(
-            range_key if entry.end_date else day_key,
-            date=entry.date,
-            end_date=entry.end_date,
-            entry_type=self._translated_entry_type(entry.entry_type),
-        )
+    def service(self) -> MealPlanService:
+        return MealPlanService(self.repos, self.user, self.translator, self.event_bus, self.integration_id)
 
     def registered_exceptions(self, ex: type[Exception]) -> str:
         registered = {
@@ -114,45 +84,17 @@ class GroupMealplanController(BaseCrudController):
         end_date: date | None = None,
         include_week_entries: bool = False,
     ):
-        # week entries are opt-in so existing API clients, which expect every entry to be on a specific day,
-        # aren't handed them
-        week_filter = None if include_week_entries else "end_date IS NULL"
-
-        # merge start and end dates into pagination query only if either is provided
-        date_filters: list[str] = []
-        if start_date:
-            # a week entry starting before `start_date` still overlaps the range if it ends on or after it
-            date_filters.append(f"(date >= {start_date} OR end_date >= {start_date})")
-        if end_date:
-            date_filters.append(f"date <= {end_date}")
-
-        q.query_filter = QueryFilterBuilder.combine_filters(q.query_filter, week_filter, *date_filters)
-
-        return self.repo.page_all(pagination=q)
+        # Week entries are opt-in for REST clients that expect a meal on a specific day.
+        return self.service.list_entries(q, start_date, end_date, include_week_entries=include_week_entries)
 
     @router.post("", response_model=PlanEntryOut, status_code=201)
     def create_one(self, data: PlanEntryCreate):
-        self._require_group_recipe(data.recipe_id)
-        data = mapper.cast(data, PlanEntrySave, group_id=self.group_id, user_id=self.user.id)
-        result = self.mixins.create_one(data)
-
-        self.publish_event(
-            event_type=EventTypes.mealplan_entry_created,
-            document_data=EventMealplanData(
-                operation=EventOperation.create,
-                mealplan_id=result.id,
-                recipe_id=data.recipe_id,
-                recipe_name=result.recipe.name if result.recipe else None,
-                recipe_slug=result.recipe.slug if result.recipe else None,
-                date=data.date,
-                end_date=data.end_date,
-            ),
-            group_id=result.group_id,
-            household_id=result.household_id,
-            message=self._notification_message(EventOperation.create, result),
-        )
-
-        return result
+        try:
+            return self.service.create_entry(data)
+        except MealPlanRecipeNotFound:
+            raise not_found() from None
+        except Exception as error:
+            self.mixins.handle_exception(error)
 
     @router.get("/today")
     def get_todays_meals(self):
@@ -185,22 +127,7 @@ class GroupMealplanController(BaseCrudController):
             )
         )
 
-        self.publish_event(
-            event_type=EventTypes.mealplan_entry_created,
-            document_data=EventMealplanData(
-                operation=EventOperation.create,
-                mealplan_id=result.id,
-                recipe_id=recipe.id,
-                recipe_name=recipe.name,
-                recipe_slug=recipe.slug,
-                date=data.date,
-                end_date=data.end_date,
-            ),
-            group_id=result.group_id,
-            household_id=result.household_id,
-            message=self._notification_message(EventOperation.create, result),
-        )
-
+        self.service.publish_event(EventOperation.create, result)
         return result
 
     @router.get("/{item_id}", response_model=PlanEntryOut)
@@ -209,45 +136,17 @@ class GroupMealplanController(BaseCrudController):
 
     @router.put("/{item_id}", response_model=PlanEntryOut)
     def update_one(self, item_id: int, data: PlanEntryUpdate):
-        self._require_group_recipe(data.recipe_id)
-        result = self.mixins.update_one(data, item_id)
-
-        self.publish_event(
-            event_type=EventTypes.mealplan_entry_updated,
-            document_data=EventMealplanData(
-                operation=EventOperation.update,
-                mealplan_id=result.id,
-                recipe_id=result.recipe_id,
-                recipe_name=result.recipe.name if result.recipe else None,
-                recipe_slug=result.recipe.slug if result.recipe else None,
-                date=result.date,
-                end_date=result.end_date,
-            ),
-            group_id=result.group_id,
-            household_id=result.household_id,
-            message=self._notification_message(EventOperation.update, result),
-        )
-
-        return result
+        try:
+            return self.service.update_entry(item_id, data)
+        except MealPlanRecipeNotFound:
+            raise not_found() from None
+        except MealPlanEntryNotFound:
+            raise not_found("Not found.") from None
+        except Exception as error:
+            self.mixins.handle_exception(error)
 
     @router.delete("/{item_id}", response_model=PlanEntryOut)
     def delete_one(self, item_id: int):
         result = self.mixins.delete_one(item_id)
-
-        self.publish_event(
-            event_type=EventTypes.mealplan_entry_deleted,
-            document_data=EventMealplanData(
-                operation=EventOperation.delete,
-                mealplan_id=result.id,
-                recipe_id=result.recipe_id,
-                recipe_name=result.recipe.name if result.recipe else None,
-                recipe_slug=result.recipe.slug if result.recipe else None,
-                date=result.date,
-                end_date=result.end_date,
-            ),
-            group_id=result.group_id,
-            household_id=result.household_id,
-            message=self._notification_message(EventOperation.delete, result),
-        )
-
+        self.service.publish_event(EventOperation.delete, result)
         return result

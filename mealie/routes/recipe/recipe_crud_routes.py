@@ -419,20 +419,10 @@ class RecipeController(BaseRecipeController):
         return new_recipe.slug
 
     def _publish_recipe_created(self, new_recipe: RecipeOut) -> None:
-        if not new_recipe:
-            return
-
-        self.publish_event(
-            event_type=EventTypes.recipe_created,
-            document_data=EventRecipeData(operation=EventOperation.create, recipe_slug=new_recipe.slug),
-            group_id=new_recipe.group_id,
-            household_id=new_recipe.household_id,
-            message=self.t(
-                "notifications.generic-created-with-url",
-                name=new_recipe.name,
-                url=urls.recipe_url(self.group.slug, new_recipe.slug, self.settings.BASE_URL),
-            ),
-        )
+        if new_recipe:
+            self.service.publish_change(
+                self.event_bus, self.integration_id, self.group.slug, new_recipe, EventOperation.create
+            )
 
     # =======================================================================
     # AI Operations
@@ -667,17 +657,7 @@ class RecipeController(BaseRecipeController):
             return None
 
         if new_recipe:
-            self.publish_event(
-                event_type=EventTypes.recipe_created,
-                document_data=EventRecipeData(operation=EventOperation.create, recipe_slug=new_recipe.slug),
-                group_id=new_recipe.group_id,
-                household_id=new_recipe.household_id,
-                message=self.t(
-                    "notifications.generic-created-with-url",
-                    name=new_recipe.name,
-                    url=urls.recipe_url(self.group.slug, new_recipe.slug, self.settings.BASE_URL),
-                ),
-            )
+            self._publish_recipe_created(new_recipe)
 
         return new_recipe.slug
 
@@ -760,16 +740,8 @@ class RecipeController(BaseRecipeController):
             self.handle_exceptions(e)
 
         if recipe:
-            self.publish_event(
-                event_type=EventTypes.recipe_updated,
-                document_data=EventRecipeData(operation=EventOperation.update, recipe_slug=recipe.slug),
-                group_id=recipe.group_id,
-                household_id=recipe.household_id,
-                message=self.t(
-                    "notifications.generic-updated-with-url",
-                    name=recipe.name,
-                    url=urls.recipe_url(self.group.slug, recipe.slug, self.settings.BASE_URL),
-                ),
+            self.service.publish_change(
+                self.event_bus, self.integration_id, self.group.slug, recipe, EventOperation.update
             )
 
         return recipe

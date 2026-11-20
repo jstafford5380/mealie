@@ -8,7 +8,8 @@ warnings.filterwarnings(
 
 # ruff: noqa: E402
 from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
+from contextlib import AsyncExitStack, asynccontextmanager
+from typing import TYPE_CHECKING
 
 import uvicorn
 from fastapi import FastAPI
@@ -16,6 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.routing import APIRoute
 from starlette.middleware.sessions import SessionMiddleware
+from starlette.routing import Route
 
 from mealie.core.config import get_app_settings
 from mealie.core.root_logger import get_logger
@@ -27,6 +29,9 @@ from mealie.routes import router, spa, utility_routes
 from mealie.routes.handlers import register_debug_handler
 from mealie.routes.media import media_router
 from mealie.services.scheduler import SchedulerRegistry, SchedulerService, tasks
+
+if TYPE_CHECKING:
+    from mealie.mcp.audit import AuditedMCP
 
 settings = get_app_settings()
 
@@ -51,6 +56,13 @@ community members. If you'd like to file an issue, please use the
 """
 
 logger = get_logger()
+
+mcp_server: AuditedMCP | None = None
+mcp_routes: tuple[Route, ...] = ()
+if settings.MCP_ENABLED:
+    from mealie.mcp.server import build_mcp_server
+
+    mcp_server, mcp_routes = build_mcp_server(settings)
 
 
 @asynccontextmanager
@@ -98,7 +110,10 @@ async def lifespan_fn(_: FastAPI) -> AsyncGenerator[None]:
             f"({', '.join(sorted(branding.ALLOWED_IMAGE_SUFFIXES))}); falling back to the default logo"
         )
 
-    yield
+    async with AsyncExitStack() as stack:
+        if mcp_server is not None:
+            await stack.enter_async_context(mcp_server.session_manager.run())
+        yield
 
     logger.info("-----SYSTEM SHUTDOWN----- \n")
 
@@ -158,6 +173,7 @@ def api_routers():
     app.include_router(router)
     app.include_router(media_router)
     app.include_router(utility_routes.router)
+    app.router.routes.extend(mcp_routes)
 
     if settings.PRODUCTION and not settings.TESTING:
         spa.mount_spa(app)

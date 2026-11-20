@@ -6,6 +6,7 @@ from enum import StrEnum
 from pathlib import Path
 from typing import Annotated, Literal, NamedTuple
 from urllib.parse import urlparse
+from uuid import UUID
 
 from dateutil.tz import tzlocal
 from pydantic import PlainSerializer, field_validator
@@ -161,6 +162,20 @@ class AppSettings(AppLoggingSettings):
 
     API_PORT: int = 9000
     API_DOCS: bool = True
+
+    MCP_ENABLED: bool = False
+    MCP_RESOURCE_URL: str | None = None
+    MCP_OAUTH_AUDIENCE: str | None = None
+    MCP_OAUTH_ISSUER: str | None = None
+    MCP_OAUTH_JWKS_URL: str | None = None
+    MCP_OAUTH_SUBJECT: str | None = None
+    MCP_USER_ID: UUID | None = None
+
+    @field_validator("MCP_USER_ID", mode="before")
+    @classmethod
+    def empty_mcp_user_id(cls, value: str | UUID | None) -> str | UUID | None:
+        return None if value == "" else value
+
     TOKEN_TIME: int = 48
     """time in hours"""
 

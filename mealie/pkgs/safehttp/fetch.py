@@ -101,18 +101,18 @@ def body_indicates_challenge(content: bytes) -> bool:
     return any(marker in sample for marker in _CHALLENGE_BODY_MARKERS)
 
 
-def _build_transport(impersonate: str, proxy: str | None = None) -> AsyncSafeTransport:
+def _build_transport(impersonate: str, proxy: str | None = None, *, public_only: bool = False) -> AsyncSafeTransport:
     settings = get_app_settings()
     kwargs: dict = {
         "impersonate": impersonate,
         "default_headers": True,
-        # disable SSL verification since we can handle untrusted data and some sites don't have certs
-        # (this also covers the proxy connection, so no separate proxy-verify knob is needed)
-        "verify": False,
-        "allow_hosts": settings.http_allow_list,
+        # The normal scraper supports sites with invalid certificates. Public-only imports verify
+        # HTTPS so they can attribute published data to the source host.
+        "verify": public_only,
+        "allow_hosts": () if public_only else settings.http_allow_list,
         "deny_hosts": settings.http_disallow_list,
     }
-    if proxy:
+    if proxy and not public_only:
         # The transport still validates the target host, but it cannot pin the connection: curl
         # hands the hostname to the proxy, which does its own resolution. Routing egress through a
         # proxy is an explicit operator choice, so that trade-off is theirs to make.
@@ -170,6 +170,8 @@ async def _attempt(
     read_body: bool,
     proxy: str | None,
     max_bytes: int | None = None,
+    *,
+    public_only: bool = False,
 ) -> tuple[FetchResult | None, bool, int, str | None]:
     """
     Performs a single fetch attempt with one browser impersonation.
@@ -181,7 +183,9 @@ async def _attempt(
     - When both ``result`` is None and ``blocked`` is False, the response was a hard error that
       rotating won't fix, and the caller should stop.
     """
-    transport = _build_transport(impersonation, proxy)
+    transport = (
+        _build_transport(impersonation, public_only=True) if public_only else _build_transport(impersonation, proxy)
+    )
     async with AsyncClient(transport=transport) as client:
         async with client.stream(method, url, timeout=timeout, follow_redirects=True) as resp:
             status_code = resp.status_code
@@ -224,6 +228,8 @@ async def _rotate(
     proxy: str | None,
     deadline: float,
     max_bytes: int | None = None,
+    *,
+    public_only: bool = False,
 ) -> tuple[FetchResult | None, bool]:
     """
     Cycles through browser impersonations (in randomized order) for a single egress path
@@ -243,7 +249,7 @@ async def _rotate(
 
         logger.debug(f'Trying browser impersonation: "{impersonation}"')
         result, blocked, status_code, retry_after = await _attempt(
-            url, method, timeout, impersonation, read_body, proxy, max_bytes
+            url, method, timeout, impersonation, read_body, proxy, max_bytes, public_only=public_only
         )
 
         if result is not None:
@@ -294,6 +300,7 @@ async def resilient_fetch(
     timeout: int = SCRAPER_TIMEOUT,
     allow_flaresolverr: bool = True,
     max_bytes: int | None = None,
+    public_only: bool = False,
 ) -> FetchResult | None:
     """
     Fetches a URL while cycling through browser TLS impersonations (via httpx-curl-cffi) to
@@ -307,6 +314,7 @@ async def resilient_fetch(
     When ``SCRAPER_PROXY_URL`` is configured, requests egress through it: in ``always`` mode every
     request uses the proxy; in ``fallback`` mode a direct attempt is made first and the proxy is
     only used to retry when every direct impersonation was blocked.
+    ``public_only`` uses direct egress and ignores allow-list exceptions and FlareSolverr.
 
     As a last resort, if the fetch is still blocked and ``SCRAPER_FLARESOLVERR_URL`` is configured,
     the request is escalated to FlareSolverr (a headless browser). This only applies to HTML fetches
@@ -321,17 +329,18 @@ async def resilient_fetch(
     Returns a ``FetchResult`` for the first successful response, or ``None`` if every impersonation
     was blocked, the server returned a hard error, or the budget was exhausted.
     """
-    logger.debug(f"Fetching URL: {url}")
+    if not public_only:
+        logger.debug(f"Fetching URL: {url}")
 
     read_body = method.upper() != "HEAD"
     deadline = time.monotonic() + SCRAPER_TOTAL_TIMEOUT
 
     settings = get_app_settings()
-    proxy = settings.SCRAPER_PROXY_URL or None
+    proxy = None if public_only else settings.SCRAPER_PROXY_URL or None
     proxy_first = bool(proxy) and settings.SCRAPER_PROXY_MODE == ScraperProxyMode.always
 
     result, blocked = await _rotate(
-        url, method, timeout, read_body, proxy if proxy_first else None, deadline, max_bytes
+        url, method, timeout, read_body, proxy if proxy_first else None, deadline, max_bytes, public_only=public_only
     )
     if result is not None:
         return result
@@ -347,7 +356,7 @@ async def resilient_fetch(
     # Final escalation: a real browser via FlareSolverr. HTML-only, and only when still blocked.
     # Note: the impersonation rotation above always runs first, so its SSRF guard (which rejects
     # private target IPs) has already vetted `url` before we hand it to FlareSolverr.
-    if blocked and read_body and allow_flaresolverr:
+    if blocked and read_body and allow_flaresolverr and not public_only:
         logger.debug("Fetch still blocked; escalating to FlareSolverr")
         result = await fetch_via_flaresolverr(url)
         if result is not None:

@@ -3,8 +3,9 @@ from types import SimpleNamespace
 
 import httpx
 import pytest
+from httpx_curl_cffi import AsyncCurlTransport
 
-from mealie.pkgs.safehttp import fetch
+from mealie.pkgs.safehttp import InvalidDomainError, fetch
 
 
 # ---------------------------------------------------------------------------
@@ -458,6 +459,31 @@ def test_build_transport_passes_proxy_through(monkeypatch):
     assert captured["proxy"] == "http://proxy:8080"
     assert captured["allow_hosts"] == []
     assert captured["deny_hosts"] == []
+
+
+@pytest.mark.asyncio
+async def test_public_only_fetch_rejects_redirect_to_allowlisted_private_address(monkeypatch):
+    monkeypatch.setattr(
+        fetch,
+        "get_app_settings",
+        lambda: SimpleNamespace(
+            http_allow_list=["127.0.0.1"],
+            http_disallow_list=[],
+            SCRAPER_PROXY_URL="http://proxy.example:8080",
+            SCRAPER_PROXY_MODE=fetch.ScraperProxyMode.always,
+        ),
+    )
+    sent = []
+
+    async def redirect(_transport, request):
+        sent.append(request.url.host)
+        return httpx.Response(302, headers={"Location": "http://127.0.0.1/recipe"})
+
+    monkeypatch.setattr(AsyncCurlTransport, "handle_async_request", redirect)
+    with pytest.raises(InvalidDomainError, match="local resource"):
+        await fetch.resilient_fetch("https://8.8.8.8/recipe", public_only=True)
+
+    assert sent == ["8.8.8.8"]
 
 
 # ---------------------------------------------------------------------------
