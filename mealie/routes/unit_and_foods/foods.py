@@ -15,6 +15,7 @@ from mealie.schema.recipe.recipe_ingredient import (
     IngredientFoodOut,
     IngredientFoodPagination,
     IngredientFoodSave,
+    IngredientFoodUpdate,
 )
 from mealie.schema.response.pagination import PaginationQuery
 from mealie.schema.response.responses import SuccessResponse
@@ -71,9 +72,21 @@ class IngredientFoodsController(BaseUserController):
         return self.mixins.get_one(item_id)
 
     @router.put("/{item_id}", response_model=IngredientFoodOut, dependencies=[require(Perm.GROUP_ORGANIZE)])
-    def update_one(self, item_id: UUID4, data: IngredientFoodCreate):
-        data = mapper.cast(data, IngredientFoodSave, group_id=self.group_id)
-        return self.mixins.update_one(data, item_id)
+    def update_one(self, item_id: UUID4, data: IngredientFoodUpdate) -> IngredientFoodOut:
+        save_data = mapper.cast(data, IngredientFoodSave, group_id=self.group_id)
+        if not (data.reverse_substitutions_add or data.reverse_substitutions_remove):
+            return self.mixins.update_one(save_data, item_id)
+
+        if item_id in data.reverse_substitutions_add or item_id in data.reverse_substitutions_remove:
+            raise HTTPException(422, "A food cannot be substituted with itself")
+
+        try:
+            return self.repo.update_with_reverse_substitutions(
+                item_id, save_data, set(data.reverse_substitutions_add), set(data.reverse_substitutions_remove)
+            )
+        except Exception as error:
+            self.mixins.handle_exception(error)
+            raise
 
     @router.delete("/{item_id}", response_model=IngredientFoodOut, dependencies=[require(Perm.GROUP_ORGANIZE)])
     def delete_one(self, item_id: UUID4):

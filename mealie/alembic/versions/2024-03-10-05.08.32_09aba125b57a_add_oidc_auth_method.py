@@ -21,7 +21,7 @@ def is_postgres():
 
 def upgrade():
     if is_postgres():
-        op.execute("ALTER TYPE authmethod ADD VALUE 'OIDC'")
+        op.execute("ALTER TYPE authmethod ADD VALUE IF NOT EXISTS 'OIDC'")
 
 
 def downgrade():

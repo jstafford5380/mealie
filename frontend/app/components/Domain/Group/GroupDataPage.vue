@@ -24,17 +24,25 @@
 
   <!-- Edit Dialog -->
   <BaseDialog
-    v-model="editDialog"
+    v-model="editDialogModel"
     :title="editTitle || $t('general.edit')"
     :icon="icon"
     color="primary"
     max-width="600px"
     width="100%"
     :submit-disabled="!editFormValid"
-    can-confirm
+    :loading="editSaving"
+    :keep-open="keepEditOpen"
+    :can-confirm="!keepEditOpen"
+    :can-submit="keepEditOpen"
+    :submit-text="$t('general.save')"
     @confirm="emit('edit-one', editForm.data)"
+    @submit="emit('edit-one', editForm.data)"
   >
-    <div class="px-4">
+    <div
+      class="px-4"
+      :inert="editSaving"
+    >
       <slot name="edit-dialog-top" />
       <AutoForm
         v-model="editForm.data"
@@ -44,7 +52,10 @@
       />
     </div>
     <template #custom-card-action>
-      <slot name="edit-dialog-custom-action" />
+      <slot
+        v-if="!editSaving"
+        name="edit-dialog-custom-action"
+      />
     </template>
   </BaseDialog>
 
@@ -176,6 +187,8 @@ const props = defineProps({
   editTitle: {
     type: String,
   },
+  keepEditOpen: Boolean,
+  editSaving: Boolean,
   tableConfig: {
     type: Object as PropType<TableConfig>,
     default: () => ({
@@ -198,6 +211,15 @@ const props = defineProps({
   onDeleteDialogOpen: {
     type: Function as PropType<(items: any[]) => Promise<void>>,
     default: null,
+  },
+});
+
+const editDialogModel = computed({
+  get: () => editDialog.value,
+  set: (open) => {
+    if (!props.editSaving) {
+      editDialog.value = open;
+    }
   },
 });
 

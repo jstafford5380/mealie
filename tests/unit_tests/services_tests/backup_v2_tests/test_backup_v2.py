@@ -1,12 +1,15 @@
+import json
 import statistics
 import uuid
 from pathlib import Path
-from typing import Any
+from zipfile import ZipFile
 
+import pytest
 from sqlalchemy.orm import Session
 
 import tests.data as test_data
 from mealie.core.config import get_app_settings
+from mealie.core.settings.directories import AppDirectories
 from mealie.db.db_setup import session_context
 from mealie.db.models._model_utils.guid import GUID
 from mealie.db.models.group import Group
@@ -24,12 +27,6 @@ from mealie.db.models.users.users import User
 from mealie.services.backups_v2.alchemy_exporter import AlchemyExporter
 from mealie.services.backups_v2.backup_file import BackupFile
 from mealie.services.backups_v2.backup_v2 import BackupV2
-
-
-def dict_sorter(d: dict) -> Any:
-    possible_keys = {"created_at", "id"}
-
-    return next((d[key] for key in possible_keys if d.get(key)), 1)
 
 
 def test_database_backup():
@@ -51,7 +48,7 @@ def test_database_restore():
 
     # Capture existing database snapshot
     original_exporter = AlchemyExporter(settings.DB_URL)
-    snapshop_1 = original_exporter.dump()
+    original_snapshot = original_exporter.dump()
     original_exporter.engine.dispose()
 
     # Create Backup
@@ -62,11 +59,74 @@ def test_database_restore():
     backup_v2.restore(path_to_backup)
 
     new_exporter = AlchemyExporter(settings.DB_URL)
-    snapshop_2 = new_exporter.dump()
+    restored_snapshot = new_exporter.dump()
     new_exporter.engine.dispose()
 
-    for s1, s2 in zip(snapshop_1, snapshop_2, strict=False):
-        assert snapshop_1[s1].sort(key=dict_sorter) == snapshop_2[s2].sort(key=dict_sorter)
+    assert original_snapshot.keys() == restored_snapshot.keys()
+    for table, rows in original_snapshot.items():
+        expected = sorted(json.dumps(row, sort_keys=True) for row in rows)
+        actual = sorted(json.dumps(row, sort_keys=True) for row in restored_snapshot[table])
+        assert expected == actual, table
+
+
+@pytest.mark.parametrize("failure", ["metadata", "missing_table", "import", "activate_files"])
+def test_failed_restore_preserves_live_data(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    failure: str,
+) -> None:
+    backup = BackupV2()
+    monkeypatch.setattr(backup, "directories", AppDirectories(tmp_path / "live"))
+    original_secret = backup.directories.DATA_DIR / ".secret"
+    original_secret.write_text("live secret")
+    live_file = backup.directories.RECIPE_DATA_DIR / "existing.txt"
+    live_file.write_text("live recipe")
+
+    with session_context() as session:
+        user_ids = {user_id for (user_id,) in session.query(User.id).all()}
+    assert user_ids
+
+    # Use the current migration version and omit users so accidental activation would replace them.
+    data = backup.db_exporter.dump_schema()
+    if failure == "metadata":
+        del data["alembic_version"]
+    elif failure == "missing_table":
+        del data["recipes"]
+    elif failure == "import":
+        data["unknown_table"] = [{"id": 1}]
+
+    archive = tmp_path / "restore.zip"
+    with ZipFile(archive, "w") as zip_file:
+        zip_file.writestr("database.json", json.dumps(data))
+        zip_file.writestr("data/.secret", "replacement secret")
+        zip_file.writestr("data/recipes/replacement.txt", "replacement recipe")
+
+    if failure == "activate_files":
+        rename = Path.rename
+
+        def fail_on_recipe_install(path: Path, target: Path) -> Path:
+            if path.parent.name == "incoming" and path.name == "recipes":
+                raise OSError("Cannot activate recipes")
+            return rename(path, target)
+
+        monkeypatch.setattr(Path, "rename", fail_on_recipe_install)
+
+    expected_errors = {
+        "metadata": ValueError,
+        "missing_table": ValueError,
+        "import": KeyError,
+        "activate_files": OSError,
+    }
+    with pytest.raises(expected_errors[failure]):
+        backup.restore(archive)
+
+    with session_context() as session:
+        assert {user_id for (user_id,) in session.query(User.id).all()} == user_ids
+    assert original_secret.read_text() == "live secret"
+    assert live_file.read_text() == "live recipe"
+    assert not (backup.directories.RECIPE_DATA_DIR / "replacement.txt").exists()
+    assert not list(backup.directories.DATA_DIR.glob("*.bak.db"))
+    backup.db_exporter.engine.dispose()
 
 
 def _5ab195a474eb_add_normalized_search_properties(session: Session):

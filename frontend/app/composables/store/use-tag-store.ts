@@ -29,7 +29,7 @@ export const useTagData = function () {
 
 export const useTagStore = function (i18n?: Composer) {
   const api = useUserApi(i18n);
-  return useStore<TagOut>("tag", store, loading, initialized, api.tags);
+  return useStore("tag", store, loading, initialized, api.tags);
 };
 
 export const usePublicTagStore = function (groupSlug: string, i18n?: Composer) {

@@ -1,8 +1,8 @@
 <template>
   <BaseDialog
     v-model="dialog"
-    :title="entry ? $t('meal-plan.update-this-meal-plan') : $t('meal-plan.create-a-new-meal-plan')"
-    :submit-text="entry ? $t('general.update') : $t('general.create')"
+    :title="entry ? $t('meal-plan.edit-meal') : $t('meal-plan.add-meal')"
+    :submit-text="entry ? $t('general.save') : $t('general.add')"
     :icon="$globals.icons.foods"
     :submit-disabled="submitDisabled"
     width="1000"
@@ -82,7 +82,8 @@
           v-if="isRecipe"
           ref="selector"
           v-model="recipe"
-          height="100%"
+          class="min-h-0 flex-auto"
+          height="auto"
           :query-filter="ruleQueryFilter"
         >
           <template #filters>

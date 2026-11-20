@@ -307,7 +307,7 @@ const formItems = computed<AutoFormItems>(() => [
     numberInputConfig: {
       min: 0,
       max: undefined,
-      precision: null,
+      precision: 0,
       controlVariant: "hidden",
     },
   },
@@ -378,7 +378,6 @@ const createForm = reactive({
 });
 
 async function handleCreate(createFormData: IngredientUnitCreate) {
-  // @ts-expect-error createOne eroniusly expects id which is not preset at time of creation
   await unitActions.createOne(createFormData);
   createForm.data = {
     name: "",

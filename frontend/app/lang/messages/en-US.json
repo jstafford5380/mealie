@@ -358,6 +358,8 @@
     "household-preferences": "Household Preferences"
   },
   "meal-plan": {
+    "add-meal": "Add Meal",
+    "edit-meal": "Edit Meal",
     "create-a-new-meal-plan": "Create a New Meal Plan",
     "update-this-meal-plan": "Update this Meal Plan",
     "dinner-this-week": "Dinner This Week",
@@ -990,6 +992,8 @@
     "failed-to-create-shopping-list": "Failed to create shopping list",
     "item-checked-off": "Checked off {item}",
     "changes-not-saved": "Some changes couldn't be saved. They stay on this device and will be sent again.",
+    "merge-conflict": "An item you edited no longer exists on the server. Your edits are still on this device. Discard them here, then edit the current list.",
+    "discard-conflicting-changes": "Discard conflicting changes",
     "more-options": "More options",
     "fewer-options": "Fewer options",
     "save-as-new-food": "Save \"{text}\" as a new food",

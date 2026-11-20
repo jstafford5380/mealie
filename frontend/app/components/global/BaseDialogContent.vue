@@ -1,7 +1,7 @@
 <template>
   <div
     data-slot="base-dialog-content"
-    class="relative flex h-full max-h-[inherit] min-h-0 flex-col font-sans text-popover-foreground"
+    class="relative flex min-h-0 flex-auto flex-col font-sans text-popover-foreground"
   >
     <div
       v-if="loading"

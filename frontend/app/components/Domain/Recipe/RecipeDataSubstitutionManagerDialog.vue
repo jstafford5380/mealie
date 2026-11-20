@@ -62,12 +62,12 @@ export interface ReverseSubstitutionChanges {
 
 interface Props {
   data: IngredientFoodOut;
+  pendingReverseChanges?: ReverseSubstitutionChanges | null;
 }
 
 const props = defineProps<Props>();
 
 const emit = defineEmits<{
-  // reverse substitutions live on the other food, so the page writes them separately
   submit: [substitutions: IngredientFoodSubstitution[], reverseChanges: ReverseSubstitutionChanges];
   cancel: [];
 }>();
@@ -131,11 +131,19 @@ function resetReverse(index: number) {
 }
 
 function initSubstitutions() {
-  substitutions.value = (props.data.substitutions || []).map(substitution => ({
-    substituteFoodId: substitution.substituteFoodId || null,
-    note: substitution.note || "",
-    addReverse: null,
-  }));
+  const pendingAdds = new Set(props.pendingReverseChanges?.add);
+  const pendingRemovals = new Set(props.pendingReverseChanges?.remove);
+  substitutions.value = (props.data.substitutions || []).map((substitution) => {
+    const substituteFoodId = substitution.substituteFoodId || null;
+    let addReverse: boolean | null = null;
+    if (substituteFoodId && pendingAdds.has(substituteFoodId)) {
+      addReverse = true;
+    }
+    else if (substituteFoodId && pendingRemovals.has(substituteFoodId)) {
+      addReverse = false;
+    }
+    return { substituteFoodId, note: substitution.note || "", addReverse };
+  });
 
   if (!substitutions.value.length) {
     createSubstitution();

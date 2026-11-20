@@ -110,6 +110,43 @@ def test_shopping_list_items_create_many(
     assert not created_item_ids
 
 
+@pytest.mark.parametrize("bulk_update", [False, True])
+def test_bulk_items_keep_compatible_items_in_separate_lists(
+    api_client: TestClient, unique_user: TestUser, shopping_lists: list[ShoppingListOut], bulk_update: bool
+) -> None:
+    lists = shopping_lists[:2]
+    items = [
+        create_item(shopping_list.id, note="Apples", quantity=quantity)
+        for quantity, shopping_list in enumerate(lists, start=1)
+    ]
+
+    if bulk_update:
+        for item in items:
+            original = api_client.post(api_routes.households_shopping_items, json=item, headers=unique_user.token)
+            item["id"] = utils.assert_deserialize(original, 201)["createdItems"][0]["id"]
+            item["quantity"] += 2
+
+        response = api_client.put(api_routes.households_shopping_items, json=items, headers=unique_user.token)
+        changes = utils.assert_deserialize(response, 200)
+        assert len(changes["updatedItems"]) == len(items)
+        assert not changes["deletedItems"]
+    else:
+        response = api_client.post(
+            api_routes.households_shopping_items_create_bulk, json=items, headers=unique_user.token
+        )
+        assert len(utils.assert_deserialize(response, 201)["createdItems"]) == len(items)
+
+    for shopping_list, item in zip(lists, items, strict=True):
+        response = api_client.get(
+            api_routes.households_shopping_lists_item_id(shopping_list.id), headers=unique_user.token
+        )
+        saved_items = utils.assert_deserialize(response, 200)["listItems"]
+        assert len(saved_items) == 1
+        assert saved_items[0]["quantity"] == item["quantity"]
+        if bulk_update:
+            assert saved_items[0]["id"] == item["id"]
+
+
 def test_shopping_list_items_auto_assign_label_with_food_without_label(
     api_client: TestClient, unique_user: TestUser, shopping_list: ShoppingListOut
 ):

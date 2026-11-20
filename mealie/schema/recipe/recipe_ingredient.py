@@ -217,6 +217,20 @@ class IngredientFoodSave(IngredientFoodCreate):
     group_id: UUID4
 
 
+class IngredientFoodUpdate(IngredientFoodCreate):
+    reverse_substitutions_add: list[UUID4] = []
+    reverse_substitutions_remove: list[UUID4] = []
+
+    @model_validator(mode="after")
+    def validate_reverse_substitutions(self):
+        forward_ids = {substitution.substitute_food_id for substitution in self.substitutions}
+        if not set(self.reverse_substitutions_add) <= forward_ids:
+            raise ValueError("a reverse substitution requires a forward substitution")
+        if set(self.reverse_substitutions_add) & set(self.reverse_substitutions_remove):
+            raise ValueError("a reverse substitution cannot be added and removed together")
+        return self
+
+
 class IngredientFoodOut(IngredientFoodCreate, MealieOutModel):
     id: UUID4
     label: MultiPurposeLabelSummary | None = None

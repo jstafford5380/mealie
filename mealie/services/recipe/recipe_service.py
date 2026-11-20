@@ -763,8 +763,30 @@ class RecipeService(RecipeServiceBase):
 
     def patch_one(self, slug_or_id: str | UUID, patch_data: RecipeDraft) -> RecipeOut:
         recipe = self._pre_update_check(slug_or_id, patch_data)
+        if "recipe_ingredient" in patch_data.model_fields_set:
+            self._resolve_ingredient_sub_recipes(patch_data)
 
-        new_data = self.group_recipes.patch(recipe.slug, patch_data.model_dump(exclude_unset=True))
+        changes = patch_data.model_dump(exclude_unset=True)
+        reference_fields = {"recipe_ingredient", "recipe_instructions", "notes"}
+        if reference_fields & changes.keys():
+            instructions = (
+                patch_data.recipe_instructions if "recipe_instructions" in changes else recipe.recipe_instructions
+            )
+            effective = patch_data.model_copy(
+                update={
+                    "recipe_ingredient": patch_data.recipe_ingredient
+                    if "recipe_ingredient" in changes
+                    else recipe.recipe_ingredient,
+                    "recipe_instructions": [step.model_copy(deep=True) for step in instructions],
+                    "notes": patch_data.notes if "notes" in changes else recipe.notes,
+                },
+            )
+            self._remove_non_existent_ingredient_references(effective)
+            self._remove_non_existent_note_references(effective)
+            if "recipe_instructions" in changes or effective.recipe_instructions != recipe.recipe_instructions:
+                changes["recipe_instructions"] = [step.model_dump() for step in effective.recipe_instructions]
+
+        new_data = self.group_recipes.patch(recipe.slug, changes)
 
         self.check_assets(new_data, recipe.slug)
         return new_data

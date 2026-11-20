@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import random
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
+from contextlib import contextmanager
 from datetime import UTC, datetime
 from math import ceil
 from typing import Any
@@ -25,6 +26,8 @@ from mealie.schema.response.query_search import SearchFilter
 from mealie.services.query_filter.builder import NonFilterableValueError, QueryFilterBuilder
 
 from ._utils import NotSet
+
+_REPOSITORY_TRANSACTION = "mealie_repository_transaction"
 
 
 class RepositoryGeneric[Schema: MealieModel, Model: SqlAlchemyBase]:
@@ -183,12 +186,37 @@ class RepositoryGeneric[Schema: MealieModel, Model: SqlAlchemyBase]:
 
         return eff_schema.model_validate(result)
 
+    @contextmanager
+    def transaction(self) -> Iterator[None]:
+        """Commit a group of generic repository writes on this session together."""
+        if self.session.info.get(_REPOSITORY_TRANSACTION):
+            yield
+            return
+
+        self.session.info[_REPOSITORY_TRANSACTION] = True
+        try:
+            yield
+            self.session.commit()
+        except BaseException:
+            self.session.rollback()
+            raise
+        finally:
+            del self.session.info[_REPOSITORY_TRANSACTION]
+
+    def _finish_write(self) -> None:
+        if self.session.info.get(_REPOSITORY_TRANSACTION):
+            self.session.flush()
+            # Flush alone leaves relationships loaded by earlier reads stale.
+            self.session.expire_all()
+        else:
+            self.session.commit()
+
     def create(self, data: Schema | BaseModel | dict) -> Schema:
         try:
             data = data if isinstance(data, dict) else data.model_dump()
             new_document = self.model(session=self.session, **data)
             self.session.add(new_document)
-            self.session.commit()
+            self._finish_write()
         except Exception:
             self.session.rollback()
             raise
@@ -206,7 +234,7 @@ class RepositoryGeneric[Schema: MealieModel, Model: SqlAlchemyBase]:
                 new_documents.append(new_document)
 
             self.session.add_all(new_documents)
-            self.session.commit()
+            self._finish_write()
         except Exception:
             self.session.rollback()
             raise
@@ -231,7 +259,7 @@ class RepositoryGeneric[Schema: MealieModel, Model: SqlAlchemyBase]:
         entry = self._query_one(match_value=match_value)
         entry.update(session=self.session, **self._keep_scope(entry, new_data))
 
-        self.session.commit()
+        self._finish_write()
         return self.schema.model_validate(entry)
 
     def update_many(self, data: Iterable[Schema | BaseModel | dict]) -> list[Schema]:
@@ -253,7 +281,7 @@ class RepositoryGeneric[Schema: MealieModel, Model: SqlAlchemyBase]:
             document_to_update.update(session=self.session, **data)  # type: ignore
             updated_documents.append(document_to_update)
 
-        self.session.commit()
+        self._finish_write()
         return [self.schema.model_validate(x) for x in updated_documents]
 
     def patch(self, match_value: str | int | UUID4, new_data: dict | BaseModel) -> Schema:
@@ -274,7 +302,7 @@ class RepositoryGeneric[Schema: MealieModel, Model: SqlAlchemyBase]:
 
         try:
             self.session.delete(result)
-            self.session.commit()
+            self._finish_write()
         except Exception as e:
             self.session.rollback()
             raise e
@@ -292,7 +320,7 @@ class RepositoryGeneric[Schema: MealieModel, Model: SqlAlchemyBase]:
             for result in results:
                 self.session.delete(result)
 
-            self.session.commit()
+            self._finish_write()
         except Exception as e:
             self.session.rollback()
             raise e

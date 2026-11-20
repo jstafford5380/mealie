@@ -31,7 +31,7 @@ if not settings.DB_URL:
 config.set_main_option("sqlalchemy.url", settings.DB_URL.replace("%", "%%"))
 
 
-def include_object(object: Any, name: str, type_: str, reflected: bool, compare_to: Any):
+def include_object(object: Any, name: str | None, type_: str, reflected: bool, compare_to: Any):
     # skip dropping food/unit unique constraints; they are defined manually so alembic doesn't see them
     # see: revision dded3119c1fe
     if type_ == "unique_constraint" and name == "ingredient_foods_name_group_id_key" and compare_to is None:
@@ -90,13 +90,31 @@ def run_migrations_offline():
         context.run_migrations()
 
 
-def run_migrations_online():
+def run_migrations(connection: sa.Connection) -> None:
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        user_module_prefix="mealie.db.migration_types.",
+        render_as_batch=True,
+        include_object=include_object,
+    )
+
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+def run_migrations_online() -> None:
     """Run migrations in 'online' mode.
 
     In this scenario we need to create an Engine
     and associate a connection with the context.
 
     """
+    connection = config.attributes.get("connection")
+    if connection is not None:
+        run_migrations(connection)
+        return
+
     connectable = sa.engine_from_config(
         config.get_section(config.config_ini_section),
         prefix="sqlalchemy.",
@@ -104,16 +122,7 @@ def run_migrations_online():
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection,
-            target_metadata=target_metadata,
-            user_module_prefix="mealie.db.migration_types.",
-            render_as_batch=True,
-            include_object=include_object,
-        )
-
-        with context.begin_transaction():
-            context.run_migrations()
+        run_migrations(connection)
 
 
 if context.is_offline_mode():

@@ -7,7 +7,6 @@ Create Date: 2022-02-21 19:56:24.351115
 """
 
 import sqlalchemy as sa
-from sqlalchemy import engine_from_config
 
 import mealie.db.migration_types
 from alembic import op
@@ -21,14 +20,7 @@ depends_on: str | tuple[str, ...] | None = None
 
 # Adapted from https://improveandrepeat.com/2021/09/python-friday-87-handling-pre-existing-tables-with-alembic-and-sqlalchemy/
 def table_exists(table, schema=None):
-    config = op.get_context().config
-    engine = engine_from_config(config.get_section(config.config_ini_section), prefix="sqlalchemy.")
-    try:
-        insp = sa.inspect(engine)
-        return insp.has_table(table, schema)
-    finally:
-        # Without this the connection is only released when the engine is garbage collected.
-        engine.dispose()
+    return sa.inspect(op.get_bind()).has_table(table, schema)
 
 
 def upgrade():

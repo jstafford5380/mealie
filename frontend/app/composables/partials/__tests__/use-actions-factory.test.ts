@@ -1,19 +1,31 @@
-import { describe, expect, test, vi } from "vitest";
+import { describe, expect, expectTypeOf, test, vi } from "vitest";
 import { ref } from "vue";
 import { useStoreActions } from "../use-actions-factory";
 import type { BaseCRUDAPI } from "~/lib/api/base/base-clients";
 
 describe("useStoreActions", () => {
+  type CreateInput = { name: string };
+  type UpdateInput = { displayName: string };
+  type Item = { id: string; name: string };
+
   const mockApi = {
     getAll: vi.fn(),
     createOne: vi.fn(),
     updateOne: vi.fn(),
     deleteOne: vi.fn(),
-  } as unknown as BaseCRUDAPI<unknown, unknown, unknown>;
+  } as unknown as BaseCRUDAPI<CreateInput, Item, UpdateInput>;
 
   const mockStore = ref([]);
   const mockLoading = ref(false);
   const mockInitialized = ref(false);
+
+  test("keeps create and update payloads distinct from the read model", () => {
+    const actions = useStoreActions("test-store", mockApi, mockStore, mockLoading, mockInitialized);
+
+    expectTypeOf(actions.createOne).parameter(0).toEqualTypeOf<CreateInput>();
+    expectTypeOf(actions.updateOne).parameter(0).toEqualTypeOf<UpdateInput & { id: string | number }>();
+    expectTypeOf(actions.createOne).returns.resolves.toEqualTypeOf<Item | null>();
+  });
 
   test("deleteMany calls deleteOne for each ID and refreshes once", async () => {
     const actions = useStoreActions("test-store", mockApi, mockStore, mockLoading, mockInitialized);

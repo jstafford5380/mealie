@@ -2,6 +2,10 @@ import datetime
 import json
 import re
 import shutil
+import sqlite3
+import tempfile
+from collections.abc import Callable, Iterator
+from contextlib import ExitStack, closing, contextmanager
 from pathlib import Path
 from zipfile import ZipFile
 
@@ -31,15 +35,12 @@ class BackupV2(BaseService):
 
         self.db_exporter = AlchemyExporter(self.db_url)
 
-    def _sqlite(self) -> None:
-        db_file = self.settings.DB_URL.removeprefix("sqlite:///")  # type: ignore
-
-        # Create a backup of the SQLite database
+    def _stage_sqlite_snapshot(self, incoming: Path) -> None:
         timestamp = datetime.datetime.now(datetime.UTC).strftime("%Y.%m.%d")
-        shutil.copy(db_file, self.directories.DATA_DIR.joinpath(f"mealie_{timestamp}.bak.db"))
-
-    def _postgres(self) -> None:
-        pass
+        snapshot = incoming / f"mealie_{timestamp}.bak.db"
+        # SQLite's backup API includes committed changes that are still in the WAL.
+        with closing(self.db_exporter.engine.raw_connection()) as source, closing(sqlite3.connect(snapshot)) as target:
+            source.driver_connection.backup(target)
 
     def backup(self) -> Path:
         # sourcery skip: merge-nested-ifs, reintroduce-else, remove-redundant-continue
@@ -68,66 +69,77 @@ class BackupV2(BaseService):
                     continue
 
                 if data_file.is_file() and data_file.suffix not in self.EXCLUDE_EXTENTIONS:
-                    if data_file.parent.name in self.EXCLUDE_DIRS:
+                    relative = data_file.relative_to(self.directories.DATA_DIR)
+                    if self.EXCLUDE_DIRS.intersection(relative.parts[:-1]):
                         continue
 
-                    zip_file.write(data_file, f"data/{data_file.relative_to(self.directories.DATA_DIR)}")
+                    zip_file.write(data_file, f"data/{relative}")
 
         return backup_file
 
-    def _copy_data(self, data_path: Path) -> None:
-        for f in data_path.iterdir():
-            if f.is_file():
-                if f.name not in self.RESTORE_FILES:
-                    continue
+    @contextmanager
+    def _stage_data(self, data_path: Path) -> Iterator[Callable[[], None]]:
+        # Put both copies on the live filesystem so that activation and rollback use renames.
+        temp_dir = self.directories.DATA_DIR / ".temp"
+        temp_dir.mkdir(exist_ok=True)
+        staging = Path(tempfile.mkdtemp(prefix="restore-", dir=temp_dir))
+        incoming = staging / "incoming"
+        previous = staging / "previous"
+        rollback = ExitStack()
+        preserve_staging = False
 
-                shutil.copyfile(f, self.directories.DATA_DIR / f.name)
-                continue
+        def install() -> None:
+            for replacement in sorted(incoming.iterdir()):
+                destination = self.directories.DATA_DIR / replacement.name
+                if destination.exists() or destination.is_symlink():
+                    original = destination.rename(previous / replacement.name)
+                    rollback.callback(original.rename, destination)
+                replacement.rename(destination)
+                rollback.callback(destination.rename, replacement)
 
-            shutil.rmtree(self.directories.DATA_DIR / f.name)
-            shutil.copytree(f, self.directories.DATA_DIR / f.name)
+        try:
+            incoming.mkdir()
+            previous.mkdir()
+            for entry in data_path.iterdir():
+                replacement = incoming / entry.name
+                if entry.is_dir() and entry.name not in self.EXCLUDE_DIRS:
+                    shutil.copytree(entry, replacement)
+                elif entry.is_file() and entry.name in self.RESTORE_FILES:
+                    shutil.copyfile(entry, replacement)
 
-        # since we copied a new .secret, AppSettings has the wrong secret info
-        self.logger.info("invalidating appsettings cache")
-        get_app_settings.cache_clear()
-        self.settings = get_app_settings()
+            if self.db_exporter.engine.dialect.name == "sqlite":
+                self._stage_sqlite_snapshot(incoming)
+
+            yield install
+        except BaseException:
+            try:
+                rollback.close()
+            except OSError:
+                preserve_staging = True
+                self.logger.exception("Could not roll back restored files. Recovery files are in %s", staging)
+                raise
+            raise
+        else:
+            rollback.pop_all()
+        finally:
+            if not preserve_staging:
+                shutil.rmtree(staging, ignore_errors=True)
 
     def restore(self, backup_path: Path) -> None:
         self.logger.info("initializing backup restore")
 
         backup = BackupFile(backup_path)
 
-        if self.settings.DB_ENGINE == "sqlite":
-            self._sqlite()
-        elif self.settings.DB_ENGINE == "postgres":
-            self._postgres()
-
         with backup as contents:
-            # ================================
-            # Validation
             if not contents.validate():
                 self.logger.error(
                     "Invalid backup file. file does not contain required elements (data directory and database.json)"
                 )
                 raise ValueError("Invalid backup file")
 
-            database_json = contents.read_tables()
+            with self._stage_data(contents.data_directory) as install_files:
+                self.db_exporter.restore(contents.read_tables(), install_files)
 
-            # ================================
-            # Purge Database
-
-            self.logger.info("dropping all database tables")
-            self.db_exporter.drop_all()
-
-            # ================================
-            # Restore Database
-
-            self.logger.info("importing database tables")
-            self.db_exporter.restore(database_json)
-
-            self.logger.info("database tables imported successfully")
-
-            self.logger.info("restoring data directory")
-            self._copy_data(contents.data_directory)
-            self.logger.info("data directory restored successfully")
+        # A restored .secret invalidates the cached settings.
+        get_app_settings.cache_clear()
         self.logger.info("backup restore complete")

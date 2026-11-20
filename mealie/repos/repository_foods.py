@@ -2,15 +2,17 @@ from collections.abc import Sequence
 
 from pydantic import UUID4
 from sqlalchemy import func, select, update
+from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import joinedload, with_expression
 
 from mealie.db.models.household.shopping_list import ShoppingListItem
 from mealie.db.models.recipe.ingredient import (
     IngredientFoodModel,
+    IngredientFoodSubstitutionModel,
     RecipeIngredientModel,
     RecipeIngredientSubstitutionModel,
 )
-from mealie.schema.recipe.recipe_ingredient import IngredientFoodOut
+from mealie.schema.recipe.recipe_ingredient import IngredientFoodOut, IngredientFoodSave
 
 from .repository_generic import GroupRepositoryGeneric
 
@@ -29,6 +31,33 @@ class RepositoryFood(GroupRepositoryGeneric[IngredientFoodOut, IngredientFoodMod
     def _get_food(self, id: UUID4) -> IngredientFoodModel:
         stmt = select(self.model).filter_by(**self._filter_builder(**{"id": id}))
         return self.session.execute(stmt).scalars().one()
+
+    def update_with_reverse_substitutions(
+        self, item_id: UUID4, data: IngredientFoodSave, add: set[UUID4], remove: set[UUID4]
+    ) -> IngredientFoodOut:
+        food_ids = {item_id} | add | remove
+        stmt = (
+            select(self.model)
+            .filter_by(**self._filter_builder())
+            .where(self.model.id.in_(food_ids))
+            .order_by(self.model.id)
+            .with_for_update(of=self.model)
+        )
+        with self.transaction():
+            foods = {food.id: food for food in self.session.scalars(stmt).unique()}
+            if food_ids != foods.keys():
+                raise NoResultFound("One or more foods do not exist in this group")
+
+            result = self.update(item_id, data)
+            for reverse_id in add:
+                food = foods[reverse_id]
+                if not any(row.substitute_food_id == item_id for row in food.substitutions):
+                    food.substitutions.append(IngredientFoodSubstitutionModel(substitute_food_id=item_id))
+            for reverse_id in remove:
+                food = foods[reverse_id]
+                food.substitutions = [row for row in food.substitutions if row.substitute_food_id != item_id]
+
+        return result
 
     def get_empty(self) -> Sequence[IngredientFoodModel]:
         # a food is only "unused" if it's absent from both recipe ingredients and

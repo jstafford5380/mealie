@@ -33,6 +33,8 @@ describe("useShoppingListItemActions", () => {
     updateItem,
     process,
     hasFailedWrites,
+    hasConflictedWrites,
+    discardConflictedChanges,
     __testing__: { queue, clearQueueItems },
   } = useShoppingListItemActions("list_id");
 
@@ -49,35 +51,155 @@ describe("useShoppingListItemActions", () => {
   });
   test("create item creates an item", () => {
     createItem(MOCK_ITEM);
-    expect(queue.create.includes(MOCK_ITEM));
+    expect(queue.create).toContainEqual(MOCK_ITEM);
   });
   describe("updateItem", () => {
     test("update item updates an item", () => {
       updateItem(MOCK_ITEM);
-      expect(queue.update).include(MOCK_ITEM);
+      expect(queue.update).toContainEqual(MOCK_ITEM);
     });
     test("ignores a newly created item", () => {
       const updatedItem = { ...MOCK_ITEM, quantity: 2000 };
       createItem(MOCK_ITEM);
       updateItem(updatedItem);
-      expect(queue.update).not.include(MOCK_ITEM);
-      expect(queue.create).not.include(MOCK_ITEM);
-      expect(queue.create).include(updatedItem);
+      expect(queue.update).not.toContainEqual(MOCK_ITEM);
+      expect(queue.create).not.toContainEqual(MOCK_ITEM);
+      expect(queue.create).toContainEqual(updatedItem);
     });
   });
   describe("deleteItem", () => {
     test("delete item deletes an item", () => {
       deleteItem(MOCK_ITEM);
-      expect(queue.delete).include(MOCK_ITEM);
+      expect(queue.delete).toContainEqual(MOCK_ITEM);
     });
     test("undoes a newly created item", () => {
       createItem(MOCK_ITEM);
       deleteItem(MOCK_ITEM);
-      expect(queue.delete).not.include(MOCK_ITEM);
-      expect(queue.create).not.include(MOCK_ITEM);
+      expect(queue.delete).not.toContainEqual(MOCK_ITEM);
+      expect(queue.create).not.toContainEqual(MOCK_ITEM);
     });
   });
   describe("process processes the queue", () => {
+    function holdWrite(write: typeof updateMany) {
+      const started = Promise.withResolvers<undefined>();
+      const completed = Promise.withResolvers<unknown>();
+      write.mockImplementationOnce(() => {
+        started.resolve(undefined);
+        return completed.promise;
+      });
+      return { started: started.promise, complete: completed.resolve };
+    }
+
+    test("preserves a newer same-item edit and coalesces concurrent flushes", async () => {
+      const item = { ...MOCK_ITEM, quantity: 1 };
+      const pendingWrite = holdWrite(updateMany);
+      updateItem(item);
+      const firstFlush = process();
+      await pendingWrite.started;
+
+      item.quantity = 2;
+      updateItem(item);
+      expect(process()).toBe(firstFlush);
+      expect(updateMany).toHaveBeenCalledExactlyOnceWith([{ ...item, quantity: 1 }]);
+
+      pendingWrite.complete(undefined);
+      await firstFlush;
+      expect(queue.update).toEqual([item]);
+      expect(updateMany).toHaveBeenCalledTimes(1);
+
+      await process();
+      expect(updateMany).toHaveBeenLastCalledWith([item]);
+      expect(queue.update).toEqual([]);
+    });
+
+    test("sends a newer edit to a successfully created item as an update", async () => {
+      const item = { ...MOCK_ITEM, quantity: 1 };
+      const edit = { ...item, quantity: 2 };
+      const pendingWrite = holdWrite(createMany);
+      createItem(item);
+      const firstFlush = process();
+      await pendingWrite.started;
+
+      updateItem(edit);
+      pendingWrite.complete(undefined);
+      await firstFlush;
+      expect(queue.create).toEqual([]);
+      expect(queue.update).toEqual([edit]);
+
+      await process();
+      expect(createMany).toHaveBeenCalledExactlyOnceWith([item]);
+      expect(updateMany).toHaveBeenCalledExactlyOnceWith([edit]);
+    });
+
+    test("sends a delete when a create already in flight succeeds", async () => {
+      const pendingWrite = holdWrite(createMany);
+      createItem(MOCK_ITEM);
+      const firstFlush = process();
+      await pendingWrite.started;
+
+      deleteItem(MOCK_ITEM);
+      pendingWrite.complete(undefined);
+      await firstFlush;
+      expect(queue.create).toEqual([]);
+      expect(queue.delete).toEqual([MOCK_ITEM]);
+
+      await process();
+      expect(deleteMany).toHaveBeenCalledExactlyOnceWith([MOCK_ITEM]);
+    });
+
+    test("retries a rejected create with the latest edit", async () => {
+      const edit = { ...MOCK_ITEM, quantity: 2 };
+      const pendingWrite = holdWrite(createMany);
+      createItem(MOCK_ITEM);
+      const firstFlush = process();
+      await pendingWrite.started;
+
+      updateItem(edit);
+      pendingWrite.complete({ error: new Error("create failed") });
+      await firstFlush;
+      expect(queue.create).toEqual([edit]);
+      expect(queue.update).toEqual([]);
+    });
+
+    test("keeps a newer edit to a merged create until it is explicitly discarded", async () => {
+      const edit = { ...MOCK_ITEM, quantity: 2 };
+      const mergedItem = { ...MOCK_ITEM, id: "canonical", quantity: 3 };
+      const pendingWrite = holdWrite(createMany);
+      createItem(MOCK_ITEM);
+      const firstFlush = process();
+      await pendingWrite.started;
+
+      updateItem(edit);
+      pendingWrite.complete({ data: { createdItems: [], updatedItems: [mergedItem], deletedItems: [] } });
+      await firstFlush;
+      expect(hasConflictedWrites.value).toBe(true);
+      expect(queue.update).toEqual([edit]);
+
+      await process();
+      expect(createMany).toHaveBeenCalledTimes(1);
+      expect(updateMany).not.toHaveBeenCalled();
+
+      discardConflictedChanges();
+      expect(queue.update).toEqual([]);
+      expect(hasConflictedWrites.value).toBe(false);
+    });
+
+    test("does not send a newer delete to an item removed by a merge", async () => {
+      const pendingWrite = holdWrite(updateMany);
+      updateItem(MOCK_ITEM);
+      const firstFlush = process();
+      await pendingWrite.started;
+
+      deleteItem(MOCK_ITEM);
+      pendingWrite.complete({ data: { createdItems: [], updatedItems: [], deletedItems: [MOCK_ITEM] } });
+      await firstFlush;
+      expect(hasConflictedWrites.value).toBe(true);
+      expect(queue.delete).toEqual([MOCK_ITEM]);
+
+      await process();
+      expect(deleteMany).not.toHaveBeenCalled();
+    });
+
     test("normally", async () => {
       const updatedItem = { ...MOCK_ITEM, id: "update" };
       const createdItem = { ...MOCK_ITEM, id: "create" };
@@ -88,9 +210,9 @@ describe("useShoppingListItemActions", () => {
       deleteItem(deletedItem);
 
       await process();
-      expect(queue.update).not.include(updatedItem);
-      expect(queue.create).not.include(createdItem);
-      expect(queue.delete).not.include(deletedItem);
+      expect(queue.update).not.toContainEqual(updatedItem);
+      expect(queue.create).not.toContainEqual(createdItem);
+      expect(queue.delete).not.toContainEqual(deletedItem);
     });
     test("clears the queue if there was an error merging", async () => {
       updateMany.mockThrowOnce("💥 Woe, exception be upon ye 💥");
@@ -106,9 +228,9 @@ describe("useShoppingListItemActions", () => {
       deleteItem(deletedItem);
 
       await process();
-      expect(queue.update).not.include(updatedItem);
-      expect(queue.create).not.include(createdItem);
-      expect(queue.delete).not.include(deletedItem);
+      expect(queue.update).not.toContainEqual(updatedItem);
+      expect(queue.create).not.toContainEqual(createdItem);
+      expect(queue.delete).not.toContainEqual(deletedItem);
     });
     test("doesn't clear the queue if offline", async () => {
       isOnline.value = false;
@@ -122,15 +244,19 @@ describe("useShoppingListItemActions", () => {
       deleteItem(deletedItem);
 
       await process();
-      expect(queue.update).include(updatedItem);
-      expect(queue.create).include(createdItem);
-      expect(queue.delete).include(deletedItem);
+      expect(queue.update).toContainEqual(updatedItem);
+      expect(queue.create).toContainEqual(createdItem);
+      expect(queue.delete).toContainEqual(deletedItem);
     });
     describe("when a write fails", () => {
       // same shape as request.safe in api-client.ts: failed writes resolve rather than reject
       function failedResponse(status?: number) {
         const error = Object.assign(new Error("request failed"), status ? { response: { status } } : {});
         return { response: null, error, data: null };
+      }
+
+      function successfulWrite(status: number) {
+        return { response: { status }, error: null, data: { createdItems: [], updatedItems: [], deletedItems: [] } };
       }
 
       test.each([
@@ -164,7 +290,7 @@ describe("useShoppingListItemActions", () => {
       test("only keeps the queue whose write failed", async () => {
         getOne.mockResolvedValue({ data: MOCK_SHOPPING_LIST });
         updateMany.mockResolvedValueOnce(failedResponse(500));
-        createMany.mockResolvedValueOnce({ response: { status: 201 }, error: null, data: {} });
+        createMany.mockResolvedValueOnce(successfulWrite(201));
 
         updateItem({ ...MOCK_ITEM, id: "update" });
         createItem({ ...MOCK_ITEM, id: "create" });
@@ -177,7 +303,7 @@ describe("useShoppingListItemActions", () => {
       test("sends the kept items again on the next run, then clears them", async () => {
         getOne.mockResolvedValue({ data: MOCK_SHOPPING_LIST });
         updateMany.mockResolvedValueOnce(failedResponse(503));
-        updateMany.mockResolvedValueOnce({ response: { status: 200 }, error: null, data: {} });
+        updateMany.mockResolvedValueOnce(successfulWrite(200));
 
         updateItem({ ...MOCK_ITEM, id: "update" });
 
@@ -203,9 +329,8 @@ describe("useShoppingListItemActions", () => {
 
       test("sends the items one by one after a rejection, so one bad item can't hold back the others", async () => {
         getOne.mockResolvedValue({ data: MOCK_SHOPPING_LIST });
-        const ok = { response: { status: 200 }, error: null, data: {} };
         updateMany.mockResolvedValueOnce(failedResponse(422));
-        updateMany.mockResolvedValueOnce(ok);
+        updateMany.mockResolvedValueOnce(successfulWrite(200));
         updateMany.mockResolvedValueOnce(failedResponse(422));
 
         updateItem({ ...MOCK_ITEM, id: "good" });

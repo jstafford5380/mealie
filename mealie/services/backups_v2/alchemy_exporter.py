@@ -1,54 +1,26 @@
 import datetime
 import os
 import uuid
-from logging import Logger
+from collections.abc import Callable
 from os import path
 from textwrap import dedent
 from typing import Any
 
-from alembic import command
+from alembic import command, script
 from alembic.config import Config
 from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel
 from sqlalchemy import Connection, ForeignKey, ForeignKeyConstraint, MetaData, Table, create_engine, insert, text
 from sqlalchemy.engine import base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import Session, sessionmaker
 
 from mealie.db import init_db
+from mealie.db.fixes.fix_group_with_no_name import fix_group_with_no_name
 from mealie.db.fixes.fix_migration_data import fix_migration_data
 from mealie.db.init_db import ALEMBIC_DIR
 from mealie.db.models._model_utils.guid import GUID
+from mealie.repos.all_repositories import get_repositories
 from mealie.services._base_service import BaseService
-
-
-class ForeignKeyDisabler:
-    def __init__(self, connection: Connection, dialect_name: str, *, logger: Logger | None = None):
-        self.connection = connection
-        self.is_postgres = dialect_name == "postgresql"
-        self.logger = logger
-
-        self._initial_fk_state: str | None = None
-
-    def __enter__(self):
-        if self.is_postgres:
-            self._initial_fk_state = self.connection.execute(text("SHOW session_replication_role;")).scalar()
-            self.connection.execute(text("SET session_replication_role = 'replica';"))
-        else:
-            self._initial_fk_state = self.connection.execute(text("PRAGMA foreign_keys;")).scalar()
-            self.connection.execute(text("PRAGMA foreign_keys = OFF;"))
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        try:
-            if self.is_postgres:
-                initial_state = self._initial_fk_state or "origin"
-                self.connection.execute(text(f"SET session_replication_role = '{initial_state}';"))
-            else:
-                initial_state = self._initial_fk_state or "ON"
-                self.connection.execute(text(f"PRAGMA foreign_keys = {initial_state};"))
-        except Exception:
-            if self.logger:
-                self.logger.exception("Error when re-enabling foreign keys")
-            raise
 
 
 class AlchemyExporter(BaseService):
@@ -199,104 +171,148 @@ class AlchemyExporter(BaseService):
 
         return jsonable_encoder(result)
 
-    def restore(self, db_dump: dict) -> None:
-        # setup alembic to run migrations up the version of the backup
-        alembic_data = db_dump["alembic_version"]
-        alembic_version = alembic_data[0]["version_num"]
+    def restore(self, db_dump: dict, install_files: Callable[[], None]) -> None:
+        if not isinstance(db_dump, dict):
+            raise ValueError("Backup database must contain a table map")
+
+        alembic_data = db_dump.get("alembic_version")
+        if (
+            not isinstance(alembic_data, list)
+            or len(alembic_data) != 1
+            or not isinstance(alembic_data[0], dict)
+            or not isinstance(version := alembic_data[0].get("version_num"), str)
+            or not version
+        ):
+            raise ValueError("Backup does not contain a database schema version")
 
         alembic_cfg_path = os.getenv("ALEMBIC_CONFIG_FILE", default=str(ALEMBIC_DIR / "alembic.ini"))
-
         if not path.isfile(alembic_cfg_path):
-            raise Exception("Provided alembic config path doesn't exist")
+            raise ValueError("Provided Alembic config path does not exist")
 
         alembic_cfg = Config(alembic_cfg_path)
-        command.upgrade(alembic_cfg, alembic_version)
+        alembic_cfg.attributes["transactional_restore"] = True
+        directory = script.ScriptDirectory.from_config(alembic_cfg)
+        directory.get_revision(version)
+        needs_upgrade = set(directory.get_heads()) != {version}
+        data = self.convert_types({table: rows for table, rows in db_dump.items() if table != "alembic_version"})
 
-        del db_dump["alembic_version"]
-        """Restores all data from dictionary into the database"""
-        with self.engine.begin() as connection:
-            with ForeignKeyDisabler(connection, self.engine.dialect.name, logger=self.logger):
-                data = self.convert_types(db_dump)
+        try:
+            with self.engine.connect() as connection:
+                sqlite = connection.dialect.name == "sqlite"
+                if sqlite:
+                    # SQLite ignores changes to this pragma inside a database transaction.
+                    connection.exec_driver_sql("PRAGMA foreign_keys = OFF")
+                    connection.commit()
 
-                self.meta.reflect(bind=self.engine)
-                for table_name, rows in data.items():
-                    if not rows:
-                        continue
-                    table = self.meta.tables[table_name]
-                    rows = self.clean_rows(db_dump, table, rows)
+                with connection.begin():
+                    if sqlite:
+                        # sqlite3 legacy transaction mode does not begin a transaction for DDL.
+                        connection.exec_driver_sql("BEGIN IMMEDIATE")
 
-                    connection.execute(table.delete())
-                    connection.execute(insert(table), rows)
-                if self.engine.dialect.name == "postgresql":
-                    # Restore postgres sequence numbers
-                    sequences = [
-                        ("api_extras_id_seq", "api_extras"),
-                        ("group_meal_plans_id_seq", "group_meal_plans"),
-                        ("ingredient_food_extras_id_seq", "ingredient_food_extras"),
-                        ("invite_tokens_id_seq", "invite_tokens"),
-                        ("long_live_tokens_id_seq", "long_live_tokens"),
-                        ("notes_id_seq", "notes"),
-                        ("password_reset_tokens_id_seq", "password_reset_tokens"),
-                        ("recipe_assets_id_seq", "recipe_assets"),
-                        ("recipe_ingredient_ref_link_id_seq", "recipe_ingredient_ref_link"),
-                        ("recipe_nutrition_id_seq", "recipe_nutrition"),
-                        ("recipe_settings_id_seq", "recipe_settings"),
-                        ("recipes_ingredients_id_seq", "recipes_ingredients"),
-                        ("server_tasks_id_seq", "server_tasks"),
-                        ("shopping_list_extras_id_seq", "shopping_list_extras"),
-                        ("shopping_list_item_extras_id_seq", "shopping_list_item_extras"),
-                    ]
+                    self._drop_all(connection)
+                    alembic_cfg.attributes["connection"] = connection
+                    command.upgrade(alembic_cfg, version)
+                    self._import_data(connection, data)
 
-                    sql = "\n".join(
-                        [f"SELECT SETVAL('{seq}', (SELECT MAX(id) FROM {table}));" for seq, table in sequences]
-                    )
-                    connection.execute(text(dedent(sql)))
+                    # Some migrations inspect recipe files on disk.
+                    install_files()
+                    if needs_upgrade:
+                        command.upgrade(alembic_cfg, "head")
 
-        # Dispose this exporter's engine to release connections back to the database.
-        # This prevents connection pool exhaustion when init_db.main() needs connections.
-        self.engine.dispose()
+                    # Some data fixes commit or roll back. Keep those changes in the restore transaction.
+                    with Session(bind=connection, join_transaction_mode="create_savepoint") as session:
+                        if not get_repositories(session, group_id=None, household_id=None).users.get_all():
+                            init_db.init_db(session)
+                        elif needs_upgrade:
+                            fix_migration_data(session)
+                            fix_group_with_no_name(session)
+                        session.commit()
+        finally:
+            self.engine.dispose()
 
-        # Re-init database to finish migrations
-        init_db.main()
+    def _import_data(self, connection: Connection, data: dict) -> None:
+        meta = MetaData()
+        meta.reflect(bind=connection)
+        missing_tables = set(meta.tables) - data.keys() - {"alembic_version"}
+        if missing_tables:
+            raise ValueError(f"Backup is missing database tables: {', '.join(sorted(missing_tables))}")
 
-    def drop_all(self) -> None:
+        is_postgres = connection.dialect.name == "postgresql"
+        if is_postgres:
+            connection.execute(text("SET LOCAL session_replication_role = 'replica'"))
+
+        for table_name, rows in data.items():
+            if rows:
+                table = meta.tables[table_name]
+                valid_rows = self.clean_rows(data, table, rows)
+                connection.execute(table.delete())
+                if valid_rows:
+                    connection.execute(insert(table), valid_rows)
+
+        if is_postgres:
+            connection.execute(text("SET LOCAL session_replication_role = 'origin'"))
+            self._restore_sequences(connection)
+
+    def _restore_sequences(self, connection: Connection) -> None:
+        # Restore postgres sequence numbers
+        sequences = [
+            ("api_extras_id_seq", "api_extras"),
+            ("group_meal_plans_id_seq", "group_meal_plans"),
+            ("ingredient_food_extras_id_seq", "ingredient_food_extras"),
+            ("invite_tokens_id_seq", "invite_tokens"),
+            ("long_live_tokens_id_seq", "long_live_tokens"),
+            ("notes_id_seq", "notes"),
+            ("password_reset_tokens_id_seq", "password_reset_tokens"),
+            ("recipe_assets_id_seq", "recipe_assets"),
+            ("recipe_ingredient_ref_link_id_seq", "recipe_ingredient_ref_link"),
+            ("recipe_nutrition_id_seq", "recipe_nutrition"),
+            ("recipe_settings_id_seq", "recipe_settings"),
+            ("recipes_ingredients_id_seq", "recipes_ingredients"),
+            ("server_tasks_id_seq", "server_tasks"),
+            ("shopping_list_extras_id_seq", "shopping_list_extras"),
+            ("shopping_list_item_extras_id_seq", "shopping_list_item_extras"),
+        ]
+
+        sql = "\n".join([f"SELECT SETVAL('{seq}', (SELECT MAX(id) FROM {table}));" for seq, table in sequences])
+        connection.execute(text(dedent(sql)))
+
+    def _drop_all(self, connection: Connection) -> None:
         """Drops all data from the database"""
         from sqlalchemy import inspect
         from sqlalchemy.schema import DropConstraint, DropTable, MetaData, Table
 
-        with self.engine.begin() as connection:
-            # Inspect the open connection, not the engine: inspecting the engine checks out a
-            # second connection that is only released when the inspector is garbage collected.
-            inspector = inspect(connection)
+        # Inspect the open connection, not the engine: inspecting the engine checks out a
+        # second connection that is only released when the inspector is garbage collected.
+        inspector = inspect(connection)
 
-            # We need to re-create a minimal metadata with only the required things to
-            # successfully emit drop constraints and tables commands for postgres (based
-            # on the actual schema of the running instance)
-            meta = MetaData()
-            tables = []
-            all_fkeys = []
-            for table_name in inspector.get_table_names():
-                fkeys = []
+        # We need to re-create a minimal metadata with only the required things to
+        # successfully emit drop constraints and tables commands for postgres (based
+        # on the actual schema of the running instance)
+        meta = MetaData()
+        tables = []
+        all_fkeys = []
+        for table_name in inspector.get_table_names():
+            fkeys = []
 
-                for fkey in inspector.get_foreign_keys(table_name):
-                    if not fkey["name"]:
-                        continue
+            for fkey in inspector.get_foreign_keys(table_name):
+                if not fkey["name"]:
+                    continue
 
-                    fkeys.append(ForeignKeyConstraint((), (), name=fkey["name"]))
+                fkeys.append(ForeignKeyConstraint((), (), name=fkey["name"]))
 
-                tables.append(Table(table_name, meta, *fkeys))
-                all_fkeys.extend(fkeys)
+            tables.append(Table(table_name, meta, *fkeys))
+            all_fkeys.extend(fkeys)
 
-            if self.engine.dialect.name == "postgresql":
-                # Only pg needs foreign key dropping
-                for fkey in all_fkeys:
-                    connection.execute(DropConstraint(fkey))
+        if self.engine.dialect.name == "postgresql":
+            # Only pg needs foreign key dropping
+            for fkey in all_fkeys:
+                connection.execute(DropConstraint(fkey))
 
-                for table in tables:
-                    connection.execute(DropTable(table))
-                # I have no idea how to drop all custom types with sqlalchemy
-                # Since we only have one, this will have to do for now
-                connection.execute(text("DROP TYPE authmethod"))
-            else:
-                for table in tables:
-                    connection.execute(DropTable(table))
+            for table in tables:
+                connection.execute(DropTable(table))
+            # I have no idea how to drop all custom types with sqlalchemy
+            # Since we only have one, this will have to do for now
+            connection.execute(text("DROP TYPE IF EXISTS authmethod"))
+        else:
+            for table in tables:
+                connection.execute(DropTable(table))

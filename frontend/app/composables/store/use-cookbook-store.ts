@@ -19,7 +19,7 @@ export function resetCookbookStore() {
 
 export const useCookbookStore = function (i18n?: Composer) {
   const api = useUserApi(i18n);
-  const store = useStore<CookBookOut>("cookbook", cookbooks, loading, initialized, api.cookbooks);
+  const store = useStore("cookbook", cookbooks, loading, initialized, api.cookbooks);
 
   const updateAll = async function (updateData: CookBookUpdate[]) {
     loading.value = true;

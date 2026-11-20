@@ -25,12 +25,17 @@ authMethod = sa.Enum("MEALIE", "LDAP", name="authmethod")
 
 
 def upgrade():
+    auth_method_type = authMethod
     if is_postgres():
-        authMethod.create(op.get_bind())
+        # PostgreSQL 15 cannot use values added by ALTER TYPE until the transaction commits.
+        # Restore imports rows in the same transaction as the migrations.
+        if op.get_context().config.attributes.get("transactional_restore"):
+            auth_method_type = sa.Enum("MEALIE", "LDAP", "OIDC", "REVERSE_PROXY", name="authmethod")
+        auth_method_type.create(op.get_bind())
 
     op.add_column(
         "users",
-        sa.Column("auth_method", authMethod, nullable=False, server_default="MEALIE"),
+        sa.Column("auth_method", auth_method_type, nullable=False, server_default="MEALIE"),
     )
     op.execute("UPDATE users SET auth_method = 'LDAP' WHERE password = 'LDAP'")
 

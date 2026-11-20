@@ -1,8 +1,12 @@
 import random
+from concurrent.futures import ThreadPoolExecutor
+from threading import Barrier
 
 import pytest
 from fastapi.testclient import TestClient
 
+from mealie.db.db_setup import session_context
+from mealie.repos.all_repositories import get_repositories
 from mealie.schema.household.group_shopping_list import (
     ShoppingListAddRecipeParamsBulk,
     ShoppingListItemOut,
@@ -12,6 +16,7 @@ from mealie.schema.household.group_shopping_list import (
 )
 from mealie.schema.recipe.recipe import RecipeDraft, RecipeOut
 from mealie.schema.recipe.recipe_ingredient import IngredientFoodSave, RecipeIngredient
+from mealie.services.household_services.shopping_lists import ShoppingListService
 from tests import utils
 from tests.utils import api_routes
 from tests.utils.assertion_helpers import assert_deserialize
@@ -172,6 +177,84 @@ def test_shopping_lists_add_recipe(
     assert len(refs) == 1
     assert refs[0]["recipeId"] == str(recipe.id)
     assert refs[0]["recipeQuantity"] == 2
+
+
+@pytest.mark.parametrize("remove", [False, True])
+def test_shopping_list_recipe_changes_roll_back_after_reference_failure(
+    api_client: TestClient,
+    unique_user: TestUser,
+    shopping_list: ShoppingListOut,
+    recipe_ingredient_only: RecipeOut,
+    monkeypatch: pytest.MonkeyPatch,
+    remove: bool,
+) -> None:
+    recipe_id = recipe_ingredient_only.id
+    list_path = api_routes.households_shopping_lists_item_id(shopping_list.id)
+    service = ShoppingListService(unique_user.repos)
+    recipe = ShoppingListAddRecipeParamsBulk(recipe_id=recipe_id, recipe_increment_quantity=2)
+
+    if remove:
+        service.add_recipe_ingredients_to_list(shopping_list.id, [recipe])
+
+    before = utils.assert_deserialize(api_client.get(list_path, headers=unique_user.token), 200)
+
+    def fail_after_item_write(*args, **kwargs):
+        items = service.shopping_lists.get_one(shopping_list.id).list_items
+        assert [item.quantity for item in items] != [item["quantity"] for item in before["listItems"]]
+        raise RuntimeError("recipe reference write failed")
+
+    target_repo = service.list_refs if remove else service.shopping_lists
+    monkeypatch.setattr(target_repo, "update", fail_after_item_write)
+
+    with pytest.raises(RuntimeError, match="recipe reference write failed"):
+        if remove:
+            service.remove_recipe_ingredients_from_list(shopping_list.id, recipe_id)
+        else:
+            service.add_recipe_ingredients_to_list(shopping_list.id, [recipe])
+
+    after = utils.assert_deserialize(api_client.get(list_path, headers=unique_user.token), 200)
+    assert after["listItems"] == before["listItems"]
+    assert after["recipeReferences"] == before["recipeReferences"]
+
+
+@pytest.mark.parametrize("remove", [False, True])
+def test_concurrent_shopping_list_recipe_changes_keep_quantities_in_sync(
+    api_client: TestClient,
+    unique_user: TestUser,
+    shopping_list: ShoppingListOut,
+    recipe_ingredient_only: RecipeOut,
+    remove: bool,
+) -> None:
+    recipe = recipe_ingredient_only
+    initial_quantity = 3 if remove else 1
+    initial_addition = ShoppingListAddRecipeParamsBulk(recipe_id=recipe.id, recipe_increment_quantity=initial_quantity)
+    ShoppingListService(unique_user.repos).add_recipe_ingredients_to_list(shopping_list.id, [initial_addition])
+
+    start = Barrier(2)
+
+    def change_recipe() -> None:
+        with session_context() as session:
+            repos = get_repositories(session, group_id=unique_user.group_id, household_id=unique_user.household_id)
+            service = ShoppingListService(repos)
+            start.wait(timeout=10)
+            if remove:
+                service.remove_recipe_ingredients_from_list(shopping_list.id, recipe.id)
+            else:
+                addition = ShoppingListAddRecipeParamsBulk(recipe_id=recipe.id, recipe_increment_quantity=1)
+                service.add_recipe_ingredients_to_list(shopping_list.id, [addition])
+
+    with ThreadPoolExecutor(max_workers=2) as workers:
+        changes = [workers.submit(change_recipe) for _ in range(2)]
+        for change in changes:
+            change.result()
+
+    response = api_client.get(api_routes.households_shopping_lists_item_id(shopping_list.id), headers=unique_user.token)
+    saved_list = ShoppingListOut.model_validate(utils.assert_deserialize(response, 200))
+    final_quantity = 1 if remove else 3
+    assert [ref.recipe_quantity for ref in saved_list.recipe_references] == [final_quantity]
+    assert {item.note: item.quantity for item in saved_list.list_items} == {
+        ingredient.note: (ingredient.quantity or 0) * final_quantity for ingredient in recipe.recipe_ingredient
+    }
 
 
 def test_shopping_lists_add_recipes(

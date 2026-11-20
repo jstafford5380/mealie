@@ -7,6 +7,7 @@ import type { RecipeOut } from "~/lib/api/types/recipe";
 
 const groupRecipeActions = ref<GroupRecipeActionOut[] | null>(null);
 const loading = ref(false);
+const initialized = ref(false);
 
 const shareLinkFieldPattern = /\$\{share-link-expires-seconds-(\d+)\}/g;
 
@@ -25,6 +26,7 @@ export function getShareLinkFields(url: string): { field: string; seconds: numbe
 export function resetGroupRecipeActions() {
   groupRecipeActions.value = null;
   loading.value = false;
+  initialized.value = false;
 }
 
 export function useGroupRecipeActionData() {
@@ -61,6 +63,7 @@ export const useGroupRecipeActions = function (
     loading.value = true;
     const { data } = await api.groupRecipeActions.getAll(1, -1, { orderBy, orderDirection });
     groupRecipeActions.value = data?.items || null;
+    initialized.value = groupRecipeActions.value !== null;
     loading.value = false;
   }
 
@@ -141,17 +144,18 @@ export const useGroupRecipeActions = function (
     }
   };
 
-  if (!groupRecipeActions.value && !loading.value) {
+  if (!initialized.value && !loading.value) {
     refreshGroupRecipeActions();
   };
 
   const actions = {
-    ...useStoreActions<GroupRecipeActionOut>(
+    ...useStoreActions(
       "group-recipe-actions",
       api.groupRecipeActions,
       groupRecipeActions,
       loading,
-      { orderBy: orderBy },
+      initialized,
+      { orderBy, orderDirection },
     ),
   };
 

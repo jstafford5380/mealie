@@ -164,6 +164,23 @@
       :description="$t('shopping-list.you-are-offline-description')"
     />
 
+    <div
+      v-if="hasConflictedWrites"
+      role="alert"
+      class="mb-4 flex flex-wrap items-center gap-3 rounded-card border border-destructive/30 bg-card p-3"
+    >
+      <p class="m-0 flex-1 text-sm">
+        {{ $t('shopping-list.merge-conflict') }}
+      </p>
+      <Button
+        variant="outline"
+        :disabled="isOffline"
+        @click="discardConflictedChanges"
+      >
+        {{ $t('shopping-list.discard-conflicting-changes') }}
+      </Button>
+    </div>
+
     <section
       v-if="!edit"
       class="flex flex-col gap-5"
@@ -483,6 +500,8 @@ const {
   copyListItems,
   toggleReorderLabelsDialog,
   isOffline,
+  hasConflictedWrites,
+  discardConflictedChanges,
   createListItemData,
   createListItem,
   itemsByLabel,

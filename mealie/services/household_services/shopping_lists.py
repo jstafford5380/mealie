@@ -59,6 +59,7 @@ class ShoppingListService:
             [
                 item1.checked,
                 item2.checked,
+                item1.shopping_list_id != item2.shopping_list_id,
                 item1.food_id != item2.food_id,
             ]
         ):
@@ -541,37 +542,40 @@ class ShoppingListService:
         - Impacted Shopping List Items
         """
 
-        self._require_lists_in_scope([list_id])
+        with self.shopping_lists.recipe_change(list_id):
+            self._require_lists_in_scope([list_id])
 
-        # Recipes are household-scoped, but any recipe in the group is a valid source.
-        group_recipes_repo = get_repositories(
-            self.repos.session, group_id=self.repos.group_id, household_id=None
-        ).recipes
-        for recipe_id in {recipe.recipe_id for recipe in recipe_items}:
-            if group_recipes_repo.get_one(recipe_id, "id") is None:
-                raise not_found()
+            # Recipes are household-scoped, but any recipe in the group is a valid source.
+            group_recipes_repo = get_repositories(
+                self.repos.session, group_id=self.repos.group_id, household_id=None
+            ).recipes
+            for recipe_id in {recipe.recipe_id for recipe in recipe_items}:
+                if group_recipes_repo.get_one(recipe_id, "id") is None:
+                    raise not_found()
 
-        items_to_create = [
-            item
-            for recipe in recipe_items
-            for item in self.get_shopping_list_items_from_recipe(
-                list_id, recipe.recipe_id, recipe.recipe_increment_quantity, recipe.recipe_ingredients
-            )
-        ]
-        item_changes = self.bulk_create_items(items_to_create)
-        updated_list = cast(ShoppingListOut, self.shopping_lists.get_one(list_id))
+            items_to_create = [
+                item
+                for recipe in recipe_items
+                for item in self.get_shopping_list_items_from_recipe(
+                    list_id, recipe.recipe_id, recipe.recipe_increment_quantity, recipe.recipe_ingredients
+                )
+            ]
+            item_changes = self.bulk_create_items(items_to_create)
+            updated_list = cast(ShoppingListOut, self.shopping_lists.get_one(list_id))
 
-        # update list-level recipe references
-        list_data = updated_list.model_dump()
-        list_refs: list[dict] = list_data["recipe_references"]
-        for recipe in recipe_items:
-            existing_ref = next((ref for ref in list_refs if ref["recipe_id"] == recipe.recipe_id), None)
-            if existing_ref:
-                existing_ref["recipe_quantity"] += recipe.recipe_increment_quantity
-            else:
-                list_refs.append({"recipe_id": recipe.recipe_id, "recipe_quantity": recipe.recipe_increment_quantity})
+            # update list-level recipe references
+            list_data = updated_list.model_dump()
+            list_refs: list[dict] = list_data["recipe_references"]
+            for recipe in recipe_items:
+                existing_ref = next((ref for ref in list_refs if ref["recipe_id"] == recipe.recipe_id), None)
+                if existing_ref:
+                    existing_ref["recipe_quantity"] += recipe.recipe_increment_quantity
+                else:
+                    list_refs.append(
+                        {"recipe_id": recipe.recipe_id, "recipe_quantity": recipe.recipe_increment_quantity}
+                    )
 
-        updated_list = self.shopping_lists.update(updated_list.id, list_data)
+            updated_list = self.shopping_lists.update(updated_list.id, list_data)
         return updated_list, item_changes
 
     def remove_recipe_ingredients_from_list(
@@ -585,6 +589,12 @@ class ShoppingListService:
         - Impacted Shopping List Items
         """
 
+        with self.shopping_lists.recipe_change(list_id):
+            return self._remove_recipe_ingredients_from_list(list_id, recipe_id, recipe_decrement)
+
+    def _remove_recipe_ingredients_from_list(
+        self, list_id: UUID4, recipe_id: UUID4, recipe_decrement: float
+    ) -> tuple[ShoppingListOut, ShoppingListItemsCollectionOut]:
         shopping_list = self.shopping_lists.get_one(list_id)
         if shopping_list is None:
             raise UnexpectedNone("Shopping list not found, cannot remove recipe ingredients")
@@ -646,8 +656,8 @@ class ShoppingListService:
         )
 
         # Decrement the list recipe reference count
-        updated_list = self.shopping_lists.get_one(shopping_list.id)
-        for recipe_ref in updated_list.recipe_references:  # type: ignore
+        updated_list = cast(ShoppingListOut, self.shopping_lists.get_one(shopping_list.id))
+        for recipe_ref in updated_list.recipe_references:
             if recipe_ref.recipe_id != recipe_id or recipe_ref.recipe_quantity is None:
                 continue
 
@@ -659,9 +669,10 @@ class ShoppingListService:
             else:
                 self.list_refs.update(recipe_ref.id, recipe_ref)
 
+            updated_list = cast(ShoppingListOut, self.shopping_lists.get_one(shopping_list.id))
             break
 
-        return self.shopping_lists.get_one(shopping_list.id), items  # type: ignore
+        return updated_list, items
 
     def create_one_list(self, data: ShoppingListCreate, owner_id: UUID4):
         create_data = data.cast(ShoppingListSave, group_id=self.repos.group_id, user_id=owner_id)

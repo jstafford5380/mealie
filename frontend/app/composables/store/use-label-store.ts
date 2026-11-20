@@ -24,5 +24,5 @@ export const useLabelData = function () {
 
 export const useLabelStore = function (i18n?: Composer) {
   const api = useUserApi(i18n);
-  return useStore<MultiPurposeLabelOut>("label", store, loading, initialized, api.multiPurposeLabels);
+  return useStore("label", store, loading, initialized, api.multiPurposeLabels);
 };

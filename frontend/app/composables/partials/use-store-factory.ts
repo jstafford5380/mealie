@@ -1,6 +1,6 @@
-import { useReadOnlyActions, useStoreActions } from "./use-actions-factory";
+import { type StoreApi, useReadOnlyActions, useStoreActions } from "./use-actions-factory";
 import type { BoundT } from "./types";
-import type { BaseCRUDAPI, BaseCRUDAPIReadOnly } from "~/lib/api/base/base-clients";
+import type { BaseCRUDAPIReadOnly } from "~/lib/api/base/base-clients";
 import type { QueryValue } from "~/lib/api/base/route";
 
 export const useData = function <T extends BoundT>(defaultObject: T) {
@@ -40,12 +40,12 @@ export const useReadOnlyStore = function <T extends BoundT>(
   return { store, actions };
 };
 
-export const useStore = function <T extends BoundT>(
+export const useStore = function <T extends BoundT, Create, Update>(
   storeKey: string,
   store: Ref<T[]>,
   loading: Ref<boolean>,
   initialized: Ref<boolean>,
-  api: BaseCRUDAPI<unknown, T, unknown>,
+  api: StoreApi<Create, T, Update>,
   params = {} as Record<string, QueryValue>,
 ) {
   const storeActions = useStoreActions(`${storeKey}-store`, api, store, loading, initialized);

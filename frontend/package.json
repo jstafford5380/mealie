@@ -11,6 +11,7 @@
     "lint:security": "node eslint-rules/check-security-rules.mjs",
     "lint": "pnpm lint:security && pnpm lint:js",
     "lint:log": "pnpm lint:js --debug",
+    "typecheck:stores": "node scripts/typecheck-stores.mjs",
     "test": "vitest",
     "test:ci": "vitest --watch=false",
     "test:coverage": "vitest run --coverage",
@@ -72,7 +73,8 @@
     "typescript": "^5.3",
     "unplugin-auto-import": "^21.0.0",
     "vite-plugin-commonjs": "^0.10.4",
-    "vitest": "^4.0.0"
+    "vitest": "^4.0.0",
+    "vue-tsc": "^3.3.14"
   },
   "devEngines": {
     "packageManager": {

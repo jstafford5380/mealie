@@ -5,6 +5,7 @@ import type {
   ShoppingListCreate,
   ShoppingListItemCreate,
   ShoppingListItemOut,
+  ShoppingListItemsCollectionOut,
   ShoppingListItemUpdateBulk,
   ShoppingListMultiPurposeLabelUpdate,
   ShoppingListOut,
@@ -51,11 +52,11 @@ export class ShoppingListItemsApi extends BaseCRUDAPI<
   itemRoute = routes.shoppingListItemsId;
 
   async createMany(items: ShoppingListItemCreate[]) {
-    return await this.requests.post(routes.shoppingListItemsCreateBulk, items);
+    return await this.requests.post<ShoppingListItemsCollectionOut>(routes.shoppingListItemsCreateBulk, items);
   }
 
   async updateMany(items: ShoppingListItemOut[]) {
-    return await this.requests.put(routes.shoppingListItems, items);
+    return await this.requests.put<ShoppingListItemsCollectionOut>(routes.shoppingListItems, items);
   }
 
   async deleteMany(items: ShoppingListItemOut[]) {

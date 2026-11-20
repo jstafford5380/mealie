@@ -74,6 +74,11 @@ export function useShoppingListPage(listId: string) {
 
   const refresh = () => baseRefresh(updateListItemOrder);
 
+  async function discardConflictedChanges() {
+    shoppingListItemActions.discardConflictedChanges();
+    await refresh();
+  }
+
   // Initialize shopping list labels
   const labels = useShoppingListLabels(shoppingList);
 
@@ -189,6 +194,8 @@ export function useShoppingListPage(listId: string) {
     itemsByLabel,
     isOffline,
     hasFailedWrites: shoppingListItemActions.hasFailedWrites,
+    hasConflictedWrites: shoppingListItemActions.hasConflictedWrites,
+    discardConflictedChanges,
 
     // Search
     ...searchManager,

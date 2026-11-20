@@ -37,7 +37,7 @@ export const useFoodData = function () {
 
 export const useFoodStore = function (i18n?: Composer) {
   const api = useUserApi(i18n);
-  return useStore<IngredientFoodOut>("food", store, loading, initialized, api.foods);
+  return useStore("food", store, loading, initialized, api.foods);
 };
 
 export const usePublicFoodStore = function (groupSlug: string, i18n?: Composer) {

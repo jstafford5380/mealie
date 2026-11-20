@@ -2,8 +2,11 @@ from collections.abc import Generator
 
 import pytest
 from fastapi.testclient import TestClient
+from sqlalchemy import event
+from sqlalchemy.orm import Session
 
-from mealie.schema.recipe.recipe_ingredient import IngredientFoodCreate
+from mealie.db.models.recipe.ingredient import IngredientFoodSubstitutionModel
+from mealie.schema.recipe.recipe_ingredient import IngredientFoodCreate, IngredientFoodSave
 from tests import utils
 from tests.utils import api_routes
 from tests.utils.factories import random_string
@@ -64,6 +67,90 @@ def test_update_food(api_client: TestClient, food: dict, unique_user: TestUser):
     assert as_json["id"] == food["id"]
     assert as_json["name"] == update_data["name"]
     assert as_json["description"] == update_data["description"]
+
+
+def test_update_food_saves_paired_substitutions(api_client: TestClient, food: dict, unique_user: TestUser):
+    headers = unique_user.token
+    other = utils.assert_deserialize(
+        api_client.post(api_routes.foods, json={"name": random_string()}, headers=headers), 201
+    )
+    food_url = api_routes.foods_item_id(food["id"])
+    other_url = api_routes.foods_item_id(other["id"])
+
+    payload = {
+        "name": food["name"],
+        "substitutions": [{"substituteFoodId": other["id"]}],
+        "reverseSubstitutionsAdd": [other["id"]],
+    }
+    for _ in range(2):
+        updated = utils.assert_deserialize(api_client.put(food_url, json=payload, headers=headers), 200)
+        assert [row["substituteFoodId"] for row in updated["substitutions"]] == [other["id"]]
+    reverse = utils.assert_deserialize(api_client.get(other_url, headers=headers), 200)
+    assert [row["substituteFoodId"] for row in reverse["substitutions"]] == [food["id"]]
+
+    payload = {"name": food["name"], "reverseSubstitutionsRemove": [other["id"]]}
+    updated = utils.assert_deserialize(api_client.put(food_url, json=payload, headers=headers), 200)
+    reverse = utils.assert_deserialize(api_client.get(other_url, headers=headers), 200)
+    assert updated["substitutions"] == reverse["substitutions"] == []
+
+
+def test_update_food_rolls_back_when_reverse_substitution_fails(
+    api_client: TestClient, food: dict, unique_user: TestUser
+):
+    headers = unique_user.token
+    other = utils.assert_deserialize(
+        api_client.post(api_routes.foods, json={"name": random_string()}, headers=headers), 201
+    )
+    food_url = api_routes.foods_item_id(food["id"])
+    other_url = api_routes.foods_item_id(other["id"])
+
+    def fail_reverse_write(session: Session, _context) -> None:
+        if any(
+            isinstance(row, IngredientFoodSubstitutionModel) and str(row.substitute_food_id) == food["id"]
+            for row in session.new
+        ):
+            raise RuntimeError("Reverse substitution failed")
+
+    event.listen(Session, "after_flush", fail_reverse_write)
+    try:
+        response = api_client.put(
+            food_url,
+            json={
+                "name": random_string(),
+                "substitutions": [{"substituteFoodId": other["id"]}],
+                "reverseSubstitutionsAdd": [other["id"]],
+            },
+            headers=headers,
+        )
+        assert response.status_code == 400, response.text
+    finally:
+        event.remove(Session, "after_flush", fail_reverse_write)
+
+    original = utils.assert_deserialize(api_client.get(food_url, headers=headers), 200)
+    reverse = utils.assert_deserialize(api_client.get(other_url, headers=headers), 200)
+    assert original["name"] == food["name"]
+    assert original["substitutions"] == reverse["substitutions"] == []
+
+
+def test_update_food_rejects_reverse_substitution_in_another_group(
+    api_client: TestClient, food: dict, unique_user: TestUser, g2_user: TestUser
+):
+    other = g2_user.repos.ingredient_foods.create(IngredientFoodSave(name=random_string(), group_id=g2_user.group_id))
+    food_url = api_routes.foods_item_id(food["id"])
+
+    response = api_client.put(
+        food_url,
+        json={
+            "name": random_string(),
+            "substitutions": [{"substituteFoodId": str(other.id)}],
+            "reverseSubstitutionsAdd": [str(other.id)],
+        },
+        headers=unique_user.token,
+    )
+    assert response.status_code == 404, response.text
+    original = utils.assert_deserialize(api_client.get(food_url, headers=unique_user.token), 200)
+    assert original["name"] == food["name"]
+    assert original["substitutions"] == []
 
 
 def test_delete_food(api_client: TestClient, food: dict, unique_user: TestUser):

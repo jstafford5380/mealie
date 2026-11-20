@@ -107,6 +107,7 @@
       v-if="editForm.data"
       v-model="substitutionManagerDialog"
       :data="editForm.data"
+      :pending-reverse-changes="pendingReverseSubstitutions?.foodId === editForm.data.id ? pendingReverseSubstitutions : null"
       @submit="updateFoodSubstitutions"
       @cancel="substitutionManagerDialog = false"
     />
@@ -148,6 +149,7 @@
     </BaseDialog>
 
     <GroupDataPage
+      v-model:edit-dialog="editDialog"
       :icon="$globals.icons.foods"
       :title="$t('data-pages.foods.food-data')"
       :create-title="$t('data-pages.foods.create-food')"
@@ -161,6 +163,8 @@
       ]"
       :create-form="createForm"
       :edit-form="editForm"
+      :edit-saving="editSaving"
+      keep-edit-open
       :on-delete-dialog-open="onDeleteDialogOpen"
       @create-one="handleCreate"
       @edit-one="handleEdit"
@@ -445,7 +449,6 @@ async function handleCreate() {
     createForm.data.householdsWithIngredientFood = [userHousehold.value];
   }
 
-  // @ts-expect-error the createOne function erroneously expects an id because it uses the IngredientFood type
   await foodStore.actions.createOne(createForm.data);
   createForm.data = {
     name: "",
@@ -463,28 +466,44 @@ const editForm = reactive({
   },
   data: {} as IngredientFoodWithOnHand,
 });
+const editDialog = ref(false);
+const editSaving = ref(false);
 
 async function handleEdit() {
-  if (!editForm.data) {
+  const draft = editForm.data;
+  if (!draft.id || editSaving.value) {
     return;
   }
-  if (!editForm.data.householdsWithIngredientFood) {
-    editForm.data.householdsWithIngredientFood = [];
+  const households = new Set(draft.householdsWithIngredientFood ?? []);
+  if (draft.onHand) {
+    households.add(userHousehold.value);
+  }
+  else {
+    households.delete(userHousehold.value);
   }
 
-  const foodId = editForm.data.id;
-
-  if (editForm.data.onHand && !editForm.data.householdsWithIngredientFood.includes(userHousehold.value)) {
-    editForm.data.householdsWithIngredientFood.push(userHousehold.value);
+  const pending = pendingReverseSubstitutions.value;
+  const reverse = pending?.foodId === draft.id ? pending : null;
+  editSaving.value = true;
+  try {
+    const { data } = await userApi.foods.updateOne(draft.id, {
+      ...draft,
+      householdsWithIngredientFood: [...households],
+      reverseSubstitutionsAdd: reverse?.add,
+      reverseSubstitutionsRemove: reverse?.remove,
+    });
+    if (!data) {
+      return;
+    }
+    if (editForm.data === draft) {
+      editDialog.value = false;
+      editForm.data = {} as IngredientFoodWithOnHand;
+    }
+    await foodStore.actions.refresh();
   }
-  else if (!editForm.data.onHand && editForm.data.householdsWithIngredientFood.includes(userHousehold.value)) {
-    const idx = editForm.data.householdsWithIngredientFood.indexOf(userHousehold.value);
-    if (idx !== -1) editForm.data.householdsWithIngredientFood.splice(idx, 1);
+  finally {
+    editSaving.value = false;
   }
-
-  await foodStore.actions.updateOne(editForm.data);
-  editForm.data = {} as IngredientFoodWithOnHand;
-  await applyReverseSubstitutions(foodId);
 }
 
 // ============================================================
@@ -519,10 +538,12 @@ function updateFoodAlias(newAliases: IngredientFoodAlias[]) {
 
 const substitutionManagerDialog = ref(false);
 
-// reverse substitutions live on other foods, so they can't ride along with the food being edited.
-// they're held until the edit is confirmed, and tagged with the food they were built for so
-// a cancelled edit can't leak them onto the next food the user opens
 const pendingReverseSubstitutions = ref<({ foodId: string } & ReverseSubstitutionChanges) | null>(null);
+watch(editDialog, (open) => {
+  if (!open) {
+    pendingReverseSubstitutions.value = null;
+  }
+});
 
 function updateFoodSubstitutions(
   newSubstitutions: IngredientFoodSubstitution[],
@@ -536,41 +557,6 @@ function updateFoodSubstitutions(
     ? { foodId: editForm.data.id, ...reverseChanges }
     : null;
   substitutionManagerDialog.value = false;
-}
-
-async function applyReverseSubstitutions(foodId: string) {
-  const pending = pendingReverseSubstitutions.value;
-  pendingReverseSubstitutions.value = null;
-  if (!pending || !foodId || pending.foodId !== foodId) {
-    return;
-  }
-
-  let updated = false;
-  for (const reverseFoodId of [...pending.add, ...pending.remove]) {
-    const reverseFood = foodStore.store.value.find(food => food.id === reverseFoodId);
-    if (!reverseFood) {
-      continue;
-    }
-
-    // rebuilt from what's on the other food right now, so a stale dialog can't resurrect
-    // a row someone else removed in the meantime
-    const others = (reverseFood.substitutions || []).filter(sub => sub.substituteFoodId !== foodId);
-    const substitutions = pending.add.includes(reverseFoodId)
-      ? [...others, { substituteFoodId: foodId }]
-      : others;
-
-    if (substitutions.length === (reverseFood.substitutions || []).length) {
-      continue;
-    }
-
-    const payload = { ...reverseFood, substitutions };
-    await userApi.foods.updateOne(reverseFoodId, payload);
-    updated = true;
-  }
-
-  if (updated) {
-    await foodStore.actions.refresh();
-  }
 }
 
 // ============================================================

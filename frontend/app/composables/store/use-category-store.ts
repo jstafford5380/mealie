@@ -29,7 +29,7 @@ export const useCategoryData = function () {
 
 export const useCategoryStore = function (i18n?: Composer) {
   const api = useUserApi(i18n);
-  return useStore<CategoryOut>("category", store, loading, initialized, api.categories);
+  return useStore("category", store, loading, initialized, api.categories);
 };
 
 export const usePublicCategoryStore = function (groupSlug: string, i18n?: Composer) {

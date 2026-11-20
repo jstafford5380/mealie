@@ -83,7 +83,6 @@ export function useShoppingListCrud(
     loadingCounter.value += 1;
     deleteListItems(checked);
     loadingCounter.value -= 1;
-    refresh();
   }
 
   function saveListItem(item: ShoppingListItemOut) {

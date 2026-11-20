@@ -203,6 +203,21 @@ export interface IngredientFoodSave {
   householdsWithIngredientFood?: string[];
   groupId: string;
 }
+export interface IngredientFoodUpdate {
+  id?: string | null;
+  name: string;
+  pluralName?: string | null;
+  description?: string;
+  extras?: {
+    [k: string]: unknown;
+  } | null;
+  labelId?: string | null;
+  aliases?: IngredientFoodAliasCreate[];
+  substitutions?: IngredientFoodSubstitutionCreate[];
+  householdsWithIngredientFood?: string[];
+  reverseSubstitutionsAdd?: string[];
+  reverseSubstitutionsRemove?: string[];
+}
 export interface IngredientReferences {
   referenceId?: string | null;
 }

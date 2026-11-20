@@ -1,5 +1,5 @@
 import { BaseCRUDAPI } from "../base/base-clients";
-import type { IngredientFoodCreate, IngredientFoodOut } from "~/lib/api/types/recipe";
+import type { IngredientFoodCreate, IngredientFoodOut, IngredientFoodUpdate } from "~/lib/api/types/recipe";
 
 const prefix = "/api";
 
@@ -10,7 +10,7 @@ const routes = {
   merge: `${prefix}/foods/merge`,
 };
 
-export class FoodAPI extends BaseCRUDAPI<IngredientFoodCreate, IngredientFoodOut> {
+export class FoodAPI extends BaseCRUDAPI<IngredientFoodCreate, IngredientFoodOut, IngredientFoodUpdate> {
   baseRoute: string = routes.food;
   itemRoute = routes.foodsFood;
 

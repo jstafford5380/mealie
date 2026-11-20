@@ -1638,7 +1638,10 @@ def test_recipe_reference_deleted(api_client: TestClient, unique_user: TestUser)
     assert recipe_a_data["recipeIngredient"][0]["referencedRecipe"] is None
 
 
-def test_sub_recipe_resolves_within_same_group(api_client: TestClient, unique_user: TestUser, g2_user: TestUser):
+@pytest.mark.parametrize("method", ["PUT", "PATCH"])
+def test_sub_recipe_resolves_within_same_group(
+    api_client: TestClient, unique_user: TestUser, g2_user: TestUser, method: str
+):
     """
     Test that when two groups have recipes with the same slug, updating a recipe
     with a sub-recipe reference by slug correctly resolves to the current group's recipe.
@@ -1695,7 +1698,8 @@ def test_sub_recipe_resolves_within_same_group(api_client: TestClient, unique_us
     ]
 
     # This should succeed and resolve to group 1's sub-recipe
-    response = api_client.put(recipe_url, json=recipe_data, headers=unique_user.token)
+    payload = recipe_data if method == "PUT" else {"recipeIngredient": recipe_data["recipeIngredient"]}
+    response = api_client.request(method, recipe_url, json=payload, headers=unique_user.token)
     assert response.status_code == 200
 
     # Verify the referenced recipe is the one from group 1, not group 2
@@ -2087,6 +2091,45 @@ def test_patch_recipe_instructions_without_ingredient_references(api_client: Tes
     recipe = response.json()
     assert [step["text"] for step in recipe["recipeInstructions"]] == ["Step one.", "Step two."]
     assert all(step["ingredientReferences"] == [] for step in recipe["recipeInstructions"])
+
+
+def test_patch_recipe_clears_only_removed_instruction_references(api_client: TestClient, unique_user: TestUser):
+    name = random_string()
+    slug = api_client.post(api_routes.recipes, json={"name": name}, headers=unique_user.token).json()
+    url = api_routes.recipes_slug(slug)
+    ingredient_id, note_id = str(uuid4()), str(uuid4())
+    ingredient_refs = [{"referenceId": ingredient_id}]
+    note_refs = [{"referenceId": note_id}]
+    response = api_client.patch(
+        url,
+        json={
+            "recipeIngredient": [{"referenceId": ingredient_id, "note": "Salt"}],
+            "notes": [{"referenceId": note_id, "title": "Tip", "text": "Season to taste."}],
+            "recipeInstructions": [
+                {"text": "Season.", "ingredientReferences": ingredient_refs, "noteReferences": note_refs}
+            ],
+        },
+        headers=unique_user.token,
+    )
+    assert response.status_code == 200, response.text
+    step = response.json()["recipeInstructions"][0]
+    assert step["ingredientReferences"] == ingredient_refs
+    assert step["noteReferences"] == note_refs
+
+    response = api_client.patch(url, json={"recipeIngredient": []}, headers=unique_user.token)
+    assert response.status_code == 200, response.text
+    step = response.json()["recipeInstructions"][0]
+    assert step["ingredientReferences"] == []
+    assert step["noteReferences"] == note_refs
+
+    response = api_client.patch(url, json={"notes": []}, headers=unique_user.token)
+    assert response.status_code == 200, response.text
+    response = api_client.get(url, headers=unique_user.token)
+    assert response.status_code == 200, response.text
+    recipe = response.json()
+    assert recipe["name"] == name
+    assert recipe["recipeInstructions"][0]["text"] == "Season."
+    assert recipe["recipeInstructions"][0]["noteReferences"] == []
 
 
 @pytest.mark.parametrize(

@@ -36,7 +36,7 @@ export const useToolData = function () {
 
 export const useToolStore = function (i18n?: Composer) {
   const api = useUserApi(i18n);
-  return useStore<ToolOut>("tool", store, loading, initialized, api.tools);
+  return useStore("tool", store, loading, initialized, api.tools);
 };
 
 export const usePublicToolStore = function (groupSlug: string, i18n?: Composer) {
