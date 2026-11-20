@@ -1,0 +1,19 @@
+services:
+  mealie:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: production
+    restart: unless-stopped
+    expose:
+      - "9000"
+    environment:
+      BASE_URL: ${BASE_URL:?}
+      ALLOW_SIGNUP: "false"
+      LOG_LEVEL: INFO
+      DB_ENGINE: sqlite
+    volumes:
+      - mealie-data:/app/data
+
+volumes:
+  mealie-data:
