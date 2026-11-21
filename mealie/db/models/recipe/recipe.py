@@ -224,7 +224,7 @@ class RecipeModel(SqlAlchemyBase, BaseMixins):
 
         self.settings = RecipeSettings(**(settings or {}))
 
-        if notes:
+        if notes is not None:
             self.notes = [Note(**n) for n in notes]
 
         self.date_updated = datetime.now(UTC)

@@ -11,6 +11,7 @@ from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 from mcp.types import ToolAnnotations
 from pydantic import (
+    MISSING,
     BaseModel,
     ConfigDict,
     Field,
@@ -18,6 +19,7 @@ from pydantic import (
     StringConstraints,
     TypeAdapter,
     ValidationError,
+    field_validator,
     model_validator,
 )
 from sqlalchemy.exc import IntegrityError
@@ -66,44 +68,61 @@ class NutritionEntry(BaseModel):
     estimate_basis: str | None = None
 
 
+class NutritionValues(Nutrition):
+    model_config = ConfigDict(extra="forbid")
+
+    @field_validator("*", mode="before", json_schema_input_type=float | str | None)
+    @classmethod
+    def validate_amount(cls, value: Any) -> Any:
+        if value is None:
+            return value
+        if isinstance(value, bool) or not isinstance(value, str | int | float):
+            raise ValueError("Supply a number or numeric string without units")
+        try:
+            amount = float(value)
+        except ValueError, OverflowError:
+            raise ValueError("Supply a number or numeric string without units") from None
+        if not isfinite(amount) or amount < 0:
+            raise ValueError("Nutrition amounts must be finite and nonnegative")
+        return value
+
+
 class NutritionInput(RecipeToolInput):
-    values: Nutrition = Field(
-        description="Numeric amounts in kcal for calories, mg for sodium and cholesterol, and g otherwise."
+    values: NutritionValues = Field(
+        description=(
+            'Supply numbers or numeric strings using camelCase keys such as "proteinContent". '
+            "Use kcal for calories, mg for sodium and cholesterol, and g otherwise. "
+            "On update, omit a nutrient to keep it or pass null to clear it."
+        )
     )
     serving_basis: Text = Field(
         default=UNKNOWN_BASIS,
         description="What the supplied amounts cover, e.g. 'per serving (1 slice)' or 'whole recipe'.",
     )
-    estimated_fields: list[str] = Field(default_factory=list, description="Names of nutrients that were estimated.")
+    estimated_fields: list[str] = Field(
+        default_factory=list,
+        description="Keys from values that were estimated, e.g. calories or proteinContent. Requires estimate_basis.",
+    )
     estimate_basis: Text | None = Field(
         default=None,
         description="Ingredient amounts and reference values used for estimates.",
     )
 
     @model_validator(mode="after")
-    def validate_estimates_and_amounts(self) -> NutritionInput:
+    def validate_estimates(self) -> NutritionInput:
         values = self.values.model_dump(exclude_unset=True)
-        for value in values.values():
-            if value is not None:
-                try:
-                    amount = float(value)
-                except ValueError:
-                    raise ValueError("Supply numeric values in the canonical units") from None
-                if not isfinite(amount) or amount < 0:
-                    raise ValueError("Nutrition values must be finite and nonnegative")
-
         aliases = {field.alias or name: name for name, field in Nutrition.model_fields.items()}
         self.estimated_fields = [aliases.get(field, field) for field in self.estimated_fields]
         if any(values.get(field) is None for field in self.estimated_fields):
-            raise ValueError("Estimated fields must have an amount")
+            raise ValueError("Each estimated_fields entry must name a nutrient with a non-null amount in values")
         if self.estimated_fields and not self.estimate_basis:
             raise ValueError("Provide a basis for estimated nutrition")
         return self
 
 
 class RecipeChanges(RecipeToolInput):
-    name: Text | None = None
-    servings: Positive | None = None
+    name: Text | MISSING = MISSING
+    servings: Positive | MISSING = MISSING
     ingredients: list[Text | IngredientAmount] | None = None
     instructions: list[Text] | None = None
     description: str | None = None
@@ -292,11 +311,6 @@ def _draft_fields(data: RecipeChanges) -> dict[str, Any]:
         "cook_time": "perform_time",
     }
     fields = {rename.get(field, field): value for field, value in values.items()}
-    if ("name" in fields and fields["name"] is None) or (
-        "recipe_servings" in fields and fields["recipe_servings"] is None
-    ):
-        raise ToolError("Recipe name and servings cannot be cleared.")
-
     if data.ingredients is not None:
         fields["recipe_ingredient"] = [
             RecipeIngredient(note=item, quantity=None)
@@ -453,7 +467,11 @@ def register_recipe_tools(server: FastMCP) -> None:
         multiplier: Positive | None = None,
         target_servings: Positive | None = None,
     ) -> RecipeScale:
-        """Preview scaled quantities without modifying the recipe. Pass the returned multiplier to a meal-plan tool."""
+        """Preview scaled quantities without modifying the recipe.
+
+        Supply exactly one of multiplier or target_servings. Use multiplier if the recipe has no serving count.
+        Pass the returned multiplier to a meal-plan tool.
+        """
         if (multiplier is None) == (target_servings is None):
             raise ToolError("Provide either a multiplier or a target serving count.")
         with _recipe_service() as service:

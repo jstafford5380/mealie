@@ -7,7 +7,7 @@ from uuid import UUID
 import sqlalchemy as sa
 from fastapi import HTTPException
 from humps import decamelize
-from pydantic import UUID4
+from pydantic import UUID4, BaseModel
 from slugify import slugify
 from sqlalchemy.exc import IntegrityError
 
@@ -311,6 +311,16 @@ class RepositoryRecipes(RecipeSuggestionMixin, HouseholdRepositoryGeneric[Recipe
             }
 
         raise RuntimeError(f"Failed to resolve organizer '{name}' after {max_attempts} attempts")
+
+    def patch(self, match_value: str | int | UUID4, new_data: dict | BaseModel) -> RecipeOut:
+        changes = new_data if isinstance(new_data, dict) else new_data.model_dump()
+        entry = self._query_one(match_value=match_value)
+        data = self.schema.model_validate(entry).model_dump()
+        # Passing these collections to update recreates their rows and generated IDs.
+        for field in ("recipe_instructions", "recipe_ingredient"):
+            if field not in changes:
+                data.pop(field)
+        return self.update(match_value, data | changes)
 
     def update(self, match_value: str | int | UUID4, new_data: dict | RecipeOut | RecipeDraft) -> RecipeOut:  # type: ignore[override]
         new_data = new_data if isinstance(new_data, dict) else new_data.model_dump()

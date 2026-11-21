@@ -4,6 +4,7 @@ from contextlib import contextmanager
 import httpx
 import pytest
 from fastapi.testclient import TestClient
+from jsonschema import Draft202012Validator
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
@@ -51,7 +52,7 @@ async def test_recipe_tools_save_scale_and_patch(
                     "ingredients": [{"quantity": 2, "text": "cups apples"}, "Salt to taste"],
                     "instructions": ["Mix and bake."],
                     "nutrition": {
-                        "values": {"calories": "240", "proteinContent": "4"},
+                        "values": {"calories": 240, "proteinContent": 4},
                         "estimated_fields": ["calories"],
                         "estimate_basis": "Estimated from two cups of apples",
                         "serving_basis": "per serving",
@@ -75,6 +76,7 @@ async def test_recipe_tools_save_scale_and_patch(
         response = api_client.get(api_routes.recipes_slug(recipe["slug"]), headers=unique_user.token)
         assert response.status_code == 200
         assert response.json()["notes"][0]["title"] == "Estimated nutrition"
+        assert response.json()["nutrition"]["calories"] == "240"
 
         _, updated = await server.call_tool(
             "update_recipe",
@@ -86,6 +88,7 @@ async def test_recipe_tools_save_scale_and_patch(
         assert updated["description"] == "A fall dessert"
         assert updated["servings"] == 2
         assert updated["ingredients"] == recipe["ingredients"]
+        assert updated["instructions"] == recipe["instructions"]
         assert updated["nutrition"]["proteinContent"] is None
         assert updated["nutrition_provenance"]["calories"]["serving_basis"] == "per serving"
 
@@ -95,11 +98,73 @@ async def test_recipe_tools_save_scale_and_patch(
         _, by_slug = await server.call_tool("get_recipe", {"recipe": recipe["slug"]})
         assert by_slug == updated
 
+        await server.call_tool(
+            "update_recipe", {"recipe_id": recipe_id, "changes": {"nutrition": {"values": {"calories": None}}}}
+        )
+        response = api_client.get(api_routes.recipes_slug(recipe["slug"]), headers=unique_user.token)
+        assert response.status_code == 200
+        assert response.json()["notes"] == []
+
     with as_user(g2_user):
         with pytest.raises(ToolError, match="Recipe not found"):
             await server.call_tool("get_recipe", {"recipe": recipe_id})
         _, search = await server.call_tool("search_recipes", {"search": name})
         assert not search["items"]
+
+
+@pytest.mark.asyncio
+async def test_backfill_nutrition_through_advertised_tool_schema(server: FastMCP, unique_user: TestUser) -> None:
+    schemas = {tool.name: Draft202012Validator(tool.inputSchema) for tool in await server.list_tools()}
+    data = {"name": random_string(), "servings": 2, "ingredients": ["Oats"], "instructions": ["Cook."]}
+    nutrition = {
+        "values": {"calories": 200, "proteinContent": "6", "fatContent": 2.5},
+        "estimated_fields": ["calories", "protein_content"],
+        "serving_basis": "per serving",
+        "estimate_basis": "Calculated from the ingredient label.",
+    }
+    schemas["create_recipe"].validate({"data": data | {"nutrition": nutrition}})
+    for field in ("name", "servings"):
+        args = {"recipe_id": "1b67fb45-4ad1-4713-9904-3080e152a239", "changes": {field: None}}
+        assert not schemas["update_recipe"].is_valid(args)
+        with pytest.raises(ToolError):
+            await server.call_tool("update_recipe", args)
+
+    with as_user(unique_user):
+        _, recipe = await server.call_tool("create_recipe", {"data": data})
+        assert recipe["nutrition_provenance"] == {}
+        assert recipe["nutrition"]["calories"] is None
+
+        args = {"recipe_id": recipe["id"], "changes": {"nutrition": nutrition}}
+        schemas["update_recipe"].validate(args)
+        _, updated = await server.call_tool("update_recipe", args)
+        _, saved = await server.call_tool("get_recipe", {"recipe": recipe["id"]})
+
+        assert updated == saved
+        assert saved["nutrition"]["fatContent"] == "2.5"
+        assert saved["nutrition_provenance"]["fat_content"]["source"] == "user_provided"
+        assert saved["nutrition_provenance"]["protein_content"] == {
+            "value": "6",
+            "source": "estimated",
+            "serving_basis": "per serving",
+            "estimate_basis": nutrition["estimate_basis"],
+        }
+        assert saved["instructions"] == recipe["instructions"]
+        assert saved["ingredients"] == recipe["ingredients"]
+
+        for malformed, message in [
+            ({"values": {"protein": 5}}, "Extra inputs are not permitted"),
+            ({"values": {"calories": "7 kcal"}}, "number or numeric string without units"),
+            ({"values": {"calories": -1}}, "finite and nonnegative"),
+            ({"values": {"calories": 5}, "estimated_fields": ["fat"]}, "non-null amount"),
+            ({"values": {"calories": 5}, "estimated_fields": ["calories"]}, "basis for estimated nutrition"),
+        ]:
+            with pytest.raises(ToolError, match=message):
+                await server.call_tool(
+                    "update_recipe", {"recipe_id": recipe["id"], "changes": {"nutrition": malformed}}
+                )
+
+        _, unchanged = await server.call_tool("get_recipe", {"recipe": recipe["id"]})
+        assert unchanged == saved
 
 
 @pytest.mark.asyncio

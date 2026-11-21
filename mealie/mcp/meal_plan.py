@@ -7,7 +7,7 @@ from uuid import UUID
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 from mcp.types import ToolAnnotations
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import MISSING, BaseModel, ConfigDict, Field, ValidationError
 from starlette.concurrency import run_in_threadpool
 
 from mealie.lang.providers import get_locale_provider
@@ -57,17 +57,17 @@ class MealPlanPage(BaseModel):
 
 
 class MealPlanPatch(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", json_schema_extra={"minProperties": 1})
 
-    date: datetime.date | None = None
+    date: datetime.date | MISSING = MISSING
     end_date: datetime.date | None = Field(
         default=None,
         description="For a week entry, six days after the start date. Pass null to make it a single-day entry.",
     )
-    entry_type: PlanEntryType | None = None
-    note: str | None = None
-    recipe_id: UUID | None = None
-    recipe_scale: RecipeScale | None = None
+    entry_type: PlanEntryType | MISSING = MISSING
+    note: str | MISSING = MISSING
+    recipe_id: UUID | MISSING = MISSING
+    recipe_scale: RecipeScale | MISSING = MISSING
 
 
 @contextmanager
@@ -149,9 +149,6 @@ def register_meal_plan_tools(server: FastMCP) -> None:
         fields = changes.model_dump(exclude_unset=True)
         if not fields:
             raise ToolError("Supply at least one meal plan field to update.")
-        for name, value in fields.items():
-            if value is None and name != "end_date":
-                raise ToolError("Only end_date can be cleared. Omit other fields to keep their values.")
         if "note" in fields:
             fields["text"] = fields.pop("note")
 

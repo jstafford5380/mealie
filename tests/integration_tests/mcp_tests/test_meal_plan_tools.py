@@ -3,6 +3,7 @@ from contextlib import contextmanager
 
 import pytest
 from fastapi.testclient import TestClient
+from jsonschema import Draft202012Validator
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
@@ -35,6 +36,19 @@ def create_recipe(api_client: TestClient, user: TestUser) -> dict:
     response = api_client.get(api_routes.recipes_slug(response.json()), headers=user.token)
     assert response.status_code == 200
     return response.json()
+
+
+@pytest.mark.asyncio
+async def test_meal_plan_patch_schema_matches_nullable_fields(server: FastMCP) -> None:
+    tool = next(tool for tool in await server.list_tools() if tool.name == "update_meal_plan_entry")
+    schema = Draft202012Validator(tool.inputSchema)
+    schema.validate({"entry_id": 1, "changes": {"end_date": None}})
+
+    for changes in ({}, *({field: None} for field in ("date", "entry_type", "note", "recipe_id", "recipe_scale"))):
+        args = {"entry_id": 1, "changes": changes}
+        assert not schema.is_valid(args)
+        with pytest.raises(ToolError):
+            await server.call_tool(tool.name, args)
 
 
 @pytest.mark.asyncio
