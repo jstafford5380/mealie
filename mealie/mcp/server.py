@@ -143,6 +143,12 @@ def build_mcp_server(settings: AppSettings) -> tuple[AuditedMCP, tuple[Route, Ro
             "Use saved meal plan tools for reusable weeks in Meal Configurator. "
             "Write to the live calendar only when the user explicitly asks to schedule meals there. "
             "Scale previews are read-only. To persist a scale, update the meal-plan entry's multiplier. "
+            "A meal's scale is the portion eaten. To cook a full batch, give its entry a fresh recipe batch UUID. "
+            "Later meals use leftover portions by referencing that batch UUID. Check list_leftover_batches before "
+            "using calendar leftovers and reserve only the unallocated servings. In saved plans, link entries "
+            "within the same plan and keep linked portions at or below one batch total. "
+            "Use list_categories, list_tags, and list_tools to find existing organizers before assigning them "
+            "to recipes. When updating a recipe, keep any existing organizers the user wants to retain. "
             "Keep estimated nutrition distinct from published values."
         ),
         streamable_http_path=MCP_PATH,

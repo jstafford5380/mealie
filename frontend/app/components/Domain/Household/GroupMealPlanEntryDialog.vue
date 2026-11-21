@@ -81,6 +81,22 @@
             edit-scale
           />
         </div>
+        <template v-if="isRecipe && recipe && !isWeekEntry && batches">
+          <SelectField
+            v-model="cookingMode"
+            :items="cookingModes"
+            :label="$t('meal-plan.cooking-mode')"
+          />
+          <SelectField
+            v-if="cookingMode === 'leftovers'"
+            v-model="leftoverBatchId"
+            :items="batchOptions"
+            :label="$t('meal-plan.leftover-batch')"
+          />
+          <p v-if="batchMessage" class="m-0 text-sm text-destructive">
+            {{ batchMessage }}
+          </p>
+        </template>
       </div>
 
       <!-- both modes fill the same pane, so the dialog doesn't resize when switching between them -->
@@ -156,8 +172,10 @@ import { MdiIcon } from "~/components/ui/mdi-icon";
 import { Switch } from "~/components/ui/switch";
 import RecipeSelector from "~/components/Domain/Recipe/RecipeSelector.vue";
 import { useMealPlanEntryDates, usePlanTypeOptions } from "~/composables/use-group-mealplan";
+import { batchPrecedesMeal, getAvailableLeftovers, getBaseServings, type MealBatch } from "~/composables/use-mealplan-batches";
 import { buildRuleQueryFilter, useMealplanRules } from "~/composables/use-mealplan-rules";
 import { useUserMealPlanPreferences } from "~/composables/use-users/preferences";
+import { uuid4 } from "~/composables/use-utils";
 import { validators } from "~/composables/use-validators";
 import type { PlanEntryCreate, PlanEntryType, PlanEntryOut, PlanEntryUpdate } from "~/lib/api/types/meal-plan";
 import type { RecipeSummary } from "~/lib/api/types/recipe";
@@ -168,6 +186,7 @@ interface Props {
   date?: Date | null;
   /** Set when creating an entry for a week rather than a specific day */
   endDate?: Date | null;
+  batches?: MealBatch[];
   /** Meal type to start a new entry with (the board passes the row it was opened from). */
   defaultEntryType?: PlanEntryType | null;
 }
@@ -196,6 +215,8 @@ const { selectedDate, isWeekEntry, weekRange, entryDates, entryDatesPayload, pic
 const entryType = ref<PlanEntryType>("dinner");
 const recipe = ref<RecipeSummary | null>(null);
 const recipeScale = ref(1);
+const cookingMode = ref<"planned" | "full" | "leftovers">("planned");
+const leftoverBatchId = ref<string | null>(null);
 const title = ref("");
 const text = ref("");
 const ignoreRules = ref(false);
@@ -240,14 +261,63 @@ const applicableRuleFilter = computed(() => buildRuleQueryFilter(
 ));
 const ruleQueryFilter = computed(() => ignoreRules.value ? null : applicableRuleFilter.value);
 
-const recipeServings = computed(() => recipe.value?.recipeServings || recipe.value?.recipeYieldQuantity || 1);
+const recipeServings = computed(() => getBaseServings(recipe.value));
+const cookingModes = computed(() => [
+  { value: "planned", title: i18n.t("meal-plan.cook-planned-servings") },
+  { value: "full", title: i18n.t("meal-plan.cook-full-batch") },
+  { value: "leftovers", title: i18n.t("meal-plan.use-leftovers") },
+]);
+const matchingBatches = computed(() => {
+  const date = format(selectedDate.value, "yyyy-MM-dd");
+  return (props.batches ?? []).filter(batch =>
+    batch.source.id !== props.entry?.id
+    && batch.source.recipeId === recipe.value?.id
+    && batchPrecedesMeal(batch.source, date, entryType.value)
+    && (batch.id === leftoverBatchId.value || availableServings(batch) > 0),
+  );
+});
+function availableServings(batch: MealBatch) {
+  return getAvailableLeftovers(batch, props.entry?.id);
+}
+const batchOptions = computed(() => {
+  const options = matchingBatches.value.map(batch => ({
+    value: batch.id,
+    title: i18n.t("meal-plan.leftover-batch-option", {
+      date: props.configuratorWeekStart
+        ? new Intl.DateTimeFormat(i18n.locale.value, { weekday: "long" }).format(parseISO(batch.source.date))
+        : i18n.d(parseISO(batch.source.date), "short"),
+      meal: i18n.t(`meal-plan.${batch.source.entryType}`),
+      remaining: i18n.n(Math.max(0, availableServings(batch)), { maximumFractionDigits: 2 }),
+    }),
+  }));
+  if (leftoverBatchId.value && !options.some(option => option.value === leftoverBatchId.value)) {
+    options.push({ value: leftoverBatchId.value, title: i18n.t("meal-plan.leftover-batch-unavailable") });
+  }
+  return options;
+});
+const batchMessage = computed(() => {
+  if (!props.batches || !isRecipe.value || !recipe.value || isWeekEntry.value) return "";
+  if (cookingMode.value === "full" && recipeScale.value > 1) {
+    return i18n.t("meal-plan.full-batch-too-small");
+  }
+  if (cookingMode.value === "leftovers") {
+    const batch = matchingBatches.value.find(batch => batch.id === leftoverBatchId.value);
+    if (!batch) return i18n.t(matchingBatches.value.length ? "meal-plan.select-leftover-batch" : "meal-plan.no-leftover-batch");
+    if (recipeScale.value * recipeServings.value - availableServings(batch) > 1e-6) {
+      return i18n.t("meal-plan.leftover-batch-too-small");
+    }
+  }
+  return "";
+});
 
 // a scale is only meaningful for the recipe it was chosen for
 watch(() => recipe.value?.id, () => {
   recipeScale.value = 1;
+  cookingMode.value = "planned";
+  leftoverBatchId.value = null;
 }, { flush: "sync" });
 
-const submitDisabled = computed(() => isRecipe.value ? !recipe.value : !title.value.trim());
+const submitDisabled = computed(() => isRecipe.value ? !recipe.value || !!batchMessage.value : !title.value.trim());
 
 function initialize() {
   entryMode.value = props.entry && !props.entry.recipeId ? "note" : "recipe";
@@ -256,6 +326,8 @@ function initialize() {
   entryType.value = props.entry?.entryType ?? props.defaultEntryType ?? "dinner";
   recipe.value = props.entry?.recipe ?? null;
   recipeScale.value = props.entry?.recipeScale ?? 1;
+  cookingMode.value = props.entry?.leftoverBatchId ? "leftovers" : props.entry?.recipeBatchId ? "full" : "planned";
+  leftoverBatchId.value = props.entry?.leftoverBatchId ?? null;
   title.value = props.entry?.title ?? "";
   text.value = props.entry?.text ?? "";
   ignoreRules.value = false;
@@ -263,6 +335,9 @@ function initialize() {
 }
 
 function submit() {
+  if (submitDisabled.value) return;
+  const chooseBatch = props.batches && isRecipe.value && !isWeekEntry.value;
+  const existingBatch = props.entry?.recipeId === recipe.value?.id ? props.entry?.recipeBatchId : null;
   const payload = {
     ...entryDatesPayload.value,
     ...(props.configuratorWeekStart && {
@@ -274,6 +349,12 @@ function submit() {
     text: isRecipe.value ? "" : text.value,
     recipeId: isRecipe.value ? recipe.value?.id : null,
     recipeScale: isRecipe.value ? recipeScale.value : 1,
+    ...(props.batches && {
+      recipeBatchId: chooseBatch && cookingMode.value === "full"
+        ? existingBatch ?? uuid4()
+        : null,
+      leftoverBatchId: chooseBatch && cookingMode.value === "leftovers" ? leftoverBatchId.value : null,
+    }),
   };
 
   if (props.entry) {

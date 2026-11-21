@@ -70,6 +70,8 @@ class GroupMealPlan(SqlAlchemyBase, BaseMixins):
 
     recipe_id: FilterableColumn[GUID | None] = mapped_column(GUID, ForeignKey("recipes.id"), index=True)
     recipe_scale: Mapped[float] = mapped_column(Float, nullable=False, default=1.0)
+    recipe_batch_id: FilterableColumn[GUID | None] = mapped_column(GUID, index=True)
+    leftover_batch_id: FilterableColumn[GUID | None] = mapped_column(GUID, index=True)
     recipe: Mapped[RecipeModel | None] = orm.relationship("RecipeModel", back_populates="meal_entries", uselist=False)
 
     @auto_init()

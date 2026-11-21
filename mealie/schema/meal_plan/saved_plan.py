@@ -8,10 +8,10 @@ from mealie.schema._mealie import MealieModel
 from mealie.schema._mealie.mealie_model import MealieOutModel
 from mealie.schema.recipe.recipe import RecipeSummary
 
-from .new_meal import WEEK_ENTRY_LENGTH, PlanEntryType
+from .new_meal import WEEK_ENTRY_LENGTH, MealEntryBatch, PlanEntryType
 
 
-class SavedMealEntryCreate(MealieModel):
+class SavedMealEntryCreate(MealEntryBatch):
     # Sunday is 0. A null weekday is an entry for the whole week.
     weekday: Annotated[int | None, Field(ge=0, le=6)]
     entry_type: PlanEntryType
@@ -24,6 +24,7 @@ class SavedMealEntryCreate(MealieModel):
     def require_recipe_or_title(self) -> Self:
         if self.recipe_id is None and not self.title.strip():
             raise ValueError("A recipe or a meal title is required")
+        self.validate_batch(self.recipe_id, self.weekday is not None)
         return self
 
 

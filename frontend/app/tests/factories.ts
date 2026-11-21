@@ -71,6 +71,8 @@ export function makePlanEntry(overrides: Partial<PlanEntryOut> = {}): PlanEntryO
     text: "",
     recipeId: null,
     recipeScale: 1,
+    recipeBatchId: null,
+    leftoverBatchId: null,
     groupId: "group-id",
     userId: "user-id",
     householdId: "household-id",

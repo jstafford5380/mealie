@@ -108,7 +108,9 @@ export type Days = {
  * Entries without a recipe (notes) are skipped.
  */
 export function getScaledRecipes(meals: PlanEntryOut[]): ScaledRecipe[] {
-  return meals.flatMap(meal => meal.recipe ? [{ ...meal.recipe, scale: meal.recipeScale ?? 1 }] : []);
+  return meals.flatMap(meal => meal.recipe && !meal.leftoverBatchId
+    ? [{ ...meal.recipe, scale: meal.recipeBatchId ? 1 : (meal.recipeScale ?? 1) }]
+    : []);
 }
 
 export type MealsByDate = {
@@ -132,59 +134,49 @@ export interface Meal {
   householdId: string;
 }
 
-export const useMealplans = function (range: Ref<DateRange>) {
+export const useMealplans = function (range: Ref<DateRange>, includeBatches = false) {
   const api = useUserApi();
   const loading = ref(false);
+  const batchEntries = ref<PlanEntryOut[]>([]);
+
+  async function loadMeals() {
+    const { start, end } = range.value;
+    const [visible, batches] = await Promise.all([
+      api.mealplans.getAll(1, -1, {
+        start_date: format(start, "yyyy-MM-dd"),
+        end_date: format(end, "yyyy-MM-dd"),
+        include_week_entries: true,
+      }),
+      includeBatches
+        ? api.mealplans.getAll(1, -1, {
+            queryFilter: "recipe_batch_id IS NOT NULL OR leftover_batch_id IS NOT NULL",
+          })
+        : null,
+    ]);
+    return { meals: visible.data?.items ?? null, batches: batches?.data?.items ?? null };
+  }
+  const { data, refresh } = useAsyncData(useAsyncKey(), loadMeals, { watch: [range] });
+  const mealplans = computed(() => data.value?.meals ?? null);
+  watch(() => data.value?.batches, (batches) => {
+    if (batches) batchEntries.value = batches;
+  }, { immediate: true });
 
   const actions = {
-    getAll() {
-      loading.value = true;
-      const { data: units } = useAsyncData(useAsyncKey(), async () => {
-        const query = {
-          start_date: format(range.value.start, "yyyy-MM-dd"),
-          end_date: format(range.value.end, "yyyy-MM-dd"),
-        };
-        const { data } = await api.mealplans.getAll(1, -1, {
-          start_date: query.start_date,
-          end_date: query.end_date,
-          include_week_entries: true,
-        });
-
-        if (data) {
-          return data.items;
-        }
-        else {
-          return null;
-        }
-      });
-
-      loading.value = false;
-      return units;
-    },
     async refreshAll() {
       loading.value = true;
-      const query = {
-        start_date: format(range.value.start, "yyyy-MM-dd"),
-        end_date: format(range.value.end, "yyyy-MM-dd"),
-      };
-      const { data } = await api.mealplans.getAll(1, -1, {
-        start_date: query.start_date,
-        end_date: query.end_date,
-        include_week_entries: true,
-      });
-
-      if (data && data.items) {
-        mealplans.value = data.items;
+      try {
+        await refresh();
       }
-
-      loading.value = false;
+      finally {
+        loading.value = false;
+      }
     },
     async createOne(payload: PlanEntryCreate) {
       loading.value = true;
 
       const { data } = await api.mealplans.createOne(payload);
       if (data) {
-        this.refreshAll();
+        await this.refreshAll();
       }
 
       loading.value = false;
@@ -197,7 +189,7 @@ export const useMealplans = function (range: Ref<DateRange>) {
       loading.value = true;
       const { data } = await api.mealplans.updateOne(updateData.id, updateData);
       if (data) {
-        this.refreshAll();
+        await this.refreshAll();
       }
       loading.value = false;
     },
@@ -217,9 +209,5 @@ export const useMealplans = function (range: Ref<DateRange>) {
     },
   };
 
-  const mealplans = actions.getAll();
-
-  watch(range, actions.refreshAll);
-
-  return { mealplans, actions, loading };
+  return { mealplans, actions, loading, batchEntries };
 };

@@ -16,6 +16,7 @@ from mealie.mcp.recipes import register_recipe_tools
 from mealie.pkgs import safehttp
 from mealie.pkgs.safehttp import FetchResult
 from mealie.repos.repository_generic import GroupRepositoryGeneric
+from mealie.schema.recipe.recipe_organizers import CategorySave, TagSave, ToolSave
 from mealie.schema.recipe.recipe_timeline_events import RecipeTimelineEventCreate
 from mealie.services.scraper import recipe_scraper
 from tests.utils import api_routes
@@ -37,6 +38,76 @@ def server() -> FastMCP:
     server = FastMCP()
     register_recipe_tools(server)
     return server
+
+
+@pytest.mark.asyncio
+async def test_recipe_organizers_list_and_assign_existing_group_values(
+    server: FastMCP, api_client: TestClient, unique_user: TestUser, g2_user: TestUser
+) -> None:
+    routes = {
+        "categories": api_routes.organizers_categories,
+        "tags": api_routes.organizers_tags,
+        "tools": api_routes.organizers_tools,
+    }
+    foreign_organizers = {
+        "categories": g2_user.repos.categories.create(CategorySave(name=random_string(), group_id=g2_user.group_id)),
+        "tags": g2_user.repos.tags.create(TagSave(name=random_string(), group_id=g2_user.group_id)),
+        "tools": g2_user.repos.tools.create(ToolSave(name=random_string(), group_id=g2_user.group_id)),
+    }
+    organizers = {}
+    for field, route in routes.items():
+        local = api_client.post(route, json={"name": f"Local {field} {random_string()}"}, headers=unique_user.token)
+        assert local.status_code == 201
+        organizers[field] = (local.json(), foreign_organizers[field].model_dump(mode="json"))
+
+    category, foreign_category = organizers["categories"]
+    tag, foreign_tag = organizers["tags"]
+    tool, foreign_tool = organizers["tools"]
+    draft = {
+        "name": random_string(),
+        "servings": 2,
+        "ingredients": ["1 cup rice"],
+        "instructions": ["Cook the rice."],
+        "categories": [category["id"], category["slug"]],
+        "tags": [tag["slug"]],
+        "tools": [tool["id"]],
+    }
+    with as_user(unique_user):
+        for field, (local, foreign) in organizers.items():
+            _, listed = await server.call_tool(f"list_{field}", {})
+            assert {key: local[key] for key in ("id", "name", "slug")} in listed["result"]
+            assert foreign["id"] not in {item["id"] for item in listed["result"]}
+
+        with pytest.raises(ToolError, match="Unknown category"):
+            await server.call_tool("create_recipe", {"data": {**draft, "categories": [foreign_category["slug"]]}})
+        _, recipe = await server.call_tool("create_recipe", {"data": draft})
+        recipe_id = recipe["id"]
+        for field, (local, _) in organizers.items():
+            assert [item["id"] for item in recipe[field]] == [local["id"]]
+
+        with pytest.raises(ToolError, match="Unknown tag"):
+            await server.call_tool(
+                "update_recipe", {"recipe_id": recipe_id, "changes": {"categories": [], "tags": [foreign_tag["id"]]}}
+            )
+        with pytest.raises(ToolError, match="Unknown tool"):
+            await server.call_tool(
+                "update_recipe", {"recipe_id": recipe_id, "changes": {"tools": [foreign_tool["id"]]}}
+            )
+
+        _, updated = await server.call_tool(
+            "update_recipe", {"recipe_id": recipe_id, "changes": {"tags": [], "tools": [tool["slug"]]}}
+        )
+        assert updated["categories"] == recipe["categories"]
+        assert updated["tags"] == []
+        assert updated["tools"] == recipe["tools"]
+        _, loaded = await server.call_tool("get_recipe", {"recipe": recipe_id})
+        assert loaded == updated
+
+    response = api_client.get(api_routes.recipes_slug(recipe["slug"]), headers=unique_user.token)
+    assert response.status_code == 200
+    assert [item["id"] for item in response.json()["recipeCategory"]] == [category["id"]]
+    assert response.json()["tags"] == []
+    assert [item["id"] for item in response.json()["tools"]] == [tool["id"]]
 
 
 @pytest.mark.asyncio

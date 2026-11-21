@@ -12,11 +12,17 @@ export type LogicalOperator = "AND" | "OR";
 export type RelationalKeyword = "IS" | "IS NOT" | "IN" | "NOT IN" | "CONTAINS ALL" | "LIKE" | "NOT LIKE";
 export type RelationalOperator = "=" | "<>" | ">" | "<" | ">=" | "<=";
 
+export interface MealEntryBatch {
+  recipeBatchId?: string | null;
+  leftoverBatchId?: string | null;
+}
 export interface MealPlanICalTokenOut {
   householdId: string;
   mealplanIcalToken: string | null;
 }
 export interface PlanEntryCreate {
+  recipeBatchId?: string | null;
+  leftoverBatchId?: string | null;
   date: string;
   endDate?: string | null;
   entryType?: PlanEntryType;
@@ -26,6 +32,8 @@ export interface PlanEntryCreate {
   recipeScale?: number;
 }
 export interface PlanEntryOut {
+  recipeBatchId: string | null;
+  leftoverBatchId: string | null;
   date: string;
   endDate: string | null;
   entryType: PlanEntryType;
@@ -105,6 +113,8 @@ export interface Nutrition {
   unsaturatedFatContent?: string | null;
 }
 export interface PlanEntrySave {
+  recipeBatchId?: string | null;
+  leftoverBatchId?: string | null;
   date: string;
   endDate?: string | null;
   entryType?: PlanEntryType;
@@ -116,6 +126,8 @@ export interface PlanEntrySave {
   userId: string;
 }
 export interface PlanEntryUpdate {
+  recipeBatchId?: string | null;
+  leftoverBatchId?: string | null;
   date: string;
   endDate?: string | null;
   entryType?: PlanEntryType;
@@ -166,6 +178,8 @@ export interface RandomPlanEntryCreate {
   entryType?: PlanEntryType;
 }
 export interface SavedMealEntryCreate {
+  recipeBatchId?: string | null;
+  leftoverBatchId?: string | null;
   weekday: number | null;
   entryType: PlanEntryType;
   title?: string;
@@ -174,6 +188,8 @@ export interface SavedMealEntryCreate {
   recipeScale?: number;
 }
 export interface SavedMealEntryOut {
+  recipeBatchId: string | null;
+  leftoverBatchId: string | null;
   weekday: number | null;
   entryType: PlanEntryType;
   title: string;

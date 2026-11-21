@@ -30,10 +30,10 @@ const meal: PlanEntryOut = makePlanEntry({
   recipe: makeRecipeSummary({ id: "my-recipe-id", name: "Pancakes", recipeServings: 4 }),
 });
 
-function mountControl() {
+function mountControl(configurator = false) {
   const actions = { updateOne: vi.fn() };
   const wrapper = mount(MealPlanScaleControl, {
-    props: { meal, actions: actions as any },
+    props: { meal, actions, configurator },
     global: { stubs: { RecipeScaleEditButton } },
   });
 
@@ -65,6 +65,15 @@ describe("MealPlanScaleControl", () => {
 
     vi.advanceTimersByTime(MEALPLAN_SCALE_SAVE_DELAY_MS);
     expect(actions.updateOne).toHaveBeenCalledExactlyOnceWith({ ...meal, recipeScale: 2 });
+  });
+
+  test("applies one of four servings to the saved-plan draft before the plan is saved", async () => {
+    const { button, actions } = mountControl(true);
+
+    await button.vm.$emit("update:modelValue", 0.25);
+
+    expect(actions.updateOne).toHaveBeenCalledExactlyOnceWith({ ...meal, recipeScale: 0.25 });
+    expect(meal.recipe?.recipeServings).toBe(4);
   });
 
   test("picks up a scale that was changed elsewhere", async () => {

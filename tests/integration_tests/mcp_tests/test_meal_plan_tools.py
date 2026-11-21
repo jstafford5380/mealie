@@ -1,5 +1,6 @@
 from collections.abc import Iterator
 from contextlib import contextmanager
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -43,6 +44,7 @@ async def test_meal_plan_patch_schema_matches_nullable_fields(server: FastMCP) -
     tool = next(tool for tool in await server.list_tools() if tool.name == "update_meal_plan_entry")
     schema = Draft202012Validator(tool.inputSchema)
     schema.validate({"entry_id": 1, "changes": {"end_date": None}})
+    schema.validate({"entry_id": 1, "changes": {"recipe_batch_id": None, "leftover_batch_id": None}})
 
     for changes in ({}, *({field: None} for field in ("date", "entry_type", "note", "recipe_id", "recipe_scale"))):
         args = {"entry_id": 1, "changes": changes}
@@ -181,3 +183,111 @@ async def test_saved_meal_plan_tools_leave_calendar_unchanged(
     assert saved["entries"][1]["weekday"] is None
     after = api_client.get(calendar_route, headers=unique_user.token, params={"include_week_entries": True}).json()
     assert after["items"] == before["items"]
+
+
+@pytest.mark.asyncio
+async def test_live_leftover_tools_discover_and_reserve_portions(
+    server: FastMCP, api_client: TestClient, unique_user: TestUser, h2_user: TestUser
+) -> None:
+    recipe = create_recipe(api_client, unique_user)
+    response = api_client.put(
+        api_routes.recipes_slug(recipe["slug"]), json={**recipe, "recipeServings": 4}, headers=unique_user.token
+    )
+    assert response.status_code == 200, response.text
+    batch_id = str(uuid4())
+    later = {"recipe_id": recipe["id"], "date": "2040-01-03", "entry_type": "lunch"}
+    portion = {**later, "leftover_batch_id": batch_id, "recipe_scale": 0.25}
+
+    with as_user(unique_user):
+        _, source = await server.call_tool(
+            "create_meal_plan_entry",
+            {
+                "recipe_id": recipe["id"],
+                "date": "2040-01-02",
+                "entry_type": "dinner",
+                "recipe_batch_id": batch_id,
+                "recipe_scale": 0.25,
+            },
+        )
+        assert source["recipe_batch_id"] == batch_id
+        assert source["leftover_batch_id"] is None
+        _, batches = await server.call_tool("list_leftover_batches", later)
+        assert batches["result"][0]["base_servings"] == 4
+        assert batches["result"][0]["remaining_servings"] == 3
+        _, before_source = await server.call_tool("list_leftover_batches", {**later, "date": "2040-01-02"})
+        assert before_source["result"] == []
+
+        _, lunch = await server.call_tool("create_meal_plan_entry", portion)
+        assert lunch["leftover_batch_id"] == batch_id
+        _, listed = await server.call_tool("list_meal_plan", {"start_date": later["date"], "end_date": later["date"]})
+        assert listed["entries"] == [lunch]
+        _, batches = await server.call_tool("list_leftover_batches", later)
+        assert batches["result"][0]["remaining_servings"] == 2
+        with pytest.raises(ToolError, match="not have enough"):
+            await server.call_tool("create_meal_plan_entry", {**portion, "recipe_scale": 0.75})
+        with pytest.raises(ToolError, match="Other meals use this batch"):
+            await server.call_tool(
+                "update_meal_plan_entry", {"entry_id": source["id"], "changes": {"recipe_batch_id": None}}
+            )
+        _, changed = await server.call_tool(
+            "update_meal_plan_entry", {"entry_id": lunch["id"], "changes": {"recipe_scale": 0.75}}
+        )
+        assert changed["leftover_batch_id"] == batch_id
+        _, batches = await server.call_tool("list_leftover_batches", later)
+        assert batches["result"] == []
+        _, cleared = await server.call_tool(
+            "update_meal_plan_entry", {"entry_id": lunch["id"], "changes": {"leftover_batch_id": None}}
+        )
+        assert cleared["leftover_batch_id"] is None
+        _, batches = await server.call_tool("list_leftover_batches", later)
+        assert batches["result"][0]["remaining_servings"] == 3
+
+    with as_user(h2_user):
+        _, batches = await server.call_tool("list_leftover_batches", later)
+        assert batches["result"] == []
+        with pytest.raises(ToolError, match="Choose an earlier full batch"):
+            await server.call_tool("create_meal_plan_entry", portion)
+
+
+@pytest.mark.asyncio
+async def test_saved_plan_tools_preserve_and_validate_batch_links(
+    server: FastMCP, api_client: TestClient, unique_user: TestUser
+) -> None:
+    recipe = create_recipe(api_client, unique_user)
+    batch_id = str(uuid4())
+    source = {
+        "weekday": 1,
+        "entryType": "dinner",
+        "recipeId": recipe["id"],
+        "recipeBatchId": batch_id,
+        "recipeScale": 0.25,
+    }
+    lunch = {
+        "weekday": 2,
+        "entryType": "lunch",
+        "recipeId": recipe["id"],
+        "leftoverBatchId": batch_id,
+        "recipeScale": 0.25,
+    }
+    with as_user(unique_user):
+        _, created = await server.call_tool(
+            "create_saved_meal_plan", {"plan": {"name": "Batch", "entries": [source, lunch]}}
+        )
+        plan_id = created["id"]
+        _, loaded = await server.call_tool("get_saved_meal_plan", {"plan_id": plan_id})
+        assert loaded["entries"][0]["recipeBatchId"] == loaded["entries"][1]["leftoverBatchId"] == batch_id
+        with pytest.raises(ToolError, match="more servings"):
+            await server.call_tool(
+                "update_saved_meal_plan",
+                {"plan_id": plan_id, "plan": {"name": "Batch", "entries": [source, {**lunch, "recipeScale": 1}]}},
+            )
+        _, updated = await server.call_tool(
+            "update_saved_meal_plan",
+            {"plan_id": plan_id, "plan": {"name": "Batch", "entries": [source, {**lunch, "recipeScale": 0.5}]}},
+        )
+        assert updated["entries"][0]["recipeBatchId"] == updated["entries"][1]["leftoverBatchId"] == batch_id
+        assert updated["entries"][1]["recipeScale"] == 0.5
+        _, batches = await server.call_tool(
+            "list_leftover_batches", {"date": "2040-01-03", "entry_type": "lunch", "recipe_id": recipe["id"]}
+        )
+        assert batches["result"] == []

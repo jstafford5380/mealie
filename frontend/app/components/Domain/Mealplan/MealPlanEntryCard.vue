@@ -77,8 +77,9 @@ const scale = computed(() => props.meal.recipeScale ?? 1);
 <template>
   <div
     :data-id="meal.id"
+    :data-batch-entry="meal.recipeBatchId || meal.leftoverBatchId ? '' : undefined"
     class="group/meal relative rounded-control border bg-background font-sans text-foreground transition-shadow hover:shadow-sm"
-    :class="layout === 'stacked' ? 'flex flex-col gap-1.5 p-1.5' : 'flex items-center gap-3 p-2'"
+    :class="layout === 'stacked' ? 'flex flex-col gap-1.5 p-1.5' : 'grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 p-2'"
   >
     <component
       :is="recipeLink ? NuxtLink : 'button'"
@@ -116,37 +117,38 @@ const scale = computed(() => props.meal.recipeScale ?? 1);
           :class="layout === 'stacked' ? 'line-clamp-2 text-[13.5px]' : 'truncate text-[15px]'"
         >{{ meal.recipe ? meal.recipe.name : meal.title || $t("meal-plan.saved-recipe-missing") }}</span>
         <span
+          v-if="meal.recipeBatchId || meal.leftoverBatchId"
+          class="block text-xs text-muted-foreground"
+        >{{ $t(meal.leftoverBatchId ? "meal-plan.leftovers" : "meal-plan.full-batch") }}</span>
+        <span
           v-if="!meal.recipe && meal.text"
           class="block text-xs text-muted-foreground"
           :class="layout === 'stacked' ? 'line-clamp-2' : 'truncate'"
         >{{ meal.text }}</span>
-        <span
-          v-if="meal.recipe && scale !== 1 && layout === 'stacked'"
-          class="mt-0.5 inline-flex rounded-full bg-subtle px-1.5 text-[11px] font-semibold text-subtle-foreground"
-        >× {{ scale }}</span>
       </span>
     </component>
 
     <MealPlanScaleControl
-      v-if="meal.recipe && layout === 'row'"
-      class="shrink-0 max-sm:display-none"
+      v-if="meal.recipe"
+      :class="layout === 'row' && 'col-start-1 row-start-2 ms-[4.75rem]'"
       :meal="meal"
       :actions="actions"
+      :configurator="configurator"
     />
 
     <div
       class="absolute end-1 top-1 opacity-0 transition-opacity focus-within:opacity-100 group-hover/meal:opacity-100 [@media(hover:none)]:opacity-100"
-      :class="layout === 'row' && 'static opacity-100'"
+      :class="layout === 'row' && 'static col-start-2 row-start-1 opacity-100'"
     >
       <RecipeContextMenu
         v-if="meal.recipe"
         :slug="meal.recipe.slug ?? ''"
         :name="meal.recipe.name ?? ''"
         :recipe-id="meal.recipe.id ?? ''"
-        :recipe-scale="scale"
+        :recipe-scale="meal.recipeBatchId ? 1 : scale"
         :menu-top="false"
         :leading-items="planItems"
-        :use-items="{ delete: false, edit: false, download: false, downloadPdf: false, duplicate: false, mealplanner: false, shoppingList: !configurator, print: false, printPreferences: false, share: true, recipeActions: true }"
+        :use-items="{ delete: false, edit: false, download: false, downloadPdf: false, duplicate: false, mealplanner: false, shoppingList: !configurator && !meal.leftoverBatchId, print: false, printPreferences: false, share: true, recipeActions: true }"
         @mealplan-edit="run('mealplanEdit')"
         @mealplan-remove="run('mealplanRemove')"
         @mealplan-randomize="run('mealplanRandomize')"

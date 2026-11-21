@@ -39,6 +39,7 @@ from mealie.schema.recipe.recipe import RecipeDraft, RecipeOut, RecipeSummary
 from mealie.schema.recipe.recipe_ingredient import RecipeIngredient
 from mealie.schema.recipe.recipe_notes import RecipeNote
 from mealie.schema.recipe.recipe_nutrition import Nutrition
+from mealie.schema.recipe.recipe_organizers import OrganizerOut
 from mealie.schema.recipe.recipe_step import RecipeStep
 from mealie.schema.response.pagination import PaginationQuery
 from mealie.services import urls
@@ -67,6 +68,11 @@ NUTRITION_GUIDANCE = (
     "Put nutrient amounts inside nutrition.values. Use camelCase keys such as proteinContent. "
     "Use numbers or numeric strings without units. For estimates, list the matching keys in estimated_fields "
     "and provide estimate_basis. Use serving_basis to describe what the amounts cover."
+)
+ORGANIZER_GUIDANCE = (
+    "Use list_categories, list_tags, and list_tools to find existing organizers. Supply their IDs or exact slugs "
+    "in categories, tags, and tools. On update, omit a list to keep it, supply the complete list to replace it, "
+    "or use [] to clear it."
 )
 
 
@@ -159,6 +165,15 @@ class RecipeChanges(RecipeToolInput):
     cook_time: Text | None = None
     total_time: Text | None = None
     nutrition: NutritionInput | None = None
+    categories: list[Text] | MISSING = Field(
+        default=MISSING, description="Existing category IDs or exact slugs. Replaces the list on update."
+    )
+    tags: list[Text] | MISSING = Field(
+        default=MISSING, description="Existing tag IDs or exact slugs. Replaces the list on update."
+    )
+    tools: list[Text] | MISSING = Field(
+        default=MISSING, description="Existing kitchen tool IDs or exact slugs. Replaces the list on update."
+    )
     image_url: HttpUrl | None = Field(default=None, description="Public HTTP(S) URL of an image.")
     image_base64: str | None = Field(
         default=None,
@@ -200,6 +215,16 @@ class RecipeSearchResult(BaseModel):
     total: int
 
 
+class RecipeOrganizer(BaseModel):
+    id: UUID
+    name: str
+    slug: str
+
+    @classmethod
+    def from_organizer(cls, organizer: OrganizerOut) -> RecipeOrganizer:
+        return cls(id=organizer.id, name=organizer.name, slug=organizer.slug)
+
+
 class RecipeDetails(RecipeResult):
     source_url: str | None
     yield_quantity: float
@@ -215,6 +240,9 @@ class RecipeDetails(RecipeResult):
     nutrition: Nutrition
     nutrition_provenance: dict[str, NutritionEntry]
     missing_nutrients: list[str]
+    categories: list[RecipeOrganizer]
+    tags: list[RecipeOrganizer]
+    tools: list[RecipeOrganizer]
 
 
 class ScaledIngredient(BaseModel):
@@ -345,9 +373,36 @@ def _apply_nutrition(
     }
 
 
-def _draft_fields(data: RecipeChanges) -> dict[str, Any]:
+def _resolve_organizers(
+    references: list[str], kind: str, find: Callable[[str | UUID, str], OrganizerOut | None]
+) -> list[OrganizerOut]:
+    resolved = {}
+    for reference in references:
+        try:
+            organizer_id = UUID(reference)
+        except ValueError:
+            organizer = find(reference, "slug")
+        else:
+            organizer = find(organizer_id, "id")
+        if organizer is None:
+            raise ToolError(f"Unknown {kind} {reference!r}. Use an existing ID or exact slug from your group.")
+        resolved[organizer.id] = organizer
+    return list(resolved.values())
+
+
+def _draft_fields(data: RecipeChanges, service: RecipeService) -> dict[str, Any]:
     values = data.model_dump(
-        exclude_unset=True, exclude={"ingredients", "instructions", "nutrition", "image_url", "image_base64"}
+        exclude_unset=True,
+        exclude={
+            "ingredients",
+            "instructions",
+            "nutrition",
+            "image_url",
+            "image_base64",
+            "categories",
+            "tags",
+            "tools",
+        },
     )
     rename = {
         "servings": "recipe_servings",
@@ -365,6 +420,12 @@ def _draft_fields(data: RecipeChanges) -> dict[str, Any]:
         ]
     if data.instructions is not None:
         fields["recipe_instructions"] = [RecipeStep(text=step) for step in data.instructions]
+    if data.categories is not MISSING:
+        fields["recipe_category"] = _resolve_organizers(data.categories, "category", service.repos.categories.get_one)
+    if data.tags is not MISSING:
+        fields["tags"] = _resolve_organizers(data.tags, "tag", service.repos.tags.get_one)
+    if data.tools is not MISSING:
+        fields["tools"] = _resolve_organizers(data.tools, "tool", service.repos.tools.get_one)
     return fields
 
 
@@ -397,6 +458,9 @@ def _details(recipe: RecipeOut, group_slug: str) -> RecipeDetails:
         nutrition=recipe.nutrition,
         nutrition_provenance=provenance,
         missing_nutrients=[field for field in Nutrition.model_fields if field not in provenance],
+        categories=[RecipeOrganizer.from_organizer(item) for item in recipe.recipe_category],
+        tags=[RecipeOrganizer.from_organizer(item) for item in recipe.tags],
+        tools=[RecipeOrganizer.from_organizer(item) for item in recipe.tools],
     )
 
 
@@ -426,6 +490,36 @@ def _scale_recipe(recipe: RecipeOut, multiplier: float) -> RecipeScale:
 
 
 def register_recipe_tools(server: FastMCP) -> None:
+    @server.tool(annotations=READ_ONLY)
+    @_offload
+    def list_categories() -> list[RecipeOrganizer]:
+        """List all existing recipe categories in your group, including their IDs, names, and slugs."""
+        with tool_context() as (_, _, repos):
+            return [
+                RecipeOrganizer.from_organizer(item)
+                for item in repos.categories.get_all(order_by="name", order_descending=False)
+            ]
+
+    @server.tool(annotations=READ_ONLY)
+    @_offload
+    def list_tags() -> list[RecipeOrganizer]:
+        """List all existing recipe tags in your group, including their IDs, names, and slugs."""
+        with tool_context() as (_, _, repos):
+            return [
+                RecipeOrganizer.from_organizer(item)
+                for item in repos.tags.get_all(order_by="name", order_descending=False)
+            ]
+
+    @server.tool(annotations=READ_ONLY)
+    @_offload
+    def list_tools() -> list[RecipeOrganizer]:
+        """List all existing kitchen tools in your group, including their IDs, names, and slugs."""
+        with tool_context() as (_, _, repos):
+            return [
+                RecipeOrganizer.from_organizer(item)
+                for item in repos.tools.get_all(order_by="name", order_descending=False)
+            ]
+
     @server.tool(annotations=READ_ONLY)
     @_offload
     def search_recipes(
@@ -470,14 +564,15 @@ def register_recipe_tools(server: FastMCP) -> None:
     @server.tool(annotations=READ_ONLY)
     @_offload
     def get_recipe(recipe: str) -> RecipeDetails:
-        """Get a recipe by ID or slug, including ingredients, instructions, and nutrition provenance."""
+        """Get a recipe by ID or slug, with ingredients, instructions, nutrition provenance, and organizers."""
         with _recipe_service() as service:
             return _details(service.get_one(recipe), _group_slug(service))
 
     @server.tool(
         annotations=WRITE,
         description=(
-            f"Save a complete recipe. For a photo, supply image_url or image_base64. {NUTRITION_GUIDANCE}\n"
+            f"Save a complete recipe. For a photo, supply image_url or image_base64. {ORGANIZER_GUIDANCE} "
+            f"{NUTRITION_GUIDANCE}\n"
             "Example request:\n"
             + dumps(
                 {
@@ -495,7 +590,7 @@ def register_recipe_tools(server: FastMCP) -> None:
     @_offload
     def create_recipe(data: RecipeInput) -> RecipeDetails:
         with _recipe_service() as service:
-            draft = RecipeDraft(id=uuid4(), **_draft_fields(data))
+            draft = RecipeDraft(id=uuid4(), **_draft_fields(data, service))
             if data.nutrition is not None:
                 draft = RecipeDraft.model_validate(draft.model_dump() | _apply_nutrition(draft, data.nutrition))
             if data.image_url is None and data.image_base64 is None:
@@ -527,6 +622,7 @@ def register_recipe_tools(server: FastMCP) -> None:
         description=(
             "Update a recipe by ID. Supply only changed fields and give full lists to replace ingredients or steps. "
             "To replace the photo, supply image_url or image_base64. "
+            f"{ORGANIZER_GUIDANCE} "
             f"{NUTRITION_GUIDANCE} Omit a nutrient to keep it or pass null to clear it.\n"
             "Example request:\n"
             + dumps(
@@ -568,9 +664,9 @@ def register_recipe_tools(server: FastMCP) -> None:
 
 
 def _update_recipe(recipe_id: UUID, changes: RecipeChanges) -> RecipeDetails:
-    fields = _draft_fields(changes)
     with _recipe_service() as service:
         recipe = service.get_one(recipe_id)
+        fields = _draft_fields(changes, service)
         if changes.nutrition is not None:
             fields.update(_apply_nutrition(recipe, changes.nutrition))
         has_image = changes.image_url is not None or changes.image_base64 is not None

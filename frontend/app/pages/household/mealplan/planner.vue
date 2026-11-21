@@ -177,6 +177,7 @@
 
     <NuxtPage
       :mealplans="plans"
+      :batch-entries="batchEntries"
       :actions="actions"
     />
   </div>
@@ -388,7 +389,7 @@ watch(visibleRange, (newRange) => {
   });
 }, { immediate: true });
 
-const { mealplans, actions } = useMealplans(visibleRange);
+const { mealplans, actions, batchEntries } = useMealplans(visibleRange, true);
 
 function filterMealByDate(date: Date) {
   if (!mealplans.value) return [];

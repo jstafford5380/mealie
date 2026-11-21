@@ -1,6 +1,6 @@
 import random
 from datetime import UTC, date, datetime, timedelta
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 from dateutil.tz import tzlocal
@@ -732,3 +732,49 @@ def test_saved_plan_import_maps_weekdays_and_preserves_existing_meals(
         ).json()["items"]
         == []
     )
+
+
+def test_saved_plan_import_remaps_batches_and_calendar_filters_them(
+    api_client: TestClient, unique_user: TestUser
+) -> None:
+    recipe_id = str(create_recipe(unique_user).id)
+    batch_id = str(uuid4())
+    headers = unique_user.token
+    response = api_client.post(
+        api_routes.households_mealplans_saved,
+        json={
+            "name": "Batch week",
+            "entries": [
+                {"weekday": 1, "entryType": "dinner", "recipeId": recipe_id, "recipeBatchId": batch_id},
+                {"weekday": 2, "entryType": "lunch", "recipeId": recipe_id, "leftoverBatchId": batch_id},
+            ],
+        },
+        headers=headers,
+    )
+    assert response.status_code == 201, response.text
+    plan = response.json()
+    assert plan["entries"][0]["recipeBatchId"] == plan["entries"][1]["leftoverBatchId"] == batch_id
+
+    route = api_routes.households_mealplans_saved_plan_id_import(plan["id"])
+    imported_ids = []
+    for week_start in ("2040-01-02", "2040-01-09"):
+        response = api_client.post(route, json={"weekStart": week_start}, headers=headers)
+        assert response.status_code == 201, response.text
+        source, consumer = response.json()
+        assert source["recipeBatchId"] == consumer["leftoverBatchId"]
+        imported_ids.append(source["recipeBatchId"])
+    assert len({batch_id, *imported_ids}) == 3
+
+    response = api_client.post(
+        api_routes.households_mealplans, json={"title": "Other meal", "date": "2040-01-05"}, headers=headers
+    )
+    assert response.status_code == 201, response.text
+    response = api_client.get(
+        api_routes.households_mealplans,
+        params={"queryFilter": "recipe_batch_id IS NOT NULL OR leftover_batch_id IS NOT NULL"},
+        headers=headers,
+    )
+    assert response.status_code == 200, response.text
+    entries = response.json()["items"]
+    assert len(entries) == 4
+    assert {entry["recipeBatchId"] or entry["leftoverBatchId"] for entry in entries} == set(imported_ids)

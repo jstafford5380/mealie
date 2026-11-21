@@ -1,10 +1,10 @@
 import datetime
 from datetime import date, timedelta
 from enum import StrEnum
-from typing import Annotated
+from typing import Annotated, Self
 from uuid import UUID
 
-from pydantic import ConfigDict, Field, field_validator
+from pydantic import ConfigDict, Field, field_validator, model_validator
 from pydantic_core.core_schema import ValidationInfo
 from sqlalchemy.orm import selectinload
 from sqlalchemy.orm.interfaces import LoaderOption
@@ -48,7 +48,20 @@ class RandomPlanEntryCreate(MealieModel):
     _validate_end_date = field_validator("end_date")(validate_end_date)
 
 
-class PlanEntryCreate(MealieModel):
+class MealEntryBatch(MealieModel):
+    recipe_batch_id: UUID | None = None
+    leftover_batch_id: UUID | None = None
+
+    def validate_batch(self, recipe_id: UUID | None, has_day: bool) -> None:
+        if self.recipe_batch_id is None and self.leftover_batch_id is None:
+            return
+        if recipe_id is None or not has_day:
+            raise ValueError("Cooking a batch or using leftovers requires a dated recipe entry")
+        if self.recipe_batch_id is not None and self.leftover_batch_id is not None:
+            raise ValueError("An entry cannot cook a full batch and use leftovers")
+
+
+class PlanEntryCreate(MealEntryBatch):
     date: date
     end_date: datetime.date | None = None
     entry_type: PlanEntryType = PlanEntryType.breakfast
@@ -66,6 +79,11 @@ class PlanEntryCreate(MealieModel):
         return value
 
     _validate_end_date = field_validator("end_date")(validate_end_date)
+
+    @model_validator(mode="after")
+    def require_day_for_batch(self) -> Self:
+        self.validate_batch(self.recipe_id, self.end_date is None)
+        return self
 
 
 class PlanEntryUpdate(PlanEntryCreate):

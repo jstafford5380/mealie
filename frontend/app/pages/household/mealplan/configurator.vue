@@ -101,6 +101,8 @@ const payload = computed<SavedMealPlanCreate | null>(() => draft.value && ({
     text: meal.text,
     recipeId: meal.recipeId,
     recipeScale: meal.recipeScale,
+    recipeBatchId: meal.recipeBatchId,
+    leftoverBatchId: meal.leftoverBatchId,
   })),
 }));
 const dirty = computed(() => !!payload.value && JSON.stringify(payload.value) !== lastSaved.value);
@@ -128,6 +130,8 @@ const actions: MealBoardActions = {
       title: entry.title ?? "",
       text: entry.text ?? "",
       recipeScale: entry.recipeScale ?? 1,
+      recipeBatchId: entry.recipeBatchId ?? null,
+      leftoverBatchId: entry.leftoverBatchId ?? null,
       entryType: entry.entryType ?? "breakfast",
       endDate: entry.endDate ?? null,
       recipeId: entry.recipeId ?? null,

@@ -1,4 +1,5 @@
 import type { PlanEntryOut, PlanEntryUpdate } from "~/lib/api/types/meal-plan";
+import { getBaseServings } from "./use-mealplan-batches";
 
 export const MEALPLAN_SCALE_SAVE_DELAY_MS = 400;
 
@@ -17,10 +18,7 @@ export function useMealPlanScale(
   const scale = ref(savedScale.value);
 
   // RecipeSummary has no fallback of its own, so a recipe without servings is treated as serving one
-  const recipeServings = computed(() => {
-    const recipe = toValue(meal).recipe;
-    return recipe?.recipeServings || recipe?.recipeYieldQuantity || 1;
-  });
+  const recipeServings = computed(() => getBaseServings(toValue(meal).recipe));
 
   let saveTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -45,7 +43,12 @@ export function useMealPlanScale(
       saveTimer = null;
     }
     if (scale.value !== savedScale.value) {
-      saveTimer = setTimeout(saveNow, delay);
+      if (delay > 0) {
+        saveTimer = setTimeout(saveNow, delay);
+      }
+      else {
+        saveNow();
+      }
     }
   }, { flush: "sync" });
 

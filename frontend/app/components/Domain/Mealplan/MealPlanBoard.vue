@@ -20,7 +20,11 @@ import { MdiIcon } from "~/components/ui/mdi-icon";
 import { useUserApi } from "~/composables/api";
 import { useAddToShoppingListDialog } from "~/composables/shopping-list-page/use-add-to-shopping-list-dialog";
 import { getScaledRecipes, usePlanTypeOptions } from "~/composables/use-group-mealplan";
+import { copyMealToSlot, leftoverDragType, planRemainingLeftovers, projectMealBatches } from "~/composables/use-mealplan-batches";
+import { useMealPlanDragPreview } from "~/composables/use-mealplan-drag-preview";
 import MealPlanEntryCard from "./MealPlanEntryCard.vue";
+import MealPlanDailyNutrition from "./MealPlanDailyNutrition.vue";
+import MealPlanLeftoversGrid from "./MealPlanLeftoversGrid.vue";
 
 /**
  * The meal plan as a board: each week is a row of whole-week entries above a grid of
@@ -31,6 +35,7 @@ const props = defineProps<{
   mealplans: MealsByDate[];
   actions: MealBoardActions;
   configurator?: boolean;
+  batchEntries?: PlanEntryOut[];
 }>();
 
 const api = useUserApi();
@@ -58,6 +63,77 @@ const blocks = computed<Block[]>(() => {
   return list;
 });
 
+const leftovers = computed(() => {
+  const entries = new Map((props.batchEntries ?? []).map(entry => [entry.id, entry]));
+  for (const day of props.mealplans) {
+    for (const entry of day.meals) entries.set(entry.id, entry);
+  }
+  return projectMealBatches([...entries.values()]);
+});
+const board = ref<HTMLElement | null>(null);
+const selectedBatchId = ref<string | null>(null);
+const draggedBatchId = ref<string | null>(null);
+const hoveredDropCell = ref<string | null>(null);
+const addingLeftovers = ref(false);
+const activeBatch = computed(() =>
+  leftovers.value.batches.find(batch => batch.id === (draggedBatchId.value ?? selectedBatchId.value)),
+);
+
+function canPlaceLeftovers(date: Date, type: PlanEntryType) {
+  return !addingLeftovers.value && !!activeBatch.value && !!planRemainingLeftovers(activeBatch.value, dateKey(date), type);
+}
+
+async function selectBatch(id: string) {
+  selectedBatchId.value = selectedBatchId.value === id ? null : id;
+  if (selectedBatchId.value) {
+    await nextTick();
+    board.value?.querySelector<HTMLElement>("[data-leftover-target]")?.focus();
+  }
+}
+
+function setDraggedBatch(id: string | null) {
+  draggedBatchId.value = id;
+  hoveredDropCell.value = null;
+}
+
+function allowLeftoverDrop(event: DragEvent, day: MealsByDate, type: PlanEntryType) {
+  if (event.dataTransfer?.types.includes(leftoverDragType) && canPlaceLeftovers(day.date, type)) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "copy";
+    hoveredDropCell.value = cellKey(day, type);
+  }
+}
+
+function leaveLeftoverCell(event: DragEvent, day: MealsByDate, type: PlanEntryType) {
+  if (hoveredDropCell.value === cellKey(day, type)
+    && !(event.relatedTarget instanceof Node && (event.currentTarget as HTMLElement).contains(event.relatedTarget))) {
+    hoveredDropCell.value = null;
+  }
+}
+
+async function addLeftovers(id: string | null, date: Date, type: PlanEntryType) {
+  const batch = leftovers.value.batches.find(batch => batch.id === id);
+  const payload = batch && planRemainingLeftovers(batch, dateKey(date), type);
+  if (!batch || !payload || addingLeftovers.value) return;
+  addingLeftovers.value = true;
+  selectedBatchId.value = null;
+  setDraggedBatch(null);
+  try {
+    await props.actions.createOne(payload, batch.source.recipe);
+  }
+  finally {
+    addingLeftovers.value = false;
+  }
+}
+
+function dropLeftovers(event: DragEvent, date: Date, type: PlanEntryType) {
+  const id = event.dataTransfer?.getData(leftoverDragType);
+  if (!id || id !== draggedBatchId.value) return;
+  event.preventDefault();
+  hoveredDropCell.value = null;
+  void addLeftovers(id, date, type);
+}
+
 // Breakfast, lunch and dinner always have a row; other types appear once a meal uses them.
 const CORE: PlanEntryType[] = ["breakfast", "lunch", "dinner"];
 function rowsFor(block: Block) {
@@ -73,7 +149,15 @@ const dateKey = (d: Date) => format(d, "yyyy-MM-dd");
 const cellKey = (day: MealsByDate, type: PlanEntryType) => `${dateKey(day.date)}|${type}`;
 const weekKey = (week: MealsByDate) => `week|${dateKey(week.date)}`;
 const cells = reactive<Record<string, PlanEntryOut[]>>({});
-watch(() => props.mealplans, (plans) => {
+const movingMeal = ref(false);
+const savingMove = ref(false);
+const { startMealDrag, refreshMealDragPreview, clearMealDragPreview } = useMealPlanDragPreview();
+function onMealDragStart(event: SortableEvent) {
+  movingMeal.value = true;
+  startMealDrag(event);
+}
+
+function syncCells(plans: MealsByDate[]) {
   const next: Record<string, PlanEntryOut[]> = {};
   for (const plan of plans) {
     if (plan.endDate) {
@@ -90,24 +174,43 @@ watch(() => props.mealplans, (plans) => {
     }
   }
   Object.assign(cells, next);
-}, { immediate: true, deep: true });
+}
+watch(() => props.mealplans, syncCells, { immediate: true, deep: true });
 
-function onDrop(event: SortableEvent) {
-  const id = (event.item as HTMLElement).querySelector("[data-id]")?.getAttribute("data-id") ?? (event.item as HTMLElement).getAttribute("data-id");
-  const target = (event.to as HTMLElement).dataset;
-  if (!id || event.from === event.to) {
+async function onDrop(event: SortableEvent & { originalEvent?: MouseEvent | TouchEvent }) {
+  clearMealDragPreview();
+  movingMeal.value = false;
+  const copying = event.originalEvent?.shiftKey === true;
+  if (!copying && event.from === event.to) {
     return;
   }
+  const id = event.item.dataset.id;
+  const target = event.to.dataset;
   const meal = props.mealplans.flatMap(p => p.meals).find(m => String(m.id) === id);
-  if (!meal) {
-    return;
+  savingMove.value = true;
+  try {
+    if (meal && target.date) {
+      const slot = {
+        date: target.date,
+        endDate: target.endDate || null,
+        entryType: (target.type as PlanEntryType) || meal.entryType,
+      };
+      if (copying) {
+        // Sortable moves the card before emitting end. Put it back before creating the copy.
+        syncCells(props.mealplans);
+        const payload = copyMealToSlot(meal, slot, leftovers.value.batches);
+        if (payload) await props.actions.createOne(payload, meal.recipe);
+      }
+      else {
+        await props.actions.updateOne({ ...meal, ...slot });
+      }
+    }
   }
-  props.actions.updateOne({
-    ...meal,
-    date: target.date!,
-    endDate: target.endDate || null,
-    entryType: (target.type as PlanEntryType) || meal.entryType,
-  });
+  finally {
+    await nextTick();
+    syncCells(props.mealplans);
+    savingMove.value = false;
+  }
 }
 
 // ---- dialogs and actions
@@ -169,11 +272,14 @@ const dayName = (d: Date) => new Intl.DateTimeFormat(i18n.locale.value, { weekda
 const today = (date: Date) => !props.configurator && isToday(date);
 const longDay = (d: Date) => props.configurator ? new Intl.DateTimeFormat(i18n.locale.value, { weekday: "long" }).format(d) : new Intl.DateTimeFormat(i18n.locale.value, { weekday: "long", month: "short", day: "numeric" }).format(d);
 // Pointer-driven dragging (not native drag-and-drop) behaves the same with mouse, touch and pen.
-const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTouchOnly: true, forceFallback: true, fallbackTolerance: 4, ghostClass: "opacity-40", filter: "button, [role=menuitem]", preventOnFilter: false };
+const sortableOptions = { group: "meals", draggable: ">[data-id]", animation: 180, delay: 250, delayOnTouchOnly: true, forceFallback: true, fallbackOnBody: true, fallbackClass: "meal-plan-drag-preview", fallbackTolerance: 4, ghostClass: "opacity-40", filter: "button, [role=menuitem]", preventOnFilter: false };
+function canMoveMeal(event: { dragged: HTMLElement; to: HTMLElement }) {
+  return !event.to.dataset.endDate || !event.dragged.hasAttribute("data-batch-entry");
+}
 </script>
 
 <template>
-  <div class="flex flex-col gap-8 font-sans">
+  <div ref="board" class="flex flex-col gap-8 font-sans" @keydown.esc="selectedBatchId = null">
     <GroupMealPlanEntryDialog
       v-model="dialog.open"
       :entry="dialog.entry"
@@ -181,6 +287,7 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
       :date="dialog.date"
       :end-date="dialog.endDate"
       :default-entry-type="dialog.entryType"
+      :batches="leftovers.batches"
       @create="(payload, recipe) => actions.createOne(payload, recipe)"
       @update="(payload, recipe) => actions.updateOne(payload, recipe)"
     />
@@ -210,9 +317,13 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
         <VueDraggable
           v-model="cells[weekKey(block.week)]!"
           v-bind="sortableOptions"
+          :disabled="savingMove"
+          :on-move="canMoveMeal"
           :data-date="dateKey(block.week.date)"
           :data-end-date="dateKey(block.week.endDate!)"
           class="flex min-h-10 min-w-0 flex-1 flex-wrap gap-2"
+          @start="onMealDragStart"
+          @change="refreshMealDragPreview"
           @end="onDrop"
         >
           <MealPlanEntryCard
@@ -253,7 +364,7 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
               class="min-w-56"
             >
               <DropdownMenuItem
-                :disabled="!block.week.meals.some(m => m.recipe)"
+                :disabled="!getScaledRecipes(block.week.meals).length"
                 @select="addToList(block.week!.meals)"
               >
                 <MdiIcon
@@ -317,7 +428,7 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
                 class="min-w-56"
               >
                 <DropdownMenuItem
-                  :disabled="!day.meals.some(m => m.recipe)"
+                  :disabled="!getScaledRecipes(day.meals).length"
                   @select="addToList(day.meals)"
                 >
                   <MdiIcon
@@ -352,33 +463,47 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
             <div class="border-b px-3 py-3 text-sm font-semibold text-muted-foreground">
               {{ row.text }}
             </div>
-            <div
+            <VueDraggable
               v-for="day in block.days"
               :key="cellKey(day, row.value)"
-              class="group/cell flex min-w-0 flex-col gap-1.5 border-b border-s p-1.5"
-              :class="today(day.date) && 'bg-highlight/30'"
+              v-model="cells[cellKey(day, row.value)]!"
+              v-bind="sortableOptions"
+              :disabled="savingMove"
+              :on-move="canMoveMeal"
+              :data-date="dateKey(day.date)"
+              :data-type="row.value"
+              class="group/cell flex min-h-14 min-w-0 flex-col gap-1.5 border-b border-s p-1.5"
+              :class="hoveredDropCell === cellKey(day, row.value) ? 'bg-highlight' : today(day.date) && 'bg-highlight/30'"
+              @start="onMealDragStart"
+              @change="refreshMealDragPreview"
+              @end="onDrop"
+              @dragover="allowLeftoverDrop($event, day, row.value)"
+              @dragleave="leaveLeftoverCell($event, day, row.value)"
+              @drop="dropLeftovers($event, day.date, row.value)"
             >
-              <VueDraggable
-                v-model="cells[cellKey(day, row.value)]!"
-                v-bind="sortableOptions"
-                :data-date="dateKey(day.date)"
-                :data-type="row.value"
-                class="flex min-h-2 flex-col gap-1.5"
-                @end="onDrop"
-              >
-                <MealPlanEntryCard
-                  v-for="meal in cells[cellKey(day, row.value)]"
-                  :key="meal.id"
-                  :meal="meal"
-                  :actions="actions"
-                  :configurator="configurator"
-                  class="cursor-grab"
-                  @edit="editMeal"
-                  @randomize="randomizeMeal"
-                  @cook-today="cookToday"
-                />
-              </VueDraggable>
+              <MealPlanEntryCard
+                v-for="meal in cells[cellKey(day, row.value)]"
+                :key="meal.id"
+                :meal="meal"
+                :actions="actions"
+                :configurator="configurator"
+                class="cursor-grab"
+                @edit="editMeal"
+                @randomize="randomizeMeal"
+                @cook-today="cookToday"
+              />
               <button
+                v-if="selectedBatchId && canPlaceLeftovers(day.date, row.value)"
+                type="button"
+                data-leftover-target
+                class="rounded-control border border-primary px-2 py-1 text-xs font-semibold text-primary"
+                :aria-label="$t('meal-plan.add-leftovers-to-slot', { type: row.text, day: longDay(day.date) })"
+                @click="addLeftovers(selectedBatchId, day.date, row.value)"
+              >
+                {{ $t("meal-plan.add-leftovers") }}
+              </button>
+              <button
+                v-else
                 type="button"
                 class="flex w-full items-center justify-center rounded-control border border-dashed text-muted-foreground transition-colors hover:border-primary/50 hover:bg-highlight/50 hover:text-primary"
                 :class="cells[cellKey(day, row.value)]?.length ? 'h-7 border-transparent opacity-0 focus-visible:opacity-100 group-hover/cell:opacity-100 [@media(hover:none)]:opacity-100' : 'h-11'"
@@ -387,8 +512,16 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
               >
                 <PlusIcon class="size-4" />
               </button>
-            </div>
+            </VueDraggable>
           </template>
+          <span />
+          <MealPlanDailyNutrition
+            v-for="day in block.days"
+            :key="`nutrition-${dateKey(day.date)}`"
+            :meals="day.meals"
+            class="border-s px-3 py-2.5"
+            :class="today(day.date) && 'bg-highlight/30'"
+          />
         </div>
       </div>
 
@@ -433,7 +566,7 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
                 class="min-w-56"
               >
                 <DropdownMenuItem
-                  :disabled="!day.meals.some(m => m.recipe)"
+                  :disabled="!getScaledRecipes(day.meals).length"
                   @select="addToList(day.meals)"
                 >
                   <MdiIcon
@@ -462,7 +595,7 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
           </header>
           <div class="flex flex-col gap-3 p-3">
             <p
-              v-if="!day.meals.length"
+              v-if="!day.meals.length && !movingMeal"
               class="m-0 px-1 text-sm text-muted-foreground"
             >
               {{ $t('meal-plan.nothing-planned') }}
@@ -471,16 +604,27 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
               v-for="option in planTypeOptions"
               :key="option.value"
             >
-              <div v-if="cells[cellKey(day, option.value)]?.length">
+              <div
+                v-if="cells[cellKey(day, option.value)]?.length || (movingMeal && rowsFor(block).some(row => row.value === option.value)) || canPlaceLeftovers(day.date, option.value)"
+                :class="hoveredDropCell === cellKey(day, option.value) && 'rounded-control bg-highlight'"
+                @dragover="allowLeftoverDrop($event, day, option.value)"
+                @dragleave="leaveLeftoverCell($event, day, option.value)"
+                @drop="dropLeftovers($event, day.date, option.value)"
+              >
                 <div class="mb-1.5 px-1 text-xs font-semibold text-muted-foreground">
                   {{ typeLabel(option.value) }}
                 </div>
                 <VueDraggable
                   v-model="cells[cellKey(day, option.value)]!"
                   v-bind="sortableOptions"
+                  :disabled="savingMove"
+                  :on-move="canMoveMeal"
                   :data-date="dateKey(day.date)"
                   :data-type="option.value"
                   class="flex flex-col gap-2"
+                  :class="movingMeal && 'min-h-8 rounded-control border border-dashed border-muted-foreground/40'"
+                  @start="onMealDragStart"
+                  @change="refreshMealDragPreview"
                   @end="onDrop"
                 >
                   <MealPlanEntryCard
@@ -495,9 +639,20 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
                     @cook-today="cookToday"
                   />
                 </VueDraggable>
+                <button
+                  v-if="selectedBatchId && canPlaceLeftovers(day.date, option.value)"
+                  type="button"
+                  data-leftover-target
+                  class="w-full rounded-control border border-primary px-2 py-2 text-sm font-semibold text-primary"
+                  :aria-label="$t('meal-plan.add-leftovers-to-slot', { type: option.text, day: longDay(day.date) })"
+                  @click="addLeftovers(selectedBatchId, day.date, option.value)"
+                >
+                  {{ $t("meal-plan.add-leftovers") }}
+                </button>
               </div>
             </template>
           </div>
+          <MealPlanDailyNutrition :meals="day.meals" class="border-t px-4 py-3" />
         </article>
       </div>
     </section>
@@ -508,5 +663,24 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
     >
       {{ $t('meal-plan.board-hint') }}
     </p>
+    <MealPlanLeftoversGrid
+      :days="blocks.flatMap(block => block.days.map(day => day.date))"
+      :batches="leftovers.batches"
+      :unlinked="leftovers.unlinked"
+      :configurator="configurator"
+      :selected-batch-id="selectedBatchId"
+      @select-batch="selectBatch"
+      @drag-batch="setDraggedBatch"
+    />
   </div>
 </template>
+
+<style scoped>
+:global(.meal-plan-copy-origin) {
+  opacity: 1;
+}
+
+:global(.meal-plan-copy-ghost) {
+  opacity: 0.55 !important;
+}
+</style>

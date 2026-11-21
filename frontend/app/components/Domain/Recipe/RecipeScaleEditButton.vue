@@ -7,9 +7,11 @@
       v-if="canEditScale"
       role="group"
       :aria-label="$t('recipe.servings')"
-      class="inline-flex h-10 items-center rounded-control border border-input bg-card"
+      class="inline-flex items-center rounded-control border border-input bg-card"
+      :class="compact ? 'h-7' : 'h-10'"
     >
       <button
+        v-if="!compact"
         type="button"
         class="inline-flex h-full w-10 items-center justify-center rounded-s-control text-muted-foreground hover:bg-highlight hover:text-highlight-foreground disabled:opacity-40"
         :disabled="disableDecrement"
@@ -22,7 +24,8 @@
         <PopoverTrigger as-child>
           <button
             type="button"
-            class="h-full px-2 text-sm font-semibold hover:bg-highlight/60"
+            class="h-full rounded-control px-2 font-semibold hover:bg-highlight/60"
+            :class="compact ? 'text-xs' : 'text-sm'"
             :title="$t('recipe.edit-scale')"
           >
             <SafeInlineHtml :html="yieldDisplay" />
@@ -37,6 +40,16 @@
             class="text-sm font-semibold"
           >{{ $t("recipe.servings") }}</label>
           <div class="flex items-center gap-2">
+            <Button
+              v-if="compact"
+              variant="outline"
+              size="icon"
+              :disabled="disableDecrement"
+              :aria-label="$t('recipe.decrease-scale-label')"
+              @click="recalculateScale(yieldQuantity - 1)"
+            >
+              <MinusIcon class="size-4" />
+            </Button>
             <input
               :id="inputId"
               type="number"
@@ -47,6 +60,15 @@
               class="h-10 min-w-0 flex-1 rounded-control border border-input bg-card px-3 text-base outline-none focus:border-ring focus:ring-3 focus:ring-ring/25"
               @change="recalculateScale(Number(($event.target as HTMLInputElement).value) || 0)"
             >
+            <Button
+              v-if="compact"
+              variant="outline"
+              size="icon"
+              :aria-label="$t('recipe.increase-scale-label')"
+              @click="recalculateScale(yieldQuantity + 1)"
+            >
+              <PlusIcon class="size-4" />
+            </Button>
             <Button
               variant="outline"
               size="icon"
@@ -60,6 +82,7 @@
         </PopoverContent>
       </Popover>
       <button
+        v-if="!compact"
         type="button"
         class="inline-flex h-full w-10 items-center justify-center rounded-e-control text-muted-foreground hover:bg-highlight hover:text-highlight-foreground"
         :aria-label="$t('recipe.increase-scale-label')"
@@ -86,6 +109,7 @@ import { calculateScaleFromYield, useScaledAmount } from "~/composables/recipes/
 interface Props {
   recipeServings?: number;
   editScale?: boolean;
+  compact?: boolean;
 }
 const props = withDefaults(defineProps<Props>(), {
   recipeServings: 0,

@@ -2,6 +2,7 @@
   <RecipeScaleEditButton
     v-model="scale"
     :recipe-servings="recipeServings"
+    compact
     edit-scale
   />
 </template>
@@ -15,10 +16,12 @@ import type { PlanEntryOut } from "~/lib/api/types/meal-plan";
 const props = defineProps<{
   meal: PlanEntryOut;
   actions: Pick<MealBoardActions, "updateOne">;
+  configurator?: boolean;
 }>();
 
 const { scale, recipeServings } = useMealPlanScale(
   () => props.meal,
   payload => props.actions.updateOne(payload),
+  props.configurator ? 0 : undefined,
 );
 </script>

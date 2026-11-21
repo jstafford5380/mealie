@@ -43,6 +43,8 @@ class MealPlanEntry(BaseModel):
     recipe_name: str | None
     recipe_url: str | None
     recipe_scale: float
+    recipe_batch_id: UUID | None
+    leftover_batch_id: UUID | None
 
     @classmethod
     def from_entry(cls, entry: PlanEntryOut, group_slug: str) -> MealPlanEntry:
@@ -58,6 +60,8 @@ class MealPlanEntry(BaseModel):
             recipe_name=recipe.name if recipe else None,
             recipe_url=recipe_url(group_slug, recipe.slug, None) if recipe else None,
             recipe_scale=entry.recipe_scale,
+            recipe_batch_id=entry.recipe_batch_id,
+            leftover_batch_id=entry.leftover_batch_id,
         )
 
 
@@ -65,6 +69,17 @@ class MealPlanPage(BaseModel):
     entries: list[MealPlanEntry]
     total: int
     next_page: int | None
+
+
+class LeftoverBatch(BaseModel):
+    batch_id: UUID
+    source_entry_id: int
+    cooked_on: datetime.date
+    cooked_for: PlanEntryType
+    recipe_id: UUID
+    recipe_name: str
+    base_servings: float
+    remaining_servings: float
 
 
 class MealPlanPatch(BaseModel):
@@ -79,10 +94,20 @@ class MealPlanPatch(BaseModel):
     note: str | MISSING = MISSING
     recipe_id: UUID | MISSING = MISSING
     recipe_scale: RecipeScale | MISSING = MISSING
+    recipe_batch_id: UUID | None = Field(
+        default=None, description="UUID identifying this full batch. Pass null to stop cooking a full batch."
+    )
+    leftover_batch_id: UUID | None = Field(
+        default=None, description="Existing source batch UUID to use. Pass null to stop using leftovers."
+    )
 
 
 class SavedMealEntryInput(SavedMealEntryCreate):
     model_config = ConfigDict(extra="forbid")
+    recipe_batch_id: UUID | None = Field(default=None, description="Fresh UUID for an entry that cooks one full batch.")
+    leftover_batch_id: UUID | None = Field(
+        default=None, description="Use the recipeBatchId of an earlier meal for the same recipe within this saved plan."
+    )
 
 
 class SavedMealPlanInput(BaseModel):
@@ -94,8 +119,120 @@ class SavedMealPlanInput(BaseModel):
         "or null for the whole week. Supply a recipe_id or a title for each meal."
     )
 
-    def to_create(self) -> SavedMealPlanCreate:
+    def to_create(self, service: MealPlanService) -> SavedMealPlanCreate:
+        batches = {}
+        for entry in self.entries:
+            if entry.recipe_batch_id is not None:
+                if entry.recipe_batch_id in batches or entry.recipe_scale > 1:
+                    raise ToolError("Each full batch needs a unique UUID and a recipeScale of at most 1.")
+                batches[entry.recipe_batch_id] = entry
+        totals = {batch_id: entry.recipe_scale for batch_id, entry in batches.items()}
+        preferences = service.repos.household_preferences.get_one(service.user.household_id) if totals else None
+        first_day = preferences.first_day_of_week if preferences else 0
+        for entry in self.entries:
+            batch_id = entry.leftover_batch_id
+            if batch_id is not None:
+                source = batches.get(batch_id)
+                if source is None or source.recipe_id != entry.recipe_id:
+                    raise ToolError(
+                        "A leftover entry must reference a full batch of the same recipe in this saved plan."
+                    )
+                if source.weekday is not None and entry.weekday is not None:
+                    source_slot = ((source.weekday - first_day) % 7, MEAL_ORDER.index(source.entry_type))
+                    target_slot = ((entry.weekday - first_day) % 7, MEAL_ORDER.index(entry.entry_type))
+                    if source_slot > target_slot:
+                        raise ToolError("In Meal Configurator, put the full batch before its leftover meals.")
+                totals[batch_id] += entry.recipe_scale
+                if totals[batch_id] > 1 + 1e-6:
+                    raise ToolError("The saved plan allocates more servings than the full batch provides.")
         return SavedMealPlanCreate(name=self.name, entries=list(self.entries))
+
+
+MEAL_ORDER = tuple(PlanEntryType)
+BATCH_FIELDS = {"recipe_batch_id", "leftover_batch_id"}
+
+
+def _precedes(source: PlanEntryCreate, date: datetime.date, entry_type: PlanEntryType) -> bool:
+    return (source.date, MEAL_ORDER.index(source.entry_type)) <= (date, MEAL_ORDER.index(entry_type))
+
+
+def _batch_entries(service: MealPlanService) -> list[PlanEntryOut]:
+    query = PaginationQuery(per_page=-1, query_filter="recipe_batch_id IS NOT NULL OR leftover_batch_id IS NOT NULL")
+    return service.list_entries(query, None, None, include_week_entries=False).items
+
+
+def _batch_uses(
+    source: PlanEntryCreate, entries: list[PlanEntryOut], exclude_id: int | None = None
+) -> list[PlanEntryOut]:
+    return [entry for entry in entries if entry.id != exclude_id and entry.leftover_batch_id == source.recipe_batch_id]
+
+
+def _available_batches(
+    entries: list[PlanEntryOut], date: datetime.date, entry_type: PlanEntryType, recipe_id: UUID | None
+) -> list[LeftoverBatch]:
+    batches = []
+    for source in entries:
+        recipe = source.recipe
+        if (
+            not source.recipe_batch_id
+            or not source.recipe_id
+            or not recipe
+            or (recipe_id is not None and source.recipe_id != recipe_id)
+            or not _precedes(source, date, entry_type)
+        ):
+            continue
+        base_servings = recipe.recipe_servings or recipe.recipe_yield_quantity or 1
+        allocated = source.recipe_scale + sum(entry.recipe_scale for entry in _batch_uses(source, entries))
+        remaining = round(base_servings * (1 - allocated), 6)
+        if remaining > 0:
+            batches.append(
+                LeftoverBatch(
+                    batch_id=source.recipe_batch_id,
+                    source_entry_id=source.id,
+                    cooked_on=source.date,
+                    cooked_for=source.entry_type,
+                    recipe_id=source.recipe_id,
+                    recipe_name=recipe.name,
+                    base_servings=base_servings,
+                    remaining_servings=remaining,
+                )
+            )
+    return sorted(batches, key=lambda batch: (batch.cooked_on, batch.source_entry_id))
+
+
+def _validate_calendar_batch(
+    service: MealPlanService, entry: PlanEntryCreate, current: PlanEntryOut | None = None
+) -> None:
+    if not (entry.recipe_batch_id or entry.leftover_batch_id or (current and current.recipe_batch_id)):
+        return
+    entries = _batch_entries(service)
+    current_id = current.id if current else None
+    if current and current.recipe_batch_id and current.recipe_batch_id != entry.recipe_batch_id:
+        if _batch_uses(current, entries):
+            raise ToolError("Other meals use this batch. Reassign those entries before clearing or changing its UUID.")
+    if entry.recipe_batch_id:
+        if any(source.recipe_batch_id == entry.recipe_batch_id and source.id != current_id for source in entries):
+            raise ToolError("This full batch UUID is already in use. Generate a fresh UUID.")
+        consumers = _batch_uses(entry, entries, current_id)
+        if any(
+            consumer.recipe_id != entry.recipe_id or not _precedes(entry, consumer.date, consumer.entry_type)
+            for consumer in consumers
+        ):
+            raise ToolError("A batch must use the same recipe as its leftover meals and precede them.")
+        if entry.recipe_scale > 1 or entry.recipe_scale + sum(meal.recipe_scale for meal in consumers) > 1 + 1e-6:
+            raise ToolError("The planned servings exceed what this full batch provides.")
+    if entry.leftover_batch_id:
+        source = next((meal for meal in entries if meal.recipe_batch_id == entry.leftover_batch_id), None)
+        if (
+            source is None
+            or source.id == current_id
+            or source.recipe_id != entry.recipe_id
+            or not _precedes(source, entry.date, entry.entry_type)
+        ):
+            raise ToolError("Choose an earlier full batch of the same recipe from list_leftover_batches.")
+        used_scale = source.recipe_scale + sum(meal.recipe_scale for meal in _batch_uses(source, entries, current_id))
+        if used_scale + entry.recipe_scale > 1 + 1e-6:
+            raise ToolError("This batch does not have enough unallocated servings. Check list_leftover_batches.")
 
 
 @contextmanager
@@ -110,8 +247,14 @@ def _meal_plan() -> Iterator[tuple[MealPlanService, str]]:
         )
         try:
             yield service, group.slug
-        except ValidationError:
-            raise ToolError("Invalid meal. Use a single date or set the end date six days after the start.") from None
+        except ValidationError as error:
+            first = error.errors(include_input=False, include_context=False, include_url=False)[0]
+            if first["loc"] == ("end_date",):
+                raise ToolError(
+                    "Invalid meal. Use a single date or set the end date six days after the start."
+                ) from None
+            message = first["msg"]
+            raise ToolError(f"Invalid meal. {message.removeprefix('Value error, ')}") from None
         except MealPlanRecipeNotFound:
             raise ToolError("The recipe was not found in your Mealie library.") from None
         except SavedMealPlanNotFound:
@@ -127,7 +270,10 @@ def register_meal_plan_tools(server: FastMCP) -> None:
         end_date: datetime.date,
         page: Annotated[int, Field(ge=1)] = 1,
     ) -> MealPlanPage:
-        """List this household's meals in an inclusive date range, including overlapping week entries."""
+        """List household meals in an inclusive date range, with batch links and overlapping week entries.
+
+        Use list_leftover_batches for unallocated servings available for a new meal.
+        """
         if start_date > end_date:
             raise ToolError("Start date must be on or before end date.")
 
@@ -144,6 +290,25 @@ def register_meal_plan_tools(server: FastMCP) -> None:
 
         return await run_in_threadpool(read)
 
+    @server.tool(annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True))
+    async def list_leftover_batches(
+        date: datetime.date,
+        entry_type: PlanEntryType,
+        recipe_id: UUID | None = None,
+    ) -> list[LeftoverBatch]:
+        """Find live-calendar batches with unallocated servings for a proposed date and meal type.
+
+        Already planned portions, including later meals, are reserved. Use a result's batch_id as
+        leftover_batch_id and set recipe_scale to desired servings divided by base_servings.
+        Saved Meal Configurator plans have separate batches. Read them with get_saved_meal_plan.
+        """
+
+        def read() -> list[LeftoverBatch]:
+            with _meal_plan() as (service, _):
+                return _available_batches(_batch_entries(service), date, entry_type, recipe_id)
+
+        return await run_in_threadpool(read)
+
     @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=False))
     async def create_meal_plan_entry(
         recipe_id: UUID,
@@ -152,9 +317,18 @@ def register_meal_plan_tools(server: FastMCP) -> None:
         end_date: datetime.date | None = None,
         note: str = "",
         recipe_scale: RecipeScale = 1.0,
+        recipe_batch_id: Annotated[
+            UUID | None, Field(description="Fresh UUID when cooking one full recipe batch.")
+        ] = None,
+        leftover_batch_id: Annotated[
+            UUID | None, Field(description="Source batch UUID from list_leftover_batches when using leftovers.")
+        ] = None,
     ) -> MealPlanEntry:
         """Add one meal to the live calendar. Use create_saved_meal_plan to build a reusable week.
 
+        recipe_scale is the portion eaten, even when cooking a full batch. Set recipe_batch_id to a fresh
+        UUID to cook one full batch, leftover_batch_id to spend from an earlier batch, or omit both to cook
+        only the planned portions. Batch links require a specific day.
         For a week entry, set end_date to six days after date. After a timeout, check list_meal_plan
         for the intended entry before retrying.
         """
@@ -168,14 +342,21 @@ def register_meal_plan_tools(server: FastMCP) -> None:
                     entry_type=entry_type,
                     text=note,
                     recipe_scale=recipe_scale,
+                    recipe_batch_id=recipe_batch_id,
+                    leftover_batch_id=leftover_batch_id,
                 )
+                _validate_calendar_batch(service, data)
                 return MealPlanEntry.from_entry(service.create_entry(data), group_slug)
 
         return await run_in_threadpool(create)
 
     @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=True))
     async def update_meal_plan_entry(entry_id: Annotated[int, Field(gt=0)], changes: MealPlanPatch) -> MealPlanEntry:
-        """Update one live calendar meal. Omitted fields stay the same. To move a week entry, supply both dates."""
+        """Update one live calendar meal. Omitted fields stay the same. Pass null to clear either batch ID.
+
+        recipe_scale is the portion eaten and changes how many servings remain in a linked batch.
+        When switching batch modes, clear the previous ID in the same update. To move a week entry, supply both dates.
+        """
         fields = changes.model_dump(exclude_unset=True)
         if not fields:
             raise ToolError("Supply at least one meal plan field to update.")
@@ -184,6 +365,11 @@ def register_meal_plan_tools(server: FastMCP) -> None:
 
         def update() -> MealPlanEntry:
             with _meal_plan() as (service, group_slug):
+                if fields.keys() & (BATCH_FIELDS | {"recipe_id", "recipe_scale", "date", "end_date", "entry_type"}):
+                    current = service.get_entry(entry_id)
+                    if current.recipe_batch_id or current.leftover_batch_id or fields.keys() & BATCH_FIELDS:
+                        candidate = PlanEntryCreate.model_validate(current.model_dump() | fields)
+                        _validate_calendar_batch(service, candidate, current)
                 return MealPlanEntry.from_entry(service.patch_entry(entry_id, fields), group_slug)
 
         return await run_in_threadpool(update)
@@ -200,7 +386,10 @@ def register_meal_plan_tools(server: FastMCP) -> None:
 
     @server.tool(annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True))
     async def get_saved_meal_plan(plan_id: UUID) -> SavedMealPlanOut:
-        """Read the meals in a saved Meal Configurator plan by its ID."""
+        """Read meals and batch links in a saved Meal Configurator plan by its ID.
+
+        Batch IDs are local to the saved plan. Each import into Meal Planner creates new batch IDs.
+        """
 
         def read() -> SavedMealPlanOut:
             with _meal_plan() as (service, _):
@@ -212,22 +401,29 @@ def register_meal_plan_tools(server: FastMCP) -> None:
     async def create_saved_meal_plan(plan: SavedMealPlanInput) -> SavedMealPlanOut:
         """Create a named, date-free weekly plan in Meal Configurator.
 
+        To cook a full batch, set recipeBatchId to a new UUID on a dated weekday entry. Set leftoverBatchId
+        on later entries to use that batch of the same recipe. The total recipeScale across linked meals
+        must fit in one batch (1.0). Entries for the whole week cannot use batch links.
         The user can import it into a calendar week from Meal Planner. After a timeout, check
         list_saved_meal_plans for the intended plan before retrying.
         """
 
         def create() -> SavedMealPlanOut:
             with _meal_plan() as (service, _):
-                return service.save_plan(plan.to_create())
+                return service.save_plan(plan.to_create(service))
 
         return await run_in_threadpool(create)
 
     @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=True))
     async def update_saved_meal_plan(plan_id: UUID, plan: SavedMealPlanInput) -> SavedMealPlanOut:
-        """Replace a saved plan's name and full list of meals. Read it first and include any meals to keep."""
+        """Replace a saved plan's name and full list of meals.
+
+        Read it first and include all meals to keep, preserving their batch IDs and portion scales.
+        To add or change leftovers, keep the source batch and consumers in this plan.
+        """
 
         def update() -> SavedMealPlanOut:
             with _meal_plan() as (service, _):
-                return service.save_plan(plan.to_create(), plan_id)
+                return service.save_plan(plan.to_create(service), plan_id)
 
         return await run_in_threadpool(update)

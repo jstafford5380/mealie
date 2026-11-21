@@ -1,5 +1,5 @@
 from datetime import date, timedelta
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from mealie.lang.providers import Translator
 from mealie.repos.all_repositories import AllRepositories
@@ -89,7 +89,14 @@ class MealPlanService(BaseService):
 
     def update_entry(self, entry_id: int, data: PlanEntryUpdate) -> PlanEntryOut:
         self._require_group_recipe(data.recipe_id)
-        self.get_entry(entry_id)
+        current = self.get_entry(entry_id)
+        batch_fields = {"recipe_batch_id", "leftover_batch_id"}
+        if (
+            data.recipe_id == current.recipe_id
+            and data.end_date is None
+            and not batch_fields.intersection(data.model_fields_set)
+        ):
+            data = data.model_copy(update=current.model_dump(include=batch_fields))
         entry = self.repos.meals.update(entry_id, data)
         self.publish_event(EventOperation.update, entry)
         return entry
@@ -188,11 +195,19 @@ class MealPlanService(BaseService):
         plan = self._get_saved_plan(plan_id)
         week_start_day = (week_start.weekday() + 1) % 7
         entries = []
+        batch_ids = {
+            batch_id: uuid4()
+            for entry in plan.entries
+            for batch_id in (entry.recipe_batch_id, entry.leftover_batch_id)
+            if batch_id is not None
+        }
         for entry in plan.entries:
             offset = (entry.weekday - week_start_day) % 7 if entry.weekday is not None else 0
             entries.append(
                 PlanEntrySave(
-                    **entry.model_dump(exclude={"weekday"}),
+                    **entry.model_dump(exclude={"weekday", "recipe_batch_id", "leftover_batch_id"}),
+                    recipe_batch_id=batch_ids[entry.recipe_batch_id] if entry.recipe_batch_id else None,
+                    leftover_batch_id=batch_ids[entry.leftover_batch_id] if entry.leftover_batch_id else None,
                     date=week_start + timedelta(days=offset),
                     end_date=week_start + WEEK_ENTRY_LENGTH if entry.weekday is None else None,
                     group_id=self.user.group_id,
