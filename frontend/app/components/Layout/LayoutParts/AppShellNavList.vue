@@ -24,8 +24,9 @@ function isActive(item: AppNavItem): boolean {
   if (/^\/g\/[^/]+$/.test(to)) {
     return path.startsWith(`${to}/r/`);
   }
-  if (to.startsWith("/household/mealplan")) {
-    return path.startsWith("/household/mealplan");
+  if (to === "/household/mealplan/planner/view") {
+    const planner = "/household/mealplan/planner";
+    return path === planner || path.startsWith(`${planner}/`) || path === "/household/mealplan/settings";
   }
   return path.startsWith(`${to}/`);
 }
