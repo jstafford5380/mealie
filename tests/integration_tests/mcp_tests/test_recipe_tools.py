@@ -1,3 +1,4 @@
+from base64 import b64encode
 from collections.abc import Iterator
 from contextlib import contextmanager
 from io import BytesIO
@@ -285,3 +286,62 @@ async def test_recipe_create_rolls_back_if_timeline_write_fails(
             )
         _, search = await server.call_tool("search_recipes", {"search": name})
         assert not search["items"]
+
+
+@pytest.mark.asyncio
+async def test_recipe_tools_upload_and_replace_images(
+    server: FastMCP, api_client: TestClient, unique_user: TestUser, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    image_url = "https://cdn.recipe.example/meal.png"
+
+    def png(color: str) -> bytes:
+        buffer = BytesIO()
+        Image.new("RGB", (32, 32), color).save(buffer, format="PNG")
+        return buffer.getvalue()
+
+    async def fetch(url: str, *, public_only: bool, max_bytes: int, allow_flaresolverr: bool) -> FetchResult:
+        assert url == image_url
+        assert public_only and not allow_flaresolverr
+        assert max_bytes == 5 * 1024**2
+        return FetchResult(png("blue"), 200, url, httpx.Headers({"content-type": "image/png"}), "utf-8")
+
+    monkeypatch.setattr(safehttp, "resilient_fetch", fetch)
+    data = {
+        "name": random_string(),
+        "servings": 1,
+        "ingredients": ["1 apple"],
+        "instructions": ["Slice the apple."],
+        "image_base64": b64encode(png("red")).decode(),
+    }
+    both = data | {"image_url": image_url}
+    tool = next(tool for tool in await server.list_tools() if tool.name == "create_recipe")
+    assert not Draft202012Validator(tool.inputSchema).is_valid({"data": both})
+
+    with as_user(unique_user):
+        with pytest.raises(ToolError):
+            await server.call_tool("create_recipe", {"data": both})
+        with pytest.raises(ToolError, match="valid image"):
+            await server.call_tool("create_recipe", {"data": data | {"image_base64": "YWJj"}})
+        assert unique_user.repos.recipes.get_one(data["name"]) is None
+
+        _, recipe = await server.call_tool("create_recipe", {"data": data})
+        recipe_route = api_routes.recipes_slug(recipe["slug"])
+        image_route = api_routes.media_recipes_recipe_id_images_file_name(recipe["id"], "original.webp")
+        stored = api_client.get(recipe_route, headers=unique_user.token).json()
+        original = api_client.get(image_route, headers=unique_user.token)
+        assert stored["image"]
+        assert original.status_code == 200
+
+        with pytest.raises(ToolError, match="valid image"):
+            await server.call_tool(
+                "update_recipe",
+                {"recipe_id": recipe["id"], "changes": {"description": "Discard this", "image_base64": "YWJj"}},
+            )
+        assert api_client.get(recipe_route, headers=unique_user.token).json()["description"] == stored["description"]
+        assert api_client.get(image_route, headers=unique_user.token).content == original.content
+
+        await server.call_tool("update_recipe", {"recipe_id": recipe["id"], "changes": {"image_url": image_url}})
+        assert api_client.get(recipe_route, headers=unique_user.token).json()["image"] != stored["image"]
+        replaced = api_client.get(image_route, headers=unique_user.token)
+        assert replaced.status_code == 200
+        assert replaced.content != original.content

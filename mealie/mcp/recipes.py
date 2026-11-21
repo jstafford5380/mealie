@@ -1,6 +1,9 @@
+from base64 import b64decode
+from binascii import Error as Base64Error
 from collections.abc import Callable, Coroutine, Iterator
 from contextlib import contextmanager
 from functools import wraps
+from io import BytesIO
 from json import dumps
 from math import isfinite
 from typing import Annotated, Any, Literal
@@ -11,6 +14,7 @@ from fastapi import HTTPException
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 from mcp.types import ToolAnnotations
+from PIL import Image
 from pydantic import (
     MISSING,
     BaseModel,
@@ -40,8 +44,9 @@ from mealie.schema.response.pagination import PaginationQuery
 from mealie.services import urls
 from mealie.services.event_bus_service.event_bus_service import EventBusService
 from mealie.services.event_bus_service.event_types import EventOperation
+from mealie.services.recipe.recipe_data_service import InvalidDomainError, NotAnImageError, RecipeDataService
 from mealie.services.recipe.recipe_service import RecipeService
-from mealie.services.scraper.scraper import create_from_html
+from mealie.services.scraper.scraper import MAX_PUBLIC_RECIPE_IMAGE_BYTES, create_from_html
 
 NUTRITION_PROVENANCE_KEY = "mealie.mcp.nutrition_provenance"
 UNKNOWN_BASIS = "unknown"
@@ -134,6 +139,15 @@ class NutritionInput(RecipeToolInput):
 
 
 class RecipeChanges(RecipeToolInput):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "not": {
+                "required": ["image_url", "image_base64"],
+                "properties": {"image_url": {"type": "string"}, "image_base64": {"type": "string"}},
+            },
+        }
+    )
+
     name: Text | MISSING = MISSING
     servings: Positive | MISSING = MISSING
     ingredients: list[Text | IngredientAmount] | None = None
@@ -145,6 +159,22 @@ class RecipeChanges(RecipeToolInput):
     cook_time: Text | None = None
     total_time: Text | None = None
     nutrition: NutritionInput | None = None
+    image_url: HttpUrl | None = Field(default=None, description="Public HTTP(S) URL of an image.")
+    image_base64: str | None = Field(
+        default=None,
+        min_length=1,
+        max_length=4 * ((MAX_PUBLIC_RECIPE_IMAGE_BYTES + 2) // 3),
+        description="Standard base64-encoded image bytes, up to 5 MiB decoded.",
+    )
+
+    @model_validator(mode="after")
+    def validate_image_source(self) -> RecipeChanges:
+        if self.image_url is not None:
+            if self.image_base64 is not None:
+                raise ValueError("Supply either image_url or image_base64.")
+            if self.image_url.username is not None or self.image_url.password is not None:
+                raise ValueError("Provide a public image URL without credentials.")
+        return self
 
 
 class RecipeInput(RecipeChanges):
@@ -316,7 +346,9 @@ def _apply_nutrition(
 
 
 def _draft_fields(data: RecipeChanges) -> dict[str, Any]:
-    values = data.model_dump(exclude_unset=True, exclude={"ingredients", "instructions", "nutrition"})
+    values = data.model_dump(
+        exclude_unset=True, exclude={"ingredients", "instructions", "nutrition", "image_url", "image_base64"}
+    )
     rename = {
         "servings": "recipe_servings",
         "yield_quantity": "recipe_yield_quantity",
@@ -445,7 +477,7 @@ def register_recipe_tools(server: FastMCP) -> None:
     @server.tool(
         annotations=WRITE,
         description=(
-            f"Save a complete recipe. {NUTRITION_GUIDANCE}\n"
+            f"Save a complete recipe. For a photo, supply image_url or image_base64. {NUTRITION_GUIDANCE}\n"
             "Example request:\n"
             + dumps(
                 {
@@ -466,7 +498,19 @@ def register_recipe_tools(server: FastMCP) -> None:
             draft = RecipeDraft(id=uuid4(), **_draft_fields(data))
             if data.nutrition is not None:
                 draft = RecipeDraft.model_validate(draft.model_dump() | _apply_nutrition(draft, data.nutrition))
-            return _save_recipe(service, draft)
+            if data.image_url is None and data.image_base64 is None:
+                return _save_recipe(service, draft)
+            assert draft.id is not None
+            image_service = RecipeDataService(draft.id)
+            try:
+                image = _load_image(data, image_service)
+                with service.repos.recipes.transaction():
+                    recipe = service.create_one(draft)
+                    _store_image(service, recipe, image)
+            except Exception:
+                image_service.delete_all_data()
+                raise
+            return _publish_and_format(service, recipe, EventOperation.create)
 
     @server.tool(annotations=WRITE)
     async def import_recipe_url(url: HttpUrl, nutrition: NutritionInput | None = None) -> RecipeDetails:
@@ -482,6 +526,7 @@ def register_recipe_tools(server: FastMCP) -> None:
         annotations=UPDATE,
         description=(
             "Update a recipe by ID. Supply only changed fields and give full lists to replace ingredients or steps. "
+            "To replace the photo, supply image_url or image_base64. "
             f"{NUTRITION_GUIDANCE} Omit a nutrient to keep it or pass null to clear it.\n"
             "Example request:\n"
             + dumps(
@@ -494,15 +539,7 @@ def register_recipe_tools(server: FastMCP) -> None:
     )
     @_offload
     def update_recipe(recipe_id: UUID, changes: RecipeChanges) -> RecipeDetails:
-        fields = _draft_fields(changes)
-        with _recipe_service() as service:
-            recipe = service.get_one(recipe_id)
-            if changes.nutrition is not None:
-                fields.update(_apply_nutrition(recipe, changes.nutrition))
-            if not fields:
-                raise ToolError("Provide at least one recipe field to update.")
-            updated = service.patch_one(recipe_id, RecipeDraft(**fields))
-            return _publish_and_format(service, updated, EventOperation.update)
+        return _update_recipe(recipe_id, changes)
 
     @server.tool(annotations=READ_ONLY)
     @_offload
@@ -528,6 +565,66 @@ def register_recipe_tools(server: FastMCP) -> None:
             if not isfinite(multiplier) or multiplier <= 0:
                 raise ToolError("Choose a positive, finite scale multiplier.")
             return _scale_recipe(saved, multiplier)
+
+
+def _update_recipe(recipe_id: UUID, changes: RecipeChanges) -> RecipeDetails:
+    fields = _draft_fields(changes)
+    with _recipe_service() as service:
+        recipe = service.get_one(recipe_id)
+        if changes.nutrition is not None:
+            fields.update(_apply_nutrition(recipe, changes.nutrition))
+        has_image = changes.image_url is not None or changes.image_base64 is not None
+        if not fields and not has_image:
+            raise ToolError("Provide at least one recipe field to update.")
+        image = None
+        if has_image:
+            if not service.can_update([recipe.slug]):
+                raise exceptions.PermissionDenied("You do not have permission to edit this recipe.")
+            image = _load_image(changes, RecipeDataService(recipe.id))
+        with service.repos.recipes.transaction():
+            updated = service.patch_one(recipe_id, RecipeDraft(**fields)) if fields else recipe
+            if image is not None:
+                _store_image(service, updated, image)
+        return _publish_and_format(service, updated, EventOperation.update)
+
+
+def _load_image(data: RecipeChanges, image_service: RecipeDataService) -> bytes:
+    if data.image_url is not None:
+        try:
+            downloaded = run(
+                lambda: image_service.fetch_image(
+                    str(data.image_url), max_bytes=MAX_PUBLIC_RECIPE_IMAGE_BYTES, public_only=True
+                )
+            )
+        except InvalidDomainError:
+            raise ToolError("The image URL must resolve to a public HTTP(S) endpoint.") from None
+        except NotAnImageError:
+            raise ToolError("The URL does not point to an image.") from None
+        except safehttp.ResponseTooLargeError:
+            raise ToolError("The image must be 5 MiB or smaller.") from None
+        if downloaded is None:
+            raise ToolError("Mealie could not download the image.")
+        content, _ = downloaded
+    else:
+        assert data.image_base64 is not None
+        try:
+            content = b64decode(data.image_base64, validate=True)
+        except Base64Error, ValueError:
+            raise ToolError("Provide valid base64-encoded image bytes.") from None
+
+    if len(content) > MAX_PUBLIC_RECIPE_IMAGE_BYTES:
+        raise ToolError("The image must be 5 MiB or smaller.")
+    return content
+
+
+def _store_image(service: RecipeService, recipe: RecipeOut, content: bytes) -> None:
+    try:
+        with Image.open(BytesIO(content)) as source:
+            if source.width * source.height > 25_000_000:
+                raise ToolError("The image must be 25 megapixels or smaller.")
+        recipe.image = service.update_recipe_image(recipe.slug, content, "webp")
+    except OSError, Image.DecompressionBombError, SyntaxError, ValueError:
+        raise ToolError("Provide a valid image that Mealie can open.") from None
 
 
 def _publish_and_format(service: RecipeService, recipe: RecipeOut, operation: EventOperation) -> RecipeDetails:

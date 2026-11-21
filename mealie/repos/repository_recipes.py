@@ -204,7 +204,7 @@ class RepositoryRecipes(RecipeSuggestionMixin, HouseholdRepositoryGeneric[Recipe
     def update_image(self, slug: str, _: str | None = None) -> str:
         entry: RecipeModel = self._query_one(match_value=slug)
         entry.image = cache.new_key()
-        self.session.commit()
+        self._finish_write()
 
         return entry.image
 
@@ -371,7 +371,7 @@ class RepositoryRecipes(RecipeSuggestionMixin, HouseholdRepositoryGeneric[Recipe
             new_data[field] = resolved
 
         entry.update(session=self.session, **new_data)
-        self.session.commit()
+        self._finish_write()
         return self.schema.model_validate(entry)
 
     def page_all(  # type: ignore
