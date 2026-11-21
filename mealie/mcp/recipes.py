@@ -1,6 +1,7 @@
 from collections.abc import Callable, Coroutine, Iterator
 from contextlib import contextmanager
 from functools import wraps
+from json import dumps
 from math import isfinite
 from typing import Annotated, Any, Literal
 from uuid import UUID, uuid4, uuid5
@@ -50,6 +51,18 @@ UPDATE = ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHin
 
 Text = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 Positive = Annotated[float, Field(gt=0, allow_inf_nan=False)]
+
+NUTRITION_EXAMPLE = {
+    "values": {"calories": "503", "proteinContent": "37", "carbohydrateContent": "59", "fatContent": "13"},
+    "estimated_fields": ["calories", "proteinContent", "carbohydrateContent", "fatContent"],
+    "serving_basis": "per serving",
+    "estimate_basis": "Calculated from ingredient nutrition estimates.",
+}
+NUTRITION_GUIDANCE = (
+    "Put nutrient amounts inside nutrition.values. Use camelCase keys such as proteinContent. "
+    "Use numbers or numeric strings without units. For estimates, list the matching keys in estimated_fields "
+    "and provide estimate_basis. Use serving_basis to describe what the amounts cover."
+)
 
 
 class RecipeToolInput(BaseModel):
@@ -429,10 +442,26 @@ def register_recipe_tools(server: FastMCP) -> None:
         with _recipe_service() as service:
             return _details(service.get_one(recipe), _group_slug(service))
 
-    @server.tool(annotations=WRITE)
+    @server.tool(
+        annotations=WRITE,
+        description=(
+            f"Save a complete recipe. {NUTRITION_GUIDANCE}\n"
+            "Example request:\n"
+            + dumps(
+                {
+                    "data": {
+                        "name": "Chicken and rice",
+                        "servings": 1,
+                        "ingredients": ["4 oz chicken", "1 cup cooked rice"],
+                        "instructions": ["Cook the chicken and serve it with the rice."],
+                        "nutrition": NUTRITION_EXAMPLE,
+                    }
+                }
+            )
+        ),
+    )
     @_offload
     def create_recipe(data: RecipeInput) -> RecipeDetails:
-        """Save a complete recipe. If nutrition values are estimated, identify the estimates and their basis."""
         with _recipe_service() as service:
             draft = RecipeDraft(id=uuid4(), **_draft_fields(data))
             if data.nutrition is not None:
@@ -441,15 +470,30 @@ def register_recipe_tools(server: FastMCP) -> None:
 
     @server.tool(annotations=WRITE)
     async def import_recipe_url(url: HttpUrl, nutrition: NutritionInput | None = None) -> RecipeDetails:
-        """Import structured recipe data from a public recipe page. Optional estimates fill gaps in source nutrition."""
+        """Import structured recipe data and an available photo from a public recipe page.
+
+        Optional estimates fill gaps in source nutrition.
+        """
         if url.username or url.password:
             raise ToolError("Provide a public recipe URL without credentials.")
         return await run_in_threadpool(run, _import_recipe, str(url), nutrition)
 
-    @server.tool(annotations=UPDATE)
+    @server.tool(
+        annotations=UPDATE,
+        description=(
+            "Update a recipe by ID. Supply only changed fields and give full lists to replace ingredients or steps. "
+            f"{NUTRITION_GUIDANCE} Omit a nutrient to keep it or pass null to clear it.\n"
+            "Example request:\n"
+            + dumps(
+                {
+                    "recipe_id": "00000000-0000-4000-8000-000000000000",
+                    "changes": {"nutrition": NUTRITION_EXAMPLE},
+                }
+            )
+        ),
+    )
     @_offload
     def update_recipe(recipe_id: UUID, changes: RecipeChanges) -> RecipeDetails:
-        """Update a recipe by ID. Supply only changed fields and give full lists to replace ingredients or steps."""
         fields = _draft_fields(changes)
         with _recipe_service() as service:
             recipe = service.get_one(recipe_id)

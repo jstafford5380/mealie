@@ -1,5 +1,6 @@
 from collections.abc import Iterator
 from contextlib import contextmanager
+from io import BytesIO
 
 import httpx
 import pytest
@@ -7,9 +8,11 @@ from fastapi.testclient import TestClient
 from jsonschema import Draft202012Validator
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
+from PIL import Image
 
 from mealie.mcp.context import current_user_id
 from mealie.mcp.recipes import register_recipe_tools
+from mealie.pkgs import safehttp
 from mealie.pkgs.safehttp import FetchResult
 from mealie.repos.repository_generic import GroupRepositoryGeneric
 from mealie.schema.recipe.recipe_timeline_events import RecipeTimelineEventCreate
@@ -168,8 +171,13 @@ async def test_backfill_nutrition_through_advertised_tool_schema(server: FastMCP
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("image_available", [True, False])
 async def test_import_preserves_source_nutrition_and_only_fills_gaps(
-    server: FastMCP, unique_user: TestUser, monkeypatch: pytest.MonkeyPatch
+    server: FastMCP,
+    api_client: TestClient,
+    unique_user: TestUser,
+    monkeypatch: pytest.MonkeyPatch,
+    image_available: bool,
 ) -> None:
     async def fetch(url: str, *, public_only: bool, max_bytes: int) -> FetchResult:
         assert public_only and max_bytes > 0
@@ -180,6 +188,7 @@ async def test_import_preserves_source_nutrition_and_only_fills_gaps(
                   "@context":"https://schema.org",
                   "@type":"Recipe",
                   "name":"Apple slices",
+                  "image":"https://cdn.recipe.example/apple.png",
                   "recipeYield":"2 servings",
                   "recipeIngredient":["2 apples"],
                   "recipeInstructions":["Slice the apples."],
@@ -197,7 +206,24 @@ async def test_import_preserves_source_nutrition_and_only_fills_gaps(
             encoding="utf-8",
         )
 
+    async def fetch_image(url: str, *, public_only: bool, max_bytes: int, allow_flaresolverr: bool) -> FetchResult:
+        assert url == "https://cdn.recipe.example/apple.png"
+        assert public_only and not allow_flaresolverr
+        assert max_bytes == 5 * 1024**2
+        if not image_available:
+            raise safehttp.ResponseTooLargeError("Image exceeds the download limit")
+        image = BytesIO()
+        Image.new("RGB", (32, 32), "red").save(image, format="PNG")
+        return FetchResult(
+            content=image.getvalue(),
+            status_code=200,
+            url=url,
+            headers=httpx.Headers({"content-type": "image/png"}),
+            encoding="utf-8",
+        )
+
     monkeypatch.setattr(recipe_scraper, "resilient_fetch", fetch)
+    monkeypatch.setattr(safehttp, "resilient_fetch", fetch_image)
     with as_user(unique_user):
         _, recipe = await server.call_tool(
             "import_recipe_url",
@@ -218,6 +244,18 @@ async def test_import_preserves_source_nutrition_and_only_fills_gaps(
     assert recipe["nutrition"]["fiberContent"] == "4"
     assert recipe["nutrition_provenance"]["fiber_content"]["source"] == "estimated"
     assert "protein_content" in recipe["missing_nutrients"]
+    stored = api_client.get(api_routes.recipes_slug(recipe["slug"]), headers=unique_user.token)
+    assert stored.status_code == 200
+    if image_available:
+        assert stored.json()["image"]
+        media = api_client.get(
+            api_routes.media_recipes_recipe_id_images_file_name(recipe["id"], "original.webp"),
+            headers=unique_user.token,
+        )
+        assert media.status_code == 200
+        assert media.headers["content-type"] == "image/webp"
+    else:
+        assert stored.json()["image"] is None
 
 
 @pytest.mark.asyncio

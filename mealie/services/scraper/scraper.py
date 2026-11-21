@@ -17,6 +17,8 @@ from mealie.services.scraper.scraped_extras import ScrapedExtras
 from .cleaner import NO_IMAGE
 from .recipe_scraper import RecipeScraper
 
+MAX_PUBLIC_RECIPE_IMAGE_BYTES = 5 * 1024**2
+
 
 class ParserErrors(StrEnum):
     BAD_RECIPE_DATA = "BAD_RECIPE_DATA"
@@ -65,10 +67,9 @@ async def create_from_html(
     if not new_recipe:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, {"details": ParserErrors.BAD_RECIPE_DATA.value})
 
-    if structured_only:
-        # MCP imports persist the structured recipe only, without a second download for media.
-        new_recipe.image = None
-    new_recipe = await finalize_scraped_recipe(new_recipe, translator, on_progress=on_progress)
+    new_recipe = await finalize_scraped_recipe(
+        new_recipe, translator, on_progress=on_progress, public_only=structured_only
+    )
     return new_recipe, extras
 
 
@@ -76,6 +77,8 @@ async def finalize_scraped_recipe(
     recipe: RecipeDraft,
     translator: Translator,
     on_progress: Callable[[str], Awaitable[None]] | None = None,
+    *,
+    public_only: bool = False,
 ) -> RecipeDraft:
     """Assigns an id to a freshly scraped recipe, downloads its image, and guarantees it has a name and slug.
 
@@ -98,12 +101,14 @@ async def finalize_scraped_recipe(
         if recipe.image and recipe.image != NO_IMAGE:
             if on_progress:
                 await on_progress(translator.t("recipe.create-progress.downloading-image"))
-            image_written = await recipe_data_service.scrape_image(recipe.image) is not None  # type: ignore
+            if public_only:
+                image_path = await recipe_data_service.scrape_image(
+                    recipe.image, public_only=True, max_bytes=MAX_PUBLIC_RECIPE_IMAGE_BYTES
+                )
+            else:
+                image_path = await recipe_data_service.scrape_image(recipe.image)
+            image_written = image_path is not None
 
-        if recipe.name is None:
-            recipe.name = "Untitled"
-
-        recipe.slug = create_recipe_slug(recipe.name)
     except Exception as e:
         recipe_data_service.logger.exception(f"Error Scraping Image: {e}")
         image_written = False
@@ -113,8 +118,10 @@ async def finalize_scraped_recipe(
     # a recipe with no image is what makes every render ask for a file that 404s.
     recipe.image = cache.new_key(4) if image_written else None
 
-    if recipe.name is None or recipe.name == "":
+    if recipe.name is None:
+        recipe.name = "Untitled"
+    elif recipe.name == "":
         recipe.name = f"No Recipe Name Found - {uuid4()!s}"
-        recipe.slug = create_recipe_slug(recipe.name)
+    recipe.slug = create_recipe_slug(recipe.name)
 
     return recipe

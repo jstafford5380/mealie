@@ -66,7 +66,8 @@ class RecipeDataService(BaseService):
         super().__init__()
 
         self.recipe_id = recipe_id
-        self.logger = logger or self.logger
+        if logger is not None:
+            self.logger = logger
         self.minifier = img.PillowMinifier(purge=True, logger=self.logger)
 
         self.dir_data = RecipeOut.directory_from_id(self.recipe_id)
@@ -114,7 +115,9 @@ class RecipeDataService(BaseService):
             image_path = image_dir.joinpath(img_type.value)
             image_path.unlink(missing_ok=True)
 
-    async def fetch_image(self, image_url: str, max_bytes: int | None = None) -> tuple[bytes, str] | None:
+    async def fetch_image(
+        self, image_url: str, max_bytes: int | None = None, *, public_only: bool = False
+    ) -> tuple[bytes, str] | None:
         """Downloads the image at `image_url` and returns its bytes and file extension.
 
         The extension comes from the response's content type rather than the URL, which is
@@ -130,7 +133,9 @@ class RecipeDataService(BaseService):
         """
         try:
             # FlareSolverr returns HTML, not image bytes, so it can't serve an image download.
-            r = await safehttp.resilient_fetch(image_url, allow_flaresolverr=False, max_bytes=max_bytes)
+            r = await safehttp.resilient_fetch(
+                image_url, allow_flaresolverr=False, max_bytes=max_bytes, public_only=public_only
+            )
         except safehttp.InvalidDomainError as e:
             # Re-raised as this module's error so callers only need one exception vocabulary.
             raise InvalidDomainError(str(e)) from e
@@ -156,7 +161,13 @@ class RecipeDataService(BaseService):
         # Types where it isn't (e.g. "image/svg+xml") fall out of the caller's allowed set.
         return r.content, content_type.removeprefix("image/")
 
-    async def scrape_image(self, image_url: str | dict[str, str] | list[str]) -> Path | None:
+    async def scrape_image(
+        self,
+        image_url: str | dict[str, str] | list[str],
+        *,
+        public_only: bool = False,
+        max_bytes: int | None = None,
+    ) -> Path | None:
         """Downloads the image at `image_url` into the recipe's image directory.
 
         Returns the path the image was written to, or `None` if nothing could be
@@ -174,7 +185,10 @@ class RecipeDataService(BaseService):
             # Multiple images have been defined in the schema - usually different resolutions
             # Typically would be in smallest->biggest order, but can't be certain so test each.
             # 'Google will pick the best image to display in Search results based on the aspect ratio and resolution.'
-            image_url_str, _ = await largest_content_len(image_url)
+            if public_only:
+                image_url_str = next(iter(image_url), "")
+            else:
+                image_url_str, _ = await largest_content_len(image_url)
 
         elif isinstance(image_url, dict):  # Handles Dictionary Types
             for key in image_url:
@@ -184,7 +198,7 @@ class RecipeDataService(BaseService):
         if not image_url_str:
             raise ValueError(f"image url could not be parsed from input: {image_url}")
 
-        downloaded = await self.fetch_image(image_url_str)
+        downloaded = await self.fetch_image(image_url_str, max_bytes=max_bytes, public_only=public_only)
 
         if downloaded is None:
             return None

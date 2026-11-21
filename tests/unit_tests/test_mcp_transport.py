@@ -1,5 +1,6 @@
 from collections.abc import AsyncIterator, Callable
 from contextlib import asynccontextmanager
+from json import loads
 from time import time
 from typing import Any
 
@@ -7,6 +8,7 @@ import jwt
 import pytest
 from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi import FastAPI
+from jsonschema import Draft202012Validator
 from pydantic import SecretStr
 from starlette.testclient import TestClient
 
@@ -146,6 +148,21 @@ def test_mcp_http_authenticated_read_and_write(
         assert tools.keys() == reads | writes | {"check_user_context"}
         assert all(tools[name]["annotations"]["readOnlyHint"] is True for name in reads)
         assert all(tools[name]["annotations"]["readOnlyHint"] is False for name in writes)
+
+        for name, envelope in (("create_recipe", "data"), ("update_recipe", "changes")):
+            tool = tools[name]
+            schema = tool["inputSchema"]
+            assert "NutritionInput" in schema["$defs"]
+            assert "values" in schema["$defs"]["NutritionInput"]["required"]
+            validator = Draft202012Validator(schema)
+            example = loads(tool["description"].split("Example request:\n", 1)[1])
+            validator.validate(example)
+
+            values = example[envelope]["nutrition"]["values"]
+            values["proteinContent"] = 37
+            validator.validate(example)
+            values["protein_content"] = values.pop("proteinContent")
+            assert not validator.is_valid(example)
 
         def call(request_id: int, name: str, arguments: dict[str, Any]) -> dict[str, Any]:
             response = client.post(
