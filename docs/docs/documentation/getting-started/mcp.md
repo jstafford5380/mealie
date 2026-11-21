@@ -66,6 +66,12 @@ Use `get_saved_meal_plan` before `update_saved_meal_plan`, which replaces the fu
 
 Example request for ChatGPT. “Create a reusable week in Meal Configurator. Cook the full four-serving chicken recipe Monday, plan one serving for Monday dinner, then use one serving from the same batch for Tuesday lunch.”
 
+### Read nutrition totals
+
+`list_meal_plan` and `get_saved_meal_plan` include nutrition for each planned portion and totals for the full date range or saved week. Live calendar pages repeat the same totals, so use them once. Whole-week entries count once. Each portion uses the recipe's stored per-serving nutrition multiplied by the planned servings, even when the meal cooks a full batch or uses leftovers.
+
+Values use kcal for calories, mg for sodium and cholesterol, and g for other nutrients. The totals add available amounts and mark nutrients that are missing from at least one entry, including meals entered as notes.
+
 ## Coolify Compose
 
 The `docker/docker-compose.coolify.yml` file includes an optional `mealie-tunnel` service. It uses Mealie's network namespace to reach the app through loopback.

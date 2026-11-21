@@ -12,9 +12,16 @@ from starlette.concurrency import run_in_threadpool
 
 from mealie.lang.providers import get_locale_provider
 from mealie.mcp.context import tool_context
+from mealie.mcp.meal_plan_nutrition import (
+    MealNutritionTotals,
+    get_planned_servings,
+    get_portion_nutrition,
+    sum_portion_nutrition,
+)
 from mealie.schema.meal_plan.new_meal import PlanEntryCreate, PlanEntryOut, PlanEntryType
 from mealie.schema.meal_plan.saved_plan import (
     SavedMealEntryCreate,
+    SavedMealEntryOut,
     SavedMealPlanCreate,
     SavedMealPlanOut,
     SavedMealPlanSummary,
@@ -45,10 +52,15 @@ class MealPlanEntry(BaseModel):
     recipe_scale: float
     recipe_batch_id: UUID | None
     leftover_batch_id: UUID | None
+    planned_servings: float | None
+    nutrition: dict[str, float] = Field(
+        description="Known nutrition for the planned portion, in kcal, mg for sodium and cholesterol, and g otherwise."
+    )
 
     @classmethod
     def from_entry(cls, entry: PlanEntryOut, group_slug: str) -> MealPlanEntry:
         recipe = entry.recipe
+        servings = get_planned_servings(recipe, entry.recipe_scale)
         return cls(
             id=entry.id,
             date=entry.date,
@@ -62,6 +74,8 @@ class MealPlanEntry(BaseModel):
             recipe_scale=entry.recipe_scale,
             recipe_batch_id=entry.recipe_batch_id,
             leftover_batch_id=entry.leftover_batch_id,
+            planned_servings=servings,
+            nutrition=get_portion_nutrition(recipe, servings),
         )
 
 
@@ -69,6 +83,36 @@ class MealPlanPage(BaseModel):
     entries: list[MealPlanEntry]
     total: int
     next_page: int | None
+    nutrition_totals: MealNutritionTotals = Field(description="Totals across the full date range, regardless of page.")
+
+
+class SavedMealEntryWithNutrition(SavedMealEntryOut):
+    planned_servings: float | None
+    nutrition: dict[str, float]
+
+
+class SavedMealPlanWithNutrition(SavedMealPlanSummary):
+    entries: list[SavedMealEntryWithNutrition]
+    nutrition_totals: MealNutritionTotals
+
+    @classmethod
+    def from_plan(cls, plan: SavedMealPlanOut) -> SavedMealPlanWithNutrition:
+        entries = []
+        for entry in plan.entries:
+            servings = get_planned_servings(entry.recipe, entry.recipe_scale)
+            entries.append(
+                SavedMealEntryWithNutrition(
+                    **entry.model_dump(),
+                    planned_servings=servings,
+                    nutrition=get_portion_nutrition(entry.recipe, servings),
+                )
+            )
+        return cls(
+            id=plan.id,
+            name=plan.name,
+            entries=entries,
+            nutrition_totals=sum_portion_nutrition(entry.nutrition for entry in entries),
+        )
 
 
 class LeftoverBatch(BaseModel):
@@ -270,22 +314,31 @@ def register_meal_plan_tools(server: FastMCP) -> None:
         end_date: datetime.date,
         page: Annotated[int, Field(ge=1)] = 1,
     ) -> MealPlanPage:
-        """List household meals in an inclusive date range, with batch links and overlapping week entries.
+        """List household meals in an inclusive date range, with planned portion nutrition and full-range totals.
 
+        Every page repeats the same totals. Count overlapping whole-week entries once. Missing nutrient values
+        are omitted and flagged in the totals. Nutrition reflects the portion eaten, including for leftovers.
         Use list_leftover_batches for unallocated servings available for a new meal.
         """
         if start_date > end_date:
             raise ToolError("Start date must be on or before end date.")
 
-        query = PaginationQuery(page=page, order_by="date,created_at", order_direction=OrderDirection.asc)
+        page_size = PaginationQuery().per_page
+        start = (page - 1) * page_size
+        stop = start + page_size
+        query = PaginationQuery(per_page=-1, order_by="date,created_at", order_direction=OrderDirection.asc)
 
         def read() -> MealPlanPage:
             with _meal_plan() as (service, group_slug):
                 results = service.list_entries(query, start_date, end_date, include_week_entries=True)
                 return MealPlanPage(
-                    entries=[MealPlanEntry.from_entry(entry, group_slug) for entry in results.items],
+                    entries=[MealPlanEntry.from_entry(entry, group_slug) for entry in results.items[start:stop]],
                     total=results.total,
-                    next_page=page + 1 if page < results.total_pages else None,
+                    next_page=page + 1 if stop < results.total else None,
+                    nutrition_totals=sum_portion_nutrition(
+                        get_portion_nutrition(entry.recipe, get_planned_servings(entry.recipe, entry.recipe_scale))
+                        for entry in results.items
+                    ),
                 )
 
         return await run_in_threadpool(read)
@@ -385,20 +438,20 @@ def register_meal_plan_tools(server: FastMCP) -> None:
         return await run_in_threadpool(read)
 
     @server.tool(annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True))
-    async def get_saved_meal_plan(plan_id: UUID) -> SavedMealPlanOut:
-        """Read meals and batch links in a saved Meal Configurator plan by its ID.
+    async def get_saved_meal_plan(plan_id: UUID) -> SavedMealPlanWithNutrition:
+        """Read meals, batch links, planned portion nutrition, and totals for a saved Meal Configurator plan.
 
         Batch IDs are local to the saved plan. Each import into Meal Planner creates new batch IDs.
         """
 
-        def read() -> SavedMealPlanOut:
+        def read() -> SavedMealPlanWithNutrition:
             with _meal_plan() as (service, _):
-                return service.get_saved_plan(plan_id)
+                return SavedMealPlanWithNutrition.from_plan(service.get_saved_plan(plan_id))
 
         return await run_in_threadpool(read)
 
     @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=False))
-    async def create_saved_meal_plan(plan: SavedMealPlanInput) -> SavedMealPlanOut:
+    async def create_saved_meal_plan(plan: SavedMealPlanInput) -> SavedMealPlanWithNutrition:
         """Create a named, date-free weekly plan in Meal Configurator.
 
         To cook a full batch, set recipeBatchId to a new UUID on a dated weekday entry. Set leftoverBatchId
@@ -408,22 +461,22 @@ def register_meal_plan_tools(server: FastMCP) -> None:
         list_saved_meal_plans for the intended plan before retrying.
         """
 
-        def create() -> SavedMealPlanOut:
+        def create() -> SavedMealPlanWithNutrition:
             with _meal_plan() as (service, _):
-                return service.save_plan(plan.to_create(service))
+                return SavedMealPlanWithNutrition.from_plan(service.save_plan(plan.to_create(service)))
 
         return await run_in_threadpool(create)
 
     @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=True))
-    async def update_saved_meal_plan(plan_id: UUID, plan: SavedMealPlanInput) -> SavedMealPlanOut:
+    async def update_saved_meal_plan(plan_id: UUID, plan: SavedMealPlanInput) -> SavedMealPlanWithNutrition:
         """Replace a saved plan's name and full list of meals.
 
         Read it first and include all meals to keep, preserving their batch IDs and portion scales.
         To add or change leftovers, keep the source batch and consumers in this plan.
         """
 
-        def update() -> SavedMealPlanOut:
+        def update() -> SavedMealPlanWithNutrition:
             with _meal_plan() as (service, _):
-                return service.save_plan(plan.to_create(service), plan_id)
+                return SavedMealPlanWithNutrition.from_plan(service.save_plan(plan.to_create(service), plan_id))
 
         return await run_in_threadpool(update)

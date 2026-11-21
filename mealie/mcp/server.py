@@ -147,6 +147,8 @@ def build_mcp_server(settings: AppSettings) -> tuple[AuditedMCP, tuple[Route, Ro
             "Later meals use leftover portions by referencing that batch UUID. Check list_leftover_batches before "
             "using calendar leftovers and reserve only the unallocated servings. In saved plans, link entries "
             "within the same plan and keep linked portions at or below one batch total. "
+            "Use the plan's nutrition totals for the full range or saved week. Live pages repeat the same totals, "
+            "so use them once. Flag any requested nutrient listed as missing, since its total is incomplete. "
             "Use list_categories, list_tags, and list_tools to find existing organizers before assigning them "
             "to recipes. When updating a recipe, keep any existing organizers the user wants to retain. "
             "Keep estimated nutrition distinct from published values."

@@ -1,5 +1,6 @@
 from collections.abc import Iterator
 from contextlib import contextmanager
+from datetime import date
 from uuid import uuid4
 
 import pytest
@@ -10,6 +11,7 @@ from mcp.server.fastmcp.exceptions import ToolError
 
 from mealie.mcp.context import current_user_id
 from mealie.mcp.meal_plan import register_meal_plan_tools
+from mealie.schema.meal_plan.new_meal import PlanEntrySave
 from tests.utils import api_routes
 from tests.utils.factories import random_string
 from tests.utils.fixture_schemas import TestUser
@@ -291,3 +293,75 @@ async def test_saved_plan_tools_preserve_and_validate_batch_links(
             "list_leftover_batches", {"date": "2040-01-03", "entry_type": "lunch", "recipe_id": recipe["id"]}
         )
         assert batches["result"] == []
+
+
+@pytest.mark.asyncio
+async def test_plan_tools_return_portion_nutrition_and_totals_across_pages(
+    server: FastMCP, api_client: TestClient, unique_user: TestUser
+) -> None:
+    recipe = create_recipe(api_client, unique_user)
+    response = api_client.put(
+        api_routes.recipes_slug(recipe["slug"]),
+        json={
+            **recipe,
+            "recipeServings": 4,
+            "nutrition": {
+                "calories": "200 kcal",
+                "proteinContent": "10 g",
+                "fatContent": "0",
+                "sodiumContent": "0.1 g",
+            },
+        },
+        headers=unique_user.token,
+    )
+    assert response.status_code == 200, response.text
+    unique_user.repos.meals.create_many(
+        [
+            PlanEntrySave(
+                date=date(2050, 1, 1), title=f"Note {index}", group_id=unique_user.group_id, user_id=unique_user.user_id
+            )
+            for index in range(50)
+        ]
+    )
+    batch_id = str(uuid4())
+    expected_portion = {"calories": 200, "protein_content": 10, "fat_content": 0, "sodium_content": 100}
+    with as_user(unique_user):
+        common = {"recipe_id": recipe["id"], "entry_type": "dinner", "recipe_scale": 0.25}
+        _, source = await server.call_tool(
+            "create_meal_plan_entry", {**common, "date": "2050-01-02", "recipe_batch_id": batch_id}
+        )
+        _, leftover = await server.call_tool(
+            "create_meal_plan_entry", {**common, "date": "2050-01-03", "leftover_batch_id": batch_id}
+        )
+        assert source["planned_servings"] == leftover["planned_servings"] == 1
+        assert source["nutrition"] == leftover["nutrition"] == expected_portion
+
+        dates = {"start_date": "2050-01-01", "end_date": "2050-01-03"}
+        _, first = await server.call_tool("list_meal_plan", dates)
+        _, second = await server.call_tool("list_meal_plan", {**dates, "page": 2})
+        assert first["next_page"] == 2 and len(first["entries"]) == 50
+        assert first["entries"][0]["planned_servings"] is None and first["entries"][0]["nutrition"] == {}
+        assert second["next_page"] is None and second["entries"] == [source, leftover]
+        assert first["nutrition_totals"] == second["nutrition_totals"]
+        assert second["nutrition_totals"]["values"] == {name: amount * 2 for name, amount in expected_portion.items()}
+        assert "calories" in second["nutrition_totals"]["missing_nutrients"]
+
+        _, saved = await server.call_tool(
+            "create_saved_meal_plan",
+            {
+                "plan": {
+                    "name": "Nutrition week",
+                    "entries": [
+                        {"weekday": 1, "entryType": "dinner", "recipeId": recipe["id"], "recipeScale": 0.25},
+                        {"weekday": None, "entryType": "lunch", "recipeId": recipe["id"], "recipeScale": 0.5},
+                    ],
+                }
+            },
+        )
+        _, readback = await server.call_tool("get_saved_meal_plan", {"plan_id": saved["id"]})
+        assert readback == saved
+        assert [entry["plannedServings"] for entry in saved["entries"]] == [1, 2]
+        assert saved["entries"][0]["nutrition"] == expected_portion
+        assert saved["nutritionTotals"]["values"] == {name: amount * 3 for name, amount in expected_portion.items()}
+        assert "calories" not in saved["nutritionTotals"]["missing_nutrients"]
+        assert "carbohydrate_content" in saved["nutritionTotals"]["missing_nutrients"]
