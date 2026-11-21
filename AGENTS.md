@@ -62,6 +62,8 @@ Mealie is a self-hosted recipe manager, meal planner, and shopping list applicat
 
 ## Essential Commands (mise tasks in mise.toml)
 
+**Restarting development services:** Use Aspire to restart the affected frontend, backend, or database (PostgreSQL) resource. Verify that the resource is healthy and responding before continuing.
+
 **Development workflow:**
 ```bash
 mise install
