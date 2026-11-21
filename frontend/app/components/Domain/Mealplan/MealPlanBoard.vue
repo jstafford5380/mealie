@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { SortableEvent } from "sortablejs";
-import type { MealsByDate, useMealplans } from "~/composables/use-group-mealplan";
+import type { MealBoardActions, MealsByDate } from "~/composables/use-group-mealplan";
 import type { PlanEntryOut, PlanEntryType } from "~/lib/api/types/meal-plan";
 import { EllipsisVerticalIcon, PlusIcon } from "@lucide/vue";
 import { useMediaQuery } from "@vueuse/core";
@@ -29,7 +29,8 @@ import MealPlanEntryCard from "./MealPlanEntryCard.vue";
  */
 const props = defineProps<{
   mealplans: MealsByDate[];
-  actions: ReturnType<typeof useMealplans>["actions"];
+  actions: MealBoardActions;
+  configurator?: boolean;
 }>();
 
 const api = useUserApi();
@@ -134,7 +135,7 @@ async function randomMeal(date: Date, type: PlanEntryType, endDate: Date | null 
     entryType: type,
   });
   if (data) {
-    props.actions.refreshAll();
+    props.actions.refreshAll?.();
   }
 }
 /** Replaces a meal with a random one of the same type; the new one is created first so a failure loses nothing. */
@@ -145,7 +146,7 @@ async function randomizeMeal(meal: PlanEntryOut) {
   const { data: created } = await api.mealplans.setRandom({ date: meal.date, endDate: meal.endDate, entryType: meal.entryType });
   if (created) {
     await api.mealplans.deleteOne(meal.id);
-    props.actions.refreshAll();
+    props.actions.refreshAll?.();
   }
 }
 /** Moves a week entry onto today, so it counts like any other meal made today. */
@@ -162,10 +163,11 @@ function addToList(meals: PlanEntryOut[]) {
 
 const randomTypes = computed(() => planTypeOptions.map(o => ({ type: o.value, label: o.text })));
 function isCurrentWeek(week: MealsByDate) {
-  return !!week.endDate && isWithinInterval(new Date(), { start: startOfDay(week.date), end: endOfDay(week.endDate) });
+  return !props.configurator && !!week.endDate && isWithinInterval(new Date(), { start: startOfDay(week.date), end: endOfDay(week.endDate) });
 }
 const dayName = (d: Date) => new Intl.DateTimeFormat(i18n.locale.value, { weekday: "short" }).format(d);
-const longDay = (d: Date) => new Intl.DateTimeFormat(i18n.locale.value, { weekday: "long", month: "short", day: "numeric" }).format(d);
+const today = (date: Date) => !props.configurator && isToday(date);
+const longDay = (d: Date) => props.configurator ? new Intl.DateTimeFormat(i18n.locale.value, { weekday: "long" }).format(d) : new Intl.DateTimeFormat(i18n.locale.value, { weekday: "long", month: "short", day: "numeric" }).format(d);
 // Pointer-driven dragging (not native drag-and-drop) behaves the same with mouse, touch and pen.
 const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTouchOnly: true, forceFallback: true, fallbackTolerance: 4, ghostClass: "opacity-40", filter: "button, [role=menuitem]", preventOnFilter: false };
 </script>
@@ -175,14 +177,15 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
     <GroupMealPlanEntryDialog
       v-model="dialog.open"
       :entry="dialog.entry"
+      :configurator-week-start="configurator ? blocks[0]?.week?.date : undefined"
       :date="dialog.date"
       :end-date="dialog.endDate"
       :default-entry-type="dialog.entryType"
-      @create="actions.createOne($event)"
-      @update="actions.updateOne($event)"
+      @create="(payload, recipe) => actions.createOne(payload, recipe)"
+      @update="(payload, recipe) => actions.updateOne(payload, recipe)"
     />
     <RecipeDialogAddToShoppingList
-      v-if="shoppingLists"
+      v-if="!configurator && shoppingLists"
       v-model="listDialog"
       :recipes="listRecipes"
       :shopping-lists="shoppingLists"
@@ -201,8 +204,8 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
         :class="isCurrentWeek(block.week) && 'border-primary/40'"
       >
         <div class="flex min-w-36 flex-col pt-1.5">
-          <span class="text-sm font-semibold">{{ isCurrentWeek(block.week) ? $t('meal-plan.this-week') : $t('meal-plan.week-of', { date: $d(block.week.date, 'short') }) }}</span>
-          <span class="text-xs text-muted-foreground">{{ $d(block.week.date, 'short') }} – {{ $d(block.week.endDate!, 'short') }}</span>
+          <span class="text-sm font-semibold">{{ configurator ? $t('meal-plan.saved-whole-week') : isCurrentWeek(block.week) ? $t('meal-plan.this-week') : $t('meal-plan.week-of', { date: $d(block.week.date, 'short') }) }}</span>
+          <span v-if="!configurator" class="text-xs text-muted-foreground">{{ $d(block.week.date, 'short') }} – {{ $d(block.week.endDate!, 'short') }}</span>
         </div>
         <VueDraggable
           v-model="cells[weekKey(block.week)]!"
@@ -217,6 +220,7 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
             :key="meal.id"
             :meal="meal"
             :actions="actions"
+            :configurator="configurator"
             layout="row"
             show-type
             class="w-full cursor-grab sm:w-72"
@@ -234,7 +238,7 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
             <PlusIcon class="size-4" />
             {{ $t('meal-plan.add-for-the-week') }}
           </button>
-          <DropdownMenu :modal="false">
+          <DropdownMenu v-if="!configurator" :modal="false">
             <DropdownMenuTrigger as-child>
               <button
                 type="button"
@@ -292,13 +296,13 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
             v-for="day in block.days"
             :key="dateKey(day.date)"
             class="group/day flex items-start justify-between gap-1 border-b border-s px-3 py-2.5"
-            :class="isToday(day.date) && 'bg-highlight text-highlight-foreground'"
+            :class="today(day.date) && 'bg-highlight text-highlight-foreground'"
           >
             <div class="flex flex-col">
-              <span class="text-[13px] text-muted-foreground">{{ isToday(day.date) ? $t('meal-plan.today') : dayName(day.date) }}</span>
-              <span class="text-xl font-bold leading-tight">{{ day.date.getDate() }}</span>
+              <span class="text-[13px] text-muted-foreground">{{ today(day.date) ? $t('meal-plan.today') : dayName(day.date) }}</span>
+              <span v-if="!configurator" class="text-xl font-bold leading-tight">{{ day.date.getDate() }}</span>
             </div>
-            <DropdownMenu :modal="false">
+            <DropdownMenu v-if="!configurator" :modal="false">
               <DropdownMenuTrigger as-child>
                 <button
                   type="button"
@@ -352,7 +356,7 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
               v-for="day in block.days"
               :key="cellKey(day, row.value)"
               class="group/cell flex min-w-0 flex-col gap-1.5 border-b border-s p-1.5"
-              :class="isToday(day.date) && 'bg-highlight/30'"
+              :class="today(day.date) && 'bg-highlight/30'"
             >
               <VueDraggable
                 v-model="cells[cellKey(day, row.value)]!"
@@ -367,6 +371,7 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
                   :key="meal.id"
                   :meal="meal"
                   :actions="actions"
+                  :configurator="configurator"
                   class="cursor-grab"
                   @edit="editMeal"
                   @randomize="randomizeMeal"
@@ -396,14 +401,14 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
           v-for="day in block.days"
           :key="dateKey(day.date)"
           class="rounded-card border bg-card"
-          :class="isToday(day.date) && 'border-primary/40'"
+          :class="today(day.date) && 'border-primary/40'"
         >
           <header class="flex items-center gap-2 border-b px-4 py-2.5">
             <h3
               class="m-0 flex-1 text-[15px] font-semibold"
-              :class="isToday(day.date) && 'text-primary'"
+              :class="today(day.date) && 'text-primary'"
             >
-              {{ isToday(day.date) ? `${$t('meal-plan.today')} · ` : '' }}{{ longDay(day.date) }}
+              {{ today(day.date) ? `${$t('meal-plan.today')} · ` : '' }}{{ longDay(day.date) }}
             </h3>
             <button
               type="button"
@@ -413,7 +418,7 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
               <PlusIcon class="size-4" />
               {{ $t('general.add') }}
             </button>
-            <DropdownMenu :modal="false">
+            <DropdownMenu v-if="!configurator" :modal="false">
               <DropdownMenuTrigger as-child>
                 <button
                   type="button"
@@ -483,6 +488,7 @@ const sortableOptions = { group: "meals", animation: 180, delay: 250, delayOnTou
                     :key="meal.id"
                     :meal="meal"
                     :actions="actions"
+                    :configurator="configurator"
                     layout="row"
                     @edit="editMeal"
                     @randomize="randomizeMeal"

@@ -15,7 +15,7 @@ from mealie.db.models.household.events import GroupEventNotifierModel
 from mealie.db.models.household.household import Household
 from mealie.db.models.household.household_to_recipe import HouseholdToRecipe
 from mealie.db.models.household.invite_tokens import GroupInviteToken
-from mealie.db.models.household.mealplan import GroupMealPlan, GroupMealPlanRules
+from mealie.db.models.household.mealplan import GroupMealPlan, GroupMealPlanRules, SavedMealPlan
 from mealie.db.models.household.preferences import HouseholdPreferencesModel
 from mealie.db.models.household.recipe_action import GroupRecipeAction
 from mealie.db.models.household.shopping_list import (
@@ -64,6 +64,7 @@ from mealie.schema.household.webhook import WebhookOut
 from mealie.schema.labels import MultiPurposeLabelOut
 from mealie.schema.meal_plan.new_meal import PlanEntryOut
 from mealie.schema.meal_plan.plan_rules import PlanRulesOut
+from mealie.schema.meal_plan.saved_plan import SavedMealPlanSave
 from mealie.schema.recipe import RecipeCommentOut, RecipeOut
 from mealie.schema.recipe.recipe_ingredient import IngredientFoodOut, IngredientUnitOut
 from mealie.schema.recipe.recipe_organizers import CategoryOut, TagOut, ToolOut
@@ -458,6 +459,17 @@ class AllRepositories:
     def meals(self) -> RepositoryMeals:
         return RepositoryMeals(
             self.session, PK_ID, GroupMealPlan, PlanEntryOut, group_id=self.group_id, household_id=self.household_id
+        )
+
+    @cached_property
+    def saved_meal_plans(self) -> HouseholdRepositoryGeneric[SavedMealPlanSave, SavedMealPlan]:
+        return HouseholdRepositoryGeneric(
+            self.session,
+            PK_ID,
+            SavedMealPlan,
+            SavedMealPlanSave,
+            group_id=self.group_id,
+            household_id=self.household_id,
         )
 
     @cached_property

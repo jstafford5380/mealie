@@ -151,4 +151,42 @@ export interface RandomPlanEntryCreate {
   endDate?: string | null;
   entryType?: PlanEntryType;
 }
+export interface SavedMealEntryCreate {
+  weekday: number | null;
+  entryType: PlanEntryType;
+  title?: string;
+  text?: string;
+  recipeId?: string | null;
+  recipeScale?: number;
+}
+export interface SavedMealEntryOut {
+  weekday: number | null;
+  entryType: PlanEntryType;
+  title: string;
+  text: string;
+  recipeId: string | null;
+  recipeScale: number;
+  recipe: RecipeSummary | null;
+}
+export interface SavedMealPlanCreate {
+  name: string;
+  entries: SavedMealEntryCreate[];
+}
+export interface SavedMealPlanImport {
+  weekStart: string;
+}
+export interface SavedMealPlanOut {
+  id: string;
+  name: string;
+  entries: SavedMealEntryOut[];
+}
+export interface SavedMealPlanSave {
+  id: string;
+  name: string;
+  entries: SavedMealEntryCreate[];
+}
+export interface SavedMealPlanSummary {
+  id: string;
+  name: string;
+}
 export interface MealieOutModel {}

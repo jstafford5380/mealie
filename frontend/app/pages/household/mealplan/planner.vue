@@ -8,6 +8,10 @@
       @list-created="addShoppingList"
     />
     <GroupMealPlanCalendarDialog v-model="calendarDialog" />
+    <MealPlanImportDialog v-model="importDialog" :weeks="importWeeks" @imported="refreshImportedMeals" />
+    <p v-if="importStatus" role="status" class="mb-4 text-sm text-muted-foreground">
+      {{ importStatus }}
+    </p>
 
     <div class="mb-6 flex flex-wrap items-center gap-x-4 gap-y-3">
       <h1 class="m-0 text-[28px] font-bold tracking-tight sm:text-[32px]">
@@ -121,6 +125,9 @@
             >{{ hiddenWeekMealCount }}<span class="sr-only">: {{ $t('meal-plan.week-meals-hidden', hiddenWeekMealCount) }}</span></span>
           </button>
         </div>
+        <Button variant="outline" :disabled="!importWeeks.length" @click="openImport">
+          {{ $t("meal-plan.import-saved-plan") }}
+        </Button>
         <Button
           :disabled="!hasRecipes"
           @click="addAllToList"
@@ -152,6 +159,10 @@
               />
               {{ $t("meal-plan.calendar-feed") }}
             </DropdownMenuItem>
+            <DropdownMenuItem @select="router.push('/household/mealplan/configurator')">
+              <MdiIcon :path="$globals.icons.calendarEdit" class="size-4" />
+              {{ $t("meal-plan.configurator") }}
+            </DropdownMenuItem>
             <DropdownMenuItem @select="router.push('/household/mealplan/settings')">
               <MdiIcon
                 :path="$globals.icons.cog"
@@ -175,6 +186,7 @@
 import { addDays, addWeeks, differenceInCalendarDays, format, isSameDay, isValid, parseISO } from "date-fns";
 import { ChevronLeftIcon, ChevronRightIcon, EllipsisVerticalIcon } from "@lucide/vue";
 import GroupMealPlanCalendarDialog from "~/components/Domain/Household/GroupMealPlanCalendarDialog.vue";
+import MealPlanImportDialog from "~/components/Domain/Mealplan/MealPlanImportDialog.vue";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -207,6 +219,8 @@ const i18n = useI18n();
 const { household, actions: householdActions } = useHouseholdSelf();
 const { shoppingLists, open: shoppingListDialog, addAllToList, addShoppingList } = useAddToShoppingListDialog();
 const calendarDialog = ref(false);
+const importDialog = ref(false);
+const importStatus = ref("");
 
 useSeoMeta({
   title: i18n.t("meal-plan.dinner-this-week"),
@@ -442,6 +456,21 @@ const mealsByWeek = computed(() => {
 const plans = computed(() => isDaysMode.value
   ? mealsByDate.value
   : mealsByWeek.value.flatMap(({ week, days }) => [week, ...days]));
+
+const importWeeks = computed(() => mealsByWeek.value.filter(({ days }) => days.length).map(({ week }) => ({
+  value: format(week.date, "yyyy-MM-dd"),
+  title: `${i18n.d(week.date, "short")} – ${i18n.d(week.endDate!, "short")}`,
+})));
+
+function openImport() {
+  importStatus.value = "";
+  importDialog.value = true;
+}
+
+async function refreshImportedMeals() {
+  await actions.refreshAll();
+  importStatus.value = i18n.t("meal-plan.import-saved-success");
+}
 
 const hiddenWeekMealCount = computed(() => isDaysMode.value
   ? (mealplans.value ?? []).filter(meal => meal.endDate).length

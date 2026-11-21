@@ -660,3 +660,75 @@ def test_mealplan_accepts_recipe_from_other_household_in_group(
     )
     assert response.status_code == 201
     assert response.json()["recipe"]["id"] == str(recipe.id)
+
+
+def test_saved_plan_import_maps_weekdays_and_preserves_existing_meals(
+    api_client: TestClient, unique_user: TestUser, h2_user: TestUser
+) -> None:
+    recipe = create_recipe(unique_user)
+    route = api_routes.households_mealplans_saved
+    token = unique_user.token
+    payload = {
+        "name": "Weeknight favorites",
+        "entries": [
+            {"weekday": 0, "entryType": "dinner", "recipeId": str(recipe.id), "recipeScale": 2},
+            {"weekday": None, "entryType": "lunch", "title": "Leftovers", "text": "Use the freezer stash"},
+        ],
+    }
+    response = api_client.post(route, json=payload, headers=token)
+    assert response.status_code == 201, response.text
+    plan = response.json()
+    assert plan["entries"][0]["recipe"]["id"] == str(recipe.id)
+    plan_route = api_routes.households_mealplans_saved_plan_id(plan["id"])
+    import_route = api_routes.households_mealplans_saved_plan_id_import(plan["id"])
+    assert api_client.get(route, headers=token).json() == [{"id": plan["id"], "name": payload["name"]}]
+    assert api_client.get(plan_route, headers=token).json() == plan
+
+    assert api_client.get(route, headers=h2_user.token).json() == []
+    assert api_client.get(plan_route, headers=h2_user.token).status_code == 404
+    assert api_client.put(plan_route, json=payload, headers=h2_user.token).status_code == 404
+    assert api_client.post(import_route, json={"weekStart": "2040-01-02"}, headers=h2_user.token).status_code == 404
+
+    payload["name"] = "Favorites"
+    response = api_client.put(plan_route, json=payload, headers=token)
+    assert response.status_code == 200, response.text
+    assert response.json()["name"] == "Favorites"
+
+    calendar = f"{api_routes.households_mealplans}?include_week_entries=true&start_date=2040-01-02&end_date=2040-01-08"
+    assert api_client.get(calendar, headers=token).json()["items"] == []
+    existing = api_client.post(
+        api_routes.households_mealplans,
+        json={"date": "2040-01-08", "entryType": "dinner", "title": "Existing dinner"},
+        headers=token,
+    )
+    assert existing.status_code == 201
+
+    response = api_client.post(import_route, json={"weekStart": "2040-01-02"}, headers=token)
+    assert response.status_code == 201, response.text
+    dinner, leftovers = response.json()
+    assert (dinner["date"], dinner["endDate"], dinner["recipeId"], dinner["recipeScale"]) == (
+        "2040-01-08",
+        None,
+        str(recipe.id),
+        2,
+    )
+    assert (leftovers["date"], leftovers["endDate"], leftovers["title"], leftovers["text"]) == (
+        "2040-01-02",
+        "2040-01-08",
+        "Leftovers",
+        "Use the freezer stash",
+    )
+    assert len(api_client.get(calendar, headers=token).json()["items"]) == 3
+    assert len(api_client.get(plan_route, headers=token).json()["entries"]) == 2
+
+    deleted = api_client.delete(api_routes.recipes_slug(recipe.slug), headers=token)
+    assert deleted.status_code == 200
+    response = api_client.post(import_route, json={"weekStart": "2040-01-09"}, headers=token)
+    assert response.status_code == 404
+    assert (
+        api_client.get(
+            f"{api_routes.households_mealplans}?include_week_entries=true&start_date=2040-01-09&end_date=2040-01-15",
+            headers=token,
+        ).json()["items"]
+        == []
+    )

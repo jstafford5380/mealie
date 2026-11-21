@@ -8,13 +8,13 @@
 
 <script setup lang="ts">
 import RecipeScaleEditButton from "~/components/Domain/Recipe/RecipeScaleEditButton.vue";
-import type { useMealplans } from "~/composables/use-group-mealplan";
+import type { MealBoardActions } from "~/composables/use-group-mealplan";
 import { useMealPlanScale } from "~/composables/use-mealplan-scale";
 import type { PlanEntryOut } from "~/lib/api/types/meal-plan";
 
 const props = defineProps<{
   meal: PlanEntryOut;
-  actions: ReturnType<typeof useMealplans>["actions"];
+  actions: Pick<MealBoardActions, "updateOne">;
 }>();
 
 const { scale, recipeServings } = useMealPlanScale(

@@ -76,7 +76,10 @@ export function useAppNavigation() {
       {
         key: "plan",
         title: i18n.t("sidebar.section-plan"),
-        items: [{ key: "mealplan", title: i18n.t("meal-plan.meal-planner"), icon: icons.calendarMultiselect, to: "/household/mealplan/planner/view" }],
+        items: [
+          { key: "mealplan", title: i18n.t("meal-plan.meal-planner"), icon: icons.calendarMultiselect, to: "/household/mealplan/planner/view" },
+          { key: "mealconfigurator", title: i18n.t("meal-plan.configurator"), icon: icons.calendarEdit, to: "/household/mealplan/configurator" },
+        ],
       },
       {
         key: "shop",

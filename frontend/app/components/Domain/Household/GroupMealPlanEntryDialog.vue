@@ -35,14 +35,21 @@
           </button>
         </div>
 
+        <SelectField
+          v-if="configuratorWeekStart"
+          v-model="configuratorSlot"
+          :label="$t('meal-plan.saved-meal-day')"
+          :items="configuratorSlots"
+        />
         <MealPlanDatePicker
+          v-else
           v-model="pickerModel"
           :multiple="pickerMultiple"
           :entry-type="entryType"
         />
 
         <label
-          v-if="showWeekOption"
+          v-if="!configuratorWeekStart && showWeekOption"
           class="flex cursor-pointer items-center justify-between gap-3"
         >
           <span>
@@ -139,6 +146,7 @@
 </template>
 
 <script setup lang="ts">
+import { addDays, format, parseISO } from "date-fns";
 import RecipeScaleEditButton from "~/components/Domain/Recipe/RecipeScaleEditButton.vue";
 import { Button } from "~/components/ui/button";
 import SelectField from "~/components/ui/field/SelectField.vue";
@@ -156,6 +164,7 @@ import type { RecipeSummary } from "~/lib/api/types/recipe";
 
 interface Props {
   entry?: PlanEntryOut | null;
+  configuratorWeekStart?: Date;
   date?: Date | null;
   /** Set when creating an entry for a week rather than a specific day */
   endDate?: Date | null;
@@ -170,8 +179,8 @@ const props = withDefaults(defineProps<Props>(), {
 });
 
 const emit = defineEmits<{
-  create: [payload: PlanEntryCreate];
-  update: [payload: PlanEntryUpdate];
+  create: [payload: PlanEntryCreate, recipe: RecipeSummary | null];
+  update: [payload: PlanEntryUpdate, recipe: RecipeSummary | null];
 }>();
 
 const dialog = defineModel<boolean>({ required: true });
@@ -195,6 +204,26 @@ const isRecipe = computed(() => entryMode.value === "recipe");
 
 const i18n = useI18n();
 const { $globals } = useNuxtApp();
+const configuratorSlots = computed(() => {
+  const start = props.configuratorWeekStart;
+  if (!start) return [];
+  const weekdays = new Intl.DateTimeFormat(i18n.locale.value, { weekday: "long" });
+  return [
+    { value: "week", title: i18n.t("meal-plan.saved-whole-week") },
+    ...Array.from({ length: 7 }, (_, offset) => {
+      const date = addDays(start, offset);
+      return { value: format(date, "yyyy-MM-dd"), title: weekdays.format(date) };
+    }),
+  ];
+});
+const configuratorSlot = computed({
+  get: () => isWeekEntry.value ? "week" : format(selectedDate.value, "yyyy-MM-dd"),
+  set(value) {
+    isWeekEntry.value = value === "week";
+    selectedDate.value = isWeekEntry.value ? props.configuratorWeekStart! : parseISO(value);
+  },
+});
+
 const modes = computed(() => [
   { value: "recipe" as const, label: i18n.t("general.recipe"), icon: $globals.icons.silverwareForkKnife },
   { value: "note" as const, label: i18n.t("meal-plan.note"), icon: $globals.icons.textBox },
@@ -220,14 +249,9 @@ watch(() => recipe.value?.id, () => {
 
 const submitDisabled = computed(() => isRecipe.value ? !recipe.value : !title.value.trim());
 
-function parseEntryDate(date: string) {
-  const [year, month, day] = date.split("-").map(Number);
-  return new Date(year, month - 1, day);
-}
-
 function initialize() {
   entryMode.value = props.entry && !props.entry.recipeId ? "note" : "recipe";
-  selectedDate.value = props.entry ? parseEntryDate(props.entry.date) : props.date ?? new Date();
+  selectedDate.value = props.entry ? parseISO(props.entry.date) : props.date ?? new Date();
   isWeekEntry.value = props.entry ? !!props.entry.endDate : !!props.endDate;
   entryType.value = props.entry?.entryType ?? props.defaultEntryType ?? "dinner";
   recipe.value = props.entry?.recipe ?? null;
@@ -241,6 +265,10 @@ function initialize() {
 function submit() {
   const payload = {
     ...entryDatesPayload.value,
+    ...(props.configuratorWeekStart && {
+      date: format(isWeekEntry.value ? props.configuratorWeekStart : selectedDate.value, "yyyy-MM-dd"),
+      endDate: isWeekEntry.value ? format(addDays(props.configuratorWeekStart, 6), "yyyy-MM-dd") : null,
+    }),
     entryType: entryType.value,
     title: isRecipe.value ? "" : title.value,
     text: isRecipe.value ? "" : text.value,
@@ -254,10 +282,10 @@ function submit() {
       id: props.entry.id,
       groupId: props.entry.groupId,
       userId: props.entry.userId,
-    });
+    }, isRecipe.value ? recipe.value : null);
   }
   else {
-    emit("create", payload);
+    emit("create", payload, isRecipe.value ? recipe.value : null);
   }
 }
 

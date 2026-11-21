@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { ContextMenuItem } from "~/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenu.vue";
-import type { useMealplans } from "~/composables/use-group-mealplan";
+import type { MealBoardActions } from "~/composables/use-group-mealplan";
 import type { PlanEntryOut } from "~/lib/api/types/meal-plan";
 import { EllipsisVerticalIcon } from "@lucide/vue";
 import RecipeContextMenu from "~/components/Domain/Recipe/RecipeContextMenu/RecipeContextMenu.vue";
@@ -20,7 +20,8 @@ import MealPlanScaleControl from "./MealPlanScaleControl.vue";
  */
 const props = withDefaults(defineProps<{
   meal: PlanEntryOut;
-  actions: ReturnType<typeof useMealplans>["actions"];
+  actions: MealBoardActions;
+  configurator?: boolean;
   layout?: "stacked" | "row";
   /** Shows the meal type, for week entries that aren't grouped by type. */
   showType?: boolean;
@@ -47,8 +48,8 @@ const recipeLink = computed(() => {
 
 const planItems = computed<ContextMenuItem[]>(() => [
   { title: i18n.t("meal-plan.edit-meal-plan"), icon: $globals.icons.calendarEdit, event: "mealplanEdit", isPublic: false },
-  { title: i18n.t("meal-plan.randomize-recipe"), icon: $globals.icons.diceMultiple, event: "mealplanRandomize", isPublic: false },
-  ...(props.meal.endDate ? [{ title: i18n.t("meal-plan.cooking-it-today"), icon: $globals.icons.potSteam, event: "mealplanCookToday", isPublic: false }] : []),
+  ...(!props.configurator ? [{ title: i18n.t("meal-plan.randomize-recipe"), icon: $globals.icons.diceMultiple, event: "mealplanRandomize", isPublic: false }] : []),
+  ...(!props.configurator && props.meal.endDate ? [{ title: i18n.t("meal-plan.cooking-it-today"), icon: $globals.icons.potSteam, event: "mealplanCookToday", isPublic: false }] : []),
   { title: i18n.t("meal-plan.remove-from-plan"), icon: $globals.icons.calendarRemove, event: "mealplanRemove", isPublic: false },
 ]);
 
@@ -113,7 +114,7 @@ const scale = computed(() => props.meal.recipeScale ?? 1);
         <span
           class="block font-semibold leading-snug"
           :class="layout === 'stacked' ? 'line-clamp-2 text-[13.5px]' : 'truncate text-[15px]'"
-        >{{ meal.recipe ? meal.recipe.name : meal.title }}</span>
+        >{{ meal.recipe ? meal.recipe.name : meal.title || $t("meal-plan.saved-recipe-missing") }}</span>
         <span
           v-if="!meal.recipe && meal.text"
           class="block text-xs text-muted-foreground"
@@ -145,7 +146,7 @@ const scale = computed(() => props.meal.recipeScale ?? 1);
         :recipe-scale="scale"
         :menu-top="false"
         :leading-items="planItems"
-        :use-items="{ delete: false, edit: false, download: false, downloadPdf: false, duplicate: false, mealplanner: false, shoppingList: true, print: false, printPreferences: false, share: true, recipeActions: true }"
+        :use-items="{ delete: false, edit: false, download: false, downloadPdf: false, duplicate: false, mealplanner: false, shoppingList: !configurator, print: false, printPreferences: false, share: true, recipeActions: true }"
         @mealplan-edit="run('mealplanEdit')"
         @mealplan-remove="run('mealplanRemove')"
         @mealplan-randomize="run('mealplanRandomize')"

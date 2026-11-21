@@ -113,6 +113,8 @@ households_mealplans_random = "/api/households/mealplans/random"
 """`/api/households/mealplans/random`"""
 households_mealplans_rules = "/api/households/mealplans/rules"
 """`/api/households/mealplans/rules`"""
+households_mealplans_saved = "/api/households/mealplans/saved"
+"""`/api/households/mealplans/saved`"""
 households_mealplans_today = "/api/households/mealplans/today"
 """`/api/households/mealplans/today`"""
 households_members = "/api/households/members"
@@ -428,6 +430,16 @@ def households_mealplans_item_id(item_id):
 def households_mealplans_rules_item_id(item_id):
     """`/api/households/mealplans/rules/{item_id}`"""
     return f"{prefix}/households/mealplans/rules/{item_id}"
+
+
+def households_mealplans_saved_plan_id(plan_id):
+    """`/api/households/mealplans/saved/{plan_id}`"""
+    return f"{prefix}/households/mealplans/saved/{plan_id}"
+
+
+def households_mealplans_saved_plan_id_import(plan_id):
+    """`/api/households/mealplans/saved/{plan_id}/import`"""
+    return f"{prefix}/households/mealplans/saved/{plan_id}/import"
 
 
 def households_recipe_actions_item_id(item_id):

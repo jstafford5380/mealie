@@ -1,10 +1,18 @@
-from datetime import date
+from datetime import date, timedelta
 from uuid import UUID
 
 from mealie.lang.providers import Translator
 from mealie.repos.all_repositories import AllRepositories
 from mealie.schema import mapper
 from mealie.schema.meal_plan import PlanEntryCreate, PlanEntryOut, PlanEntrySave, PlanEntryUpdate
+from mealie.schema.meal_plan.new_meal import WEEK_ENTRY_LENGTH
+from mealie.schema.meal_plan.saved_plan import (
+    SavedMealEntryOut,
+    SavedMealPlanCreate,
+    SavedMealPlanOut,
+    SavedMealPlanSave,
+)
+from mealie.schema.recipe.recipe import RecipeSummary
 from mealie.schema.response.pagination import PaginationBase, PaginationQuery
 from mealie.schema.user.user import PrivateUser
 from mealie.services._base_service import BaseService
@@ -20,6 +28,10 @@ MEALPLAN_EVENTS = {
 
 
 class MealPlanEntryNotFound(LookupError):
+    pass
+
+
+class SavedMealPlanNotFound(LookupError):
     pass
 
 
@@ -125,3 +137,69 @@ class MealPlanService(BaseService):
             ),
             message=message,
         )
+
+    def _get_saved_plan(self, plan_id: UUID) -> SavedMealPlanSave:
+        plan = self.repos.saved_meal_plans.get_one(plan_id)
+        if plan is None:
+            raise SavedMealPlanNotFound
+        return plan
+
+    def get_saved_plan(self, plan_id: UUID) -> SavedMealPlanOut:
+        return self._saved_plan_out(self._get_saved_plan(plan_id))
+
+    def _saved_plan_out(self, plan: SavedMealPlanSave) -> SavedMealPlanOut:
+        group_recipes = AllRepositories(self.repos.session, group_id=self.user.group_id, household_id=None).recipes
+        recipes: dict[UUID, RecipeSummary | None] = {
+            recipe_id: group_recipes.get_one(recipe_id, "id", override_schema=RecipeSummary)
+            for recipe_id in {entry.recipe_id for entry in plan.entries if entry.recipe_id is not None}
+        }
+        return SavedMealPlanOut(
+            id=plan.id,
+            name=plan.name,
+            entries=[
+                SavedMealEntryOut(
+                    **entry.model_dump(), recipe=recipes.get(entry.recipe_id) if entry.recipe_id else None
+                )
+                for entry in plan.entries
+            ],
+        )
+
+    def save_plan(self, data: SavedMealPlanCreate, plan_id: UUID | None = None) -> SavedMealPlanOut:
+        for recipe_id in {entry.recipe_id for entry in data.entries}:
+            self._require_group_recipe(recipe_id)
+
+        payload = data.model_dump(mode="json")
+        if plan_id is None:
+            plan = self.repos.saved_meal_plans.create(
+                payload | {"group_id": self.user.group_id, "household_id": self.user.household_id}
+            )
+        else:
+            self._get_saved_plan(plan_id)
+            plan = self.repos.saved_meal_plans.update(plan_id, payload)
+
+        return self._saved_plan_out(plan)
+
+    def import_saved_plan(self, plan_id: UUID, week_start: date) -> list[PlanEntryOut]:
+        plan = self._get_saved_plan(plan_id)
+        week_start_day = (week_start.weekday() + 1) % 7
+        entries = []
+        for entry in plan.entries:
+            offset = (entry.weekday - week_start_day) % 7 if entry.weekday is not None else 0
+            entries.append(
+                PlanEntrySave(
+                    **entry.model_dump(exclude={"weekday"}),
+                    date=week_start + timedelta(days=offset),
+                    end_date=week_start + WEEK_ENTRY_LENGTH if entry.weekday is None else None,
+                    group_id=self.user.group_id,
+                    user_id=self.user.id,
+                )
+            )
+
+        with self.repos.meals.transaction():
+            for recipe_id in {entry.recipe_id for entry in entries}:
+                self._require_group_recipe(recipe_id)
+            created = self.repos.meals.create_many(entries)
+
+        for entry_out in created:
+            self.publish_event(EventOperation.create, entry_out)
+        return created

@@ -27,6 +27,13 @@ export function getEntryTypeText(value: PlanEntryType) {
   const i18n = useI18n();
   return i18n.t("meal-plan." + value);
 }
+export interface MealBoardActions {
+  createOne(payload: PlanEntryCreate, recipe?: RecipeSummary | null): void | Promise<void>;
+  updateOne(payload: PlanEntryUpdate, recipe?: RecipeSummary | null): void | Promise<void>;
+  deleteOne(id: string | number): void | Promise<void>;
+  refreshAll?(): void | Promise<void>;
+}
+
 export interface DateRange {
   start: Date;
   end: Date;

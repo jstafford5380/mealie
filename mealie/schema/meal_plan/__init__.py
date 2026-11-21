@@ -10,6 +10,15 @@ from .new_meal import (
     RandomPlanEntryCreate,
 )
 from .plan_rules import PlanRulesCreate, PlanRulesDay, PlanRulesOut, PlanRulesPagination, PlanRulesSave, PlanRulesType
+from .saved_plan import (
+    SavedMealEntryCreate,
+    SavedMealEntryOut,
+    SavedMealPlanCreate,
+    SavedMealPlanImport,
+    SavedMealPlanOut,
+    SavedMealPlanSave,
+    SavedMealPlanSummary,
+)
 
 __all__ = [
     "PlanEntryCreate",
@@ -25,5 +34,12 @@ __all__ = [
     "PlanRulesPagination",
     "PlanRulesSave",
     "PlanRulesType",
+    "SavedMealEntryCreate",
+    "SavedMealEntryOut",
+    "SavedMealPlanCreate",
+    "SavedMealPlanImport",
+    "SavedMealPlanOut",
+    "SavedMealPlanSave",
+    "SavedMealPlanSummary",
     "MealPlanICalTokenOut",
 ]

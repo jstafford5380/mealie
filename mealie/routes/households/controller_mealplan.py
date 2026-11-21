@@ -1,5 +1,6 @@
 from datetime import date
 from functools import cached_property
+from uuid import UUID
 
 from dateutil.tz import tzlocal
 from fastapi import APIRouter, Depends
@@ -14,10 +15,21 @@ from mealie.routes._base.permissions import not_found
 from mealie.schema.meal_plan import PlanEntryCreate, PlanEntryOut, PlanEntrySave, PlanEntryUpdate
 from mealie.schema.meal_plan.new_meal import PlanEntryPagination, PlanEntryType, RandomPlanEntryCreate
 from mealie.schema.meal_plan.plan_rules import PlanRulesDay
+from mealie.schema.meal_plan.saved_plan import (
+    SavedMealPlanCreate,
+    SavedMealPlanImport,
+    SavedMealPlanOut,
+    SavedMealPlanSummary,
+)
 from mealie.schema.recipe.recipe import RecipeOut
 from mealie.schema.response.pagination import PaginationQuery
 from mealie.services.event_bus_service.event_types import EventOperation
-from mealie.services.meal_plan_service import MealPlanEntryNotFound, MealPlanRecipeNotFound, MealPlanService
+from mealie.services.meal_plan_service import (
+    MealPlanEntryNotFound,
+    MealPlanRecipeNotFound,
+    MealPlanService,
+    SavedMealPlanNotFound,
+)
 from mealie.services.query_filter.builder import QueryFilterBuilder
 
 router = APIRouter(prefix="/households/mealplans", tags=["Households: Meal Plans"])
@@ -129,6 +141,38 @@ class GroupMealplanController(BaseCrudController):
 
         self.service.publish_event(EventOperation.create, result)
         return result
+
+    @router.get("/saved", response_model=list[SavedMealPlanSummary])
+    def get_saved_plans(self) -> list[SavedMealPlanSummary]:
+        return sorted(self.repos.saved_meal_plans.get_all(), key=lambda plan: plan.name.casefold())
+
+    @router.post("/saved", response_model=SavedMealPlanOut, status_code=201)
+    def create_saved_plan(self, data: SavedMealPlanCreate) -> SavedMealPlanOut:
+        try:
+            return self.service.save_plan(data)
+        except MealPlanRecipeNotFound:
+            raise not_found() from None
+
+    @router.get("/saved/{plan_id}", response_model=SavedMealPlanOut)
+    def get_saved_plan(self, plan_id: UUID) -> SavedMealPlanOut:
+        try:
+            return self.service.get_saved_plan(plan_id)
+        except SavedMealPlanNotFound:
+            raise not_found() from None
+
+    @router.put("/saved/{plan_id}", response_model=SavedMealPlanOut)
+    def update_saved_plan(self, plan_id: UUID, data: SavedMealPlanCreate) -> SavedMealPlanOut:
+        try:
+            return self.service.save_plan(data, plan_id)
+        except SavedMealPlanNotFound, MealPlanRecipeNotFound:
+            raise not_found() from None
+
+    @router.post("/saved/{plan_id}/import", response_model=list[PlanEntryOut], status_code=201)
+    def import_saved_plan(self, plan_id: UUID, data: SavedMealPlanImport) -> list[PlanEntryOut]:
+        try:
+            return self.service.import_saved_plan(plan_id, data.week_start)
+        except SavedMealPlanNotFound, MealPlanRecipeNotFound:
+            raise not_found() from None
 
     @router.get("/{item_id}", response_model=PlanEntryOut)
     def get_one(self, item_id: int):
