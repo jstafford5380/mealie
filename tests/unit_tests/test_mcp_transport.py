@@ -137,13 +137,26 @@ def test_mcp_http_authenticated_read_and_write(
         listed = client.post("/mcp", json={"jsonrpc": "2.0", "id": 2, "method": "tools/list"}, headers=headers)
         assert listed.status_code == 200
         tools = {tool["name"]: tool for tool in listed.json()["result"]["tools"]}
-        reads = {"search_recipes", "get_recipe", "preview_recipe_scale", "list_meal_plan"}
+        reads = {
+            "search_recipes",
+            "get_recipe",
+            "preview_recipe_scale",
+            "list_categories",
+            "list_tags",
+            "list_tools",
+            "list_meal_plan",
+            "list_leftover_batches",
+            "list_saved_meal_plans",
+            "get_saved_meal_plan",
+        }
         writes = {
             "create_recipe",
             "import_recipe_url",
             "update_recipe",
             "create_meal_plan_entry",
             "update_meal_plan_entry",
+            "create_saved_meal_plan",
+            "update_saved_meal_plan",
         }
         assert tools.keys() == reads | writes | {"check_user_context"}
         assert all(tools[name]["annotations"]["readOnlyHint"] is True for name in reads)
