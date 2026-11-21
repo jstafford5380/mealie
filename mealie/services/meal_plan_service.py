@@ -11,6 +11,7 @@ from mealie.schema.meal_plan.saved_plan import (
     SavedMealPlanCreate,
     SavedMealPlanOut,
     SavedMealPlanSave,
+    SavedMealPlanSummary,
 )
 from mealie.schema.recipe.recipe import RecipeSummary
 from mealie.schema.response.pagination import PaginationBase, PaginationQuery
@@ -143,6 +144,10 @@ class MealPlanService(BaseService):
         if plan is None:
             raise SavedMealPlanNotFound
         return plan
+
+    def list_saved_plans(self) -> list[SavedMealPlanSummary]:
+        plans = sorted(self.repos.saved_meal_plans.get_all(), key=lambda plan: plan.name.casefold())
+        return [SavedMealPlanSummary(id=plan.id, name=plan.name) for plan in plans]
 
     def get_saved_plan(self, plan_id: UUID) -> SavedMealPlanOut:
         return self._saved_plan_out(self._get_saved_plan(plan_id))

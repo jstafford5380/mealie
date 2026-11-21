@@ -7,15 +7,26 @@ from uuid import UUID
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 from mcp.types import ToolAnnotations
-from pydantic import MISSING, BaseModel, ConfigDict, Field, ValidationError
+from pydantic import MISSING, BaseModel, ConfigDict, Field, StringConstraints, ValidationError
 from starlette.concurrency import run_in_threadpool
 
 from mealie.lang.providers import get_locale_provider
 from mealie.mcp.context import tool_context
 from mealie.schema.meal_plan.new_meal import PlanEntryCreate, PlanEntryOut, PlanEntryType
+from mealie.schema.meal_plan.saved_plan import (
+    SavedMealEntryCreate,
+    SavedMealPlanCreate,
+    SavedMealPlanOut,
+    SavedMealPlanSummary,
+)
 from mealie.schema.response.pagination import OrderDirection, PaginationQuery
 from mealie.services.event_bus_service.event_bus_service import EventBusService
-from mealie.services.meal_plan_service import MealPlanEntryNotFound, MealPlanRecipeNotFound, MealPlanService
+from mealie.services.meal_plan_service import (
+    MealPlanEntryNotFound,
+    MealPlanRecipeNotFound,
+    MealPlanService,
+    SavedMealPlanNotFound,
+)
 from mealie.services.urls.url_constructors import recipe_url
 
 RecipeScale = Annotated[float, Field(gt=0, allow_inf_nan=False)]
@@ -70,6 +81,23 @@ class MealPlanPatch(BaseModel):
     recipe_scale: RecipeScale | MISSING = MISSING
 
 
+class SavedMealEntryInput(SavedMealEntryCreate):
+    model_config = ConfigDict(extra="forbid")
+
+
+class SavedMealPlanInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)]
+    entries: list[SavedMealEntryInput] = Field(
+        description="Meals in the reusable week. Set weekday to 0 for Sunday through 6 for Saturday, "
+        "or null for the whole week. Supply a recipe_id or a title for each meal."
+    )
+
+    def to_create(self) -> SavedMealPlanCreate:
+        return SavedMealPlanCreate(name=self.name, entries=list(self.entries))
+
+
 @contextmanager
 def _meal_plan() -> Iterator[tuple[MealPlanService, str]]:
     with tool_context() as (session, user, repos):
@@ -86,6 +114,8 @@ def _meal_plan() -> Iterator[tuple[MealPlanService, str]]:
             raise ToolError("Invalid meal. Use a single date or set the end date six days after the start.") from None
         except MealPlanRecipeNotFound:
             raise ToolError("The recipe was not found in your Mealie library.") from None
+        except SavedMealPlanNotFound:
+            raise ToolError("The saved meal plan was not found in your household.") from None
         except MealPlanEntryNotFound:
             raise ToolError("The meal plan entry was not found in your household.") from None
 
@@ -123,7 +153,7 @@ def register_meal_plan_tools(server: FastMCP) -> None:
         note: str = "",
         recipe_scale: RecipeScale = 1.0,
     ) -> MealPlanEntry:
-        """Save one meal from the recipe library.
+        """Add one meal to the live calendar. Use create_saved_meal_plan to build a reusable week.
 
         For a week entry, set end_date to six days after date. After a timeout, check list_meal_plan
         for the intended entry before retrying.
@@ -145,7 +175,7 @@ def register_meal_plan_tools(server: FastMCP) -> None:
 
     @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=True))
     async def update_meal_plan_entry(entry_id: Annotated[int, Field(gt=0)], changes: MealPlanPatch) -> MealPlanEntry:
-        """Update fields of one meal while preserving omitted fields. To move a week entry, supply both dates."""
+        """Update one live calendar meal. Omitted fields stay the same. To move a week entry, supply both dates."""
         fields = changes.model_dump(exclude_unset=True)
         if not fields:
             raise ToolError("Supply at least one meal plan field to update.")
@@ -155,5 +185,49 @@ def register_meal_plan_tools(server: FastMCP) -> None:
         def update() -> MealPlanEntry:
             with _meal_plan() as (service, group_slug):
                 return MealPlanEntry.from_entry(service.patch_entry(entry_id, fields), group_slug)
+
+        return await run_in_threadpool(update)
+
+    @server.tool(annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True))
+    async def list_saved_meal_plans() -> list[SavedMealPlanSummary]:
+        """List the names and IDs of reusable weekly plans in this household's Meal Configurator."""
+
+        def read() -> list[SavedMealPlanSummary]:
+            with _meal_plan() as (service, _):
+                return service.list_saved_plans()
+
+        return await run_in_threadpool(read)
+
+    @server.tool(annotations=ToolAnnotations(readOnlyHint=True, destructiveHint=False, idempotentHint=True))
+    async def get_saved_meal_plan(plan_id: UUID) -> SavedMealPlanOut:
+        """Read the meals in a saved Meal Configurator plan by its ID."""
+
+        def read() -> SavedMealPlanOut:
+            with _meal_plan() as (service, _):
+                return service.get_saved_plan(plan_id)
+
+        return await run_in_threadpool(read)
+
+    @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=False))
+    async def create_saved_meal_plan(plan: SavedMealPlanInput) -> SavedMealPlanOut:
+        """Create a named, date-free weekly plan in Meal Configurator.
+
+        The user can import it into a calendar week from Meal Planner. After a timeout, check
+        list_saved_meal_plans for the intended plan before retrying.
+        """
+
+        def create() -> SavedMealPlanOut:
+            with _meal_plan() as (service, _):
+                return service.save_plan(plan.to_create())
+
+        return await run_in_threadpool(create)
+
+    @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=True, idempotentHint=True))
+    async def update_saved_meal_plan(plan_id: UUID, plan: SavedMealPlanInput) -> SavedMealPlanOut:
+        """Replace a saved plan's name and full list of meals. Read it first and include any meals to keep."""
+
+        def update() -> SavedMealPlanOut:
+            with _meal_plan() as (service, _):
+                return service.save_plan(plan.to_create(), plan_id)
 
         return await run_in_threadpool(update)

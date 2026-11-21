@@ -135,3 +135,49 @@ async def test_meal_plan_tools_isolate_households_and_reject_other_groups(
             )
         _, page = await server.call_tool("list_meal_plan", dates)
         assert [own_meal] == page["entries"]
+
+
+@pytest.mark.asyncio
+async def test_saved_meal_plan_tools_leave_calendar_unchanged(
+    server: FastMCP, api_client: TestClient, unique_user: TestUser, h2_user: TestUser
+) -> None:
+    recipe = create_recipe(api_client, unique_user)
+    entries = [
+        {"weekday": 1, "entry_type": "dinner", "recipe_id": recipe["id"], "recipe_scale": 2},
+        {"weekday": None, "entry_type": "lunch", "title": "Leftovers"},
+    ]
+    plan = {"name": random_string(), "entries": entries}
+    calendar_route = api_routes.households_mealplans
+    before = api_client.get(calendar_route, headers=unique_user.token, params={"include_week_entries": True}).json()
+    with as_user(unique_user):
+        with pytest.raises(ToolError):
+            await server.call_tool(
+                "create_saved_meal_plan",
+                {"plan": {"name": plan["name"], "entries": [entries[0] | {"date": "2040-01-02"}]}},
+            )
+        _, created = await server.call_tool("create_saved_meal_plan", {"plan": plan})
+        plan_id = created["id"]
+        _, listed = await server.call_tool("list_saved_meal_plans", {})
+        assert {"id": plan_id, "name": plan["name"]} in listed["result"]
+        _, loaded = await server.call_tool("get_saved_meal_plan", {"plan_id": plan_id})
+        assert loaded == created
+        _, updated = await server.call_tool(
+            "update_saved_meal_plan", {"plan_id": plan_id, "plan": {"name": "Updated", "entries": entries}}
+        )
+        assert updated["name"] == "Updated"
+
+    with as_user(h2_user):
+        _, listed = await server.call_tool("list_saved_meal_plans", {})
+        assert listed["result"] == []
+        with pytest.raises(ToolError, match="saved meal plan was not found"):
+            await server.call_tool("get_saved_meal_plan", {"plan_id": plan_id})
+        with pytest.raises(ToolError, match="saved meal plan was not found"):
+            await server.call_tool("update_saved_meal_plan", {"plan_id": plan_id, "plan": plan})
+
+    saved_route = api_routes.households_mealplans_saved_plan_id(plan_id)
+    saved = api_client.get(saved_route, headers=unique_user.token).json()
+    assert saved["name"] == "Updated"
+    assert saved["entries"][0]["recipeScale"] == 2
+    assert saved["entries"][1]["weekday"] is None
+    after = api_client.get(calendar_route, headers=unique_user.token, params={"include_week_entries": True}).json()
+    assert after["items"] == before["items"]

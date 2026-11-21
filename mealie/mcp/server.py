@@ -140,6 +140,8 @@ def build_mcp_server(settings: AppSettings) -> tuple[AuditedMCP, tuple[Route, Ro
         "Mealie",
         instructions=(
             "Manage recipes and household meal plans in Mealie. "
+            "Use saved meal plan tools for reusable weeks in Meal Configurator. "
+            "Write to the live calendar only when the user explicitly asks to schedule meals there. "
             "Scale previews are read-only. To persist a scale, update the meal-plan entry's multiplier. "
             "Keep estimated nutrition distinct from published values."
         ),

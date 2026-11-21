@@ -144,7 +144,7 @@ class GroupMealplanController(BaseCrudController):
 
     @router.get("/saved", response_model=list[SavedMealPlanSummary])
     def get_saved_plans(self) -> list[SavedMealPlanSummary]:
-        return sorted(self.repos.saved_meal_plans.get_all(), key=lambda plan: plan.name.casefold())
+        return self.service.list_saved_plans()
 
     @router.post("/saved", response_model=SavedMealPlanOut, status_code=201)
     def create_saved_plan(self, data: SavedMealPlanCreate) -> SavedMealPlanOut:
