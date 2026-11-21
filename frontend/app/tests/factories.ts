@@ -37,6 +37,7 @@ export function makeRecipeSummary(overrides: Partial<RecipeSummary> = {}): Recip
     tools: [],
     rating: null,
     orgURL: null,
+    nutrition: null,
     dateAdded: null,
     dateUpdated: null,
     createdAt: null,

@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type { UrlPrefixParam } from "./RecipeChips.vue";
-import type { TagOut } from "~/lib/api/types/recipe";
+import type { Nutrition, TagOut } from "~/lib/api/types/recipe";
 import { ClockIcon } from "@lucide/vue";
 import { MdiIcon } from "~/components/ui/mdi-icon";
 import { useStaticRoutes } from "~/composables/api";
+import { parseNutritionValue } from "~/composables/recipes/use-recipe-nutrition";
 import { useLoggedInState } from "~/composables/use-logged-in-state";
 import RecipeCardRating from "./RecipeCardRating.vue";
 import RecipeContextMenu from "./RecipeContextMenu/RecipeContextMenu.vue";
@@ -20,12 +21,12 @@ const props = withDefaults(defineProps<{
   description?: string | null;
   rating?: number | null;
   image?: unknown;
+  nutrition?: Nutrition | null;
   tags?: TagOut[];
   totalTime?: string | null;
 }>(), {
   description: null,
   rating: 0,
-  image: null,
   tags: () => [],
   totalTime: null,
 });
@@ -51,6 +52,24 @@ watch(() => [props.recipeId, props.image], () => {
 });
 const imageUrl = computed(() => (props.image && !imageFailed.value ? recipeSmallImage(props.recipeId, props.image) : null));
 const visibleTags = computed(() => props.tags.slice(0, 2));
+const { locale } = useI18n();
+const nutritionText = computed(() => {
+  const nutrition = props.nutrition;
+  if (!nutrition) return "";
+
+  const format = new Intl.NumberFormat(locale.value, { maximumFractionDigits: 2 });
+  const amounts = [
+    [nutrition.calories, "kcal"],
+    [nutrition.proteinContent, "g\u00A0P"],
+    [nutrition.carbohydrateContent, "g\u00A0C"],
+    [nutrition.fatContent, "g\u00A0F"],
+  ] as const;
+
+  return amounts.flatMap(([value, suffix]) => {
+    const amount = parseNutritionValue(value);
+    return amount === null ? [] : [format.format(amount) + suffix];
+  }).join(" | ");
+});
 </script>
 
 <template>
@@ -90,6 +109,11 @@ const visibleTags = computed(() => props.tags.slice(0, 2));
           </span>
         </span>
       </component>
+      <span
+        v-if="nutritionText"
+        class="pointer-events-none absolute start-2 top-2 rounded-item bg-black/65 px-1.5 py-1 text-[10px] font-medium leading-tight text-white shadow-sm shadow-black/30 sm:text-xs"
+        :class="isOwnGroup && actionable ? 'max-w-[calc(100%-3rem)]' : 'max-w-[calc(100%-1rem)]'"
+      >{{ nutritionText }}</span>
       <div
         v-if="isOwnGroup && actionable"
         class="absolute end-2 top-2 rounded-full bg-card/90 shadow-sm backdrop-blur"

@@ -267,6 +267,7 @@ class RecipeSummary(MealieOutModel):
     tools: list[ToolOut] = []
     rating: float | None = None
     org_url: str | None = Field(None, alias="orgURL")
+    nutrition: Nutrition | None = None
 
     date_added: datetime.date | None = None
     date_updated: datetime.datetime | None = None
@@ -295,6 +296,7 @@ class RecipeSummary(MealieOutModel):
             selectinload(RecipeModel.recipe_category),
             selectinload(RecipeModel.tags),
             selectinload(RecipeModel.tools).options(*ToolOut.loader_options()),
+            joinedload(RecipeModel.nutrition),
             joinedload(RecipeModel.user).load_only(User.household_id),
         ]
 

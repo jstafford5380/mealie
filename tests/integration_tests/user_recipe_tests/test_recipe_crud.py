@@ -2752,3 +2752,26 @@ def test_create_recipe_slug_length_validation(api_client: TestClient, unique_use
 
     response = api_client.get(api_routes.recipes_slug(created_slug), headers=unique_user.token)
     assert response.status_code == 200
+
+
+def test_recipe_listing_includes_nutrition(api_client: TestClient, unique_user: TestUser) -> None:
+    name = random_string()
+    recipe = unique_user.repos.recipes.create(
+        RecipeDraft(
+            name=name,
+            user_id=unique_user.user_id,
+            group_id=unique_user.group_id,
+            nutrition={"calories": "255", "proteinContent": "23", "carbohydrateContent": "12", "fatContent": "4"},
+        )
+    )
+    response = api_client.get(api_routes.recipes, params={"search": name}, headers=unique_user.token)
+    assert response.status_code == 200
+    item = next(item for item in response.json()["items"] if item["id"] == str(recipe.id))
+    assert {
+        key: item["nutrition"][key] for key in ("calories", "proteinContent", "carbohydrateContent", "fatContent")
+    } == {
+        "calories": "255",
+        "proteinContent": "23",
+        "carbohydrateContent": "12",
+        "fatContent": "4",
+    }

@@ -63,6 +63,7 @@ export interface RecipeSummary {
   tools: ToolOut[];
   rating: number | null;
   orgURL: string | null;
+  nutrition: Nutrition | null;
   dateAdded: string | null;
   dateUpdated: string | null;
   createdAt: string | null;
@@ -89,6 +90,19 @@ export interface ToolOut {
   slug: string;
   recipeCount: number;
   householdsWithTool: string[];
+}
+export interface Nutrition {
+  calories?: string | null;
+  carbohydrateContent?: string | null;
+  cholesterolContent?: string | null;
+  fatContent?: string | null;
+  fiberContent?: string | null;
+  proteinContent?: string | null;
+  saturatedFatContent?: string | null;
+  sodiumContent?: string | null;
+  sugarContent?: string | null;
+  transFatContent?: string | null;
+  unsaturatedFatContent?: string | null;
 }
 export interface PlanEntrySave {
   date: string;

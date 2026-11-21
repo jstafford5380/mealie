@@ -104,6 +104,7 @@
           :slug="recipe.slug || ''"
           :rating="recipe.rating"
           :image="recipe.image"
+          :nutrition="recipe.nutrition"
           :tags="recipe.tags"
           :total-time="recipe.totalTime"
           :recipe-id="recipe.id || ''"
