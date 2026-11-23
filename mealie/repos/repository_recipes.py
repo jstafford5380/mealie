@@ -312,6 +312,17 @@ class RepositoryRecipes(RecipeSuggestionMixin, HouseholdRepositoryGeneric[Recipe
 
         raise RuntimeError(f"Failed to resolve organizer '{name}' after {max_attempts} attempts")
 
+    def lock_for_ingredient_normalization(self, recipe_id: UUID) -> None:
+        """Serialize the revision check and recipe save on both SQLite and PostgreSQL."""
+        # A self-assignment takes the write lock without advancing the recipe timestamp.
+        self.session.execute(
+            sa.update(RecipeModel)
+            .filter_by(**self._filter_builder(id=recipe_id))
+            .values(updated_at=RecipeModel.updated_at)
+            .execution_options(synchronize_session=False)
+        )
+        self.session.expire_all()
+
     def patch(self, match_value: str | int | UUID4, new_data: dict | BaseModel) -> RecipeOut:
         changes = new_data if isinstance(new_data, dict) else new_data.model_dump()
         entry = self._query_one(match_value=match_value)

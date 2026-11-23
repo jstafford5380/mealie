@@ -4,14 +4,15 @@ import datetime
 import enum
 from enum import StrEnum
 from fractions import Fraction
-from typing import Any, ClassVar
-from uuid import UUID, uuid4
+from typing import Any, ClassVar, Self
+from uuid import UUID, uuid4, uuid5
 
-from pydantic import UUID4, ConfigDict, Field, field_validator, model_validator
+from pydantic import UUID4, ConfigDict, Field, ModelWrapValidatorHandler, field_validator, model_validator
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.orm.interfaces import LoaderOption
 
 from mealie.db.models.recipe import IngredientFoodModel, IngredientFoodSubstitutionModel, IngredientUnitModel
+from mealie.db.models.recipe.ingredient import RecipeIngredientModel
 from mealie.lang.locale_config import LocalePluralFoodHandling
 from mealie.lang.providers import get_locale_context
 from mealie.schema._mealie import MealieModel
@@ -480,6 +481,15 @@ class RecipeIngredient(RecipeIngredientBase):
     # Vue handles reactivity. ref may serve another purpose in the future.
     reference_id: UUID = Field(default_factory=uuid4)
     model_config = ConfigDict(from_attributes=True)
+
+    @model_validator(mode="wrap")
+    @classmethod
+    def stabilize_legacy_reference(cls, value: Any, handler: ModelWrapValidatorHandler[Self]) -> Self:
+        ingredient = handler(value)
+        if isinstance(value, RecipeIngredientModel) and value.reference_id is None and value.recipe_id:
+            # Older stored rows can have a null reference. Keep the fallback stable until the next save.
+            ingredient.reference_id = uuid5(value.recipe_id, f"recipe-ingredient:{value.id}")
+        return ingredient
 
     @field_validator("substitutions", mode="before")
     @classmethod

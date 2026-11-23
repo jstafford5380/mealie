@@ -2,6 +2,7 @@ from base64 import b64encode
 from collections.abc import Iterator
 from contextlib import contextmanager
 from io import BytesIO
+from uuid import UUID
 
 import httpx
 import pytest
@@ -10,13 +11,15 @@ from jsonschema import Draft202012Validator
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 from PIL import Image
+from sqlalchemy import update
 
+from mealie.db.models.recipe.ingredient import RecipeIngredientModel
 from mealie.mcp.context import current_user_id
 from mealie.mcp.recipes import register_recipe_tools
 from mealie.pkgs import safehttp
 from mealie.pkgs.safehttp import FetchResult
 from mealie.repos.repository_generic import GroupRepositoryGeneric
-from mealie.schema.recipe.recipe_ingredient import IngredientFoodAliasCreate, IngredientFoodSave
+from mealie.schema.recipe.recipe_ingredient import IngredientFoodAliasCreate, IngredientFoodSave, IngredientUnitSave
 from mealie.schema.recipe.recipe_organizers import CategorySave, TagSave, ToolSave
 from mealie.schema.recipe.recipe_timeline_events import RecipeTimelineEventCreate
 from mealie.services.scraper import recipe_scraper
@@ -39,6 +42,126 @@ def server() -> FastMCP:
     server = FastMCP()
     register_recipe_tools(server)
     return server
+
+
+@pytest.mark.asyncio
+async def test_structured_ingredient_round_trip_and_review(
+    server: FastMCP, api_client: TestClient, unique_user: TestUser, g2_user: TestUser
+) -> None:
+    food = unique_user.repos.ingredient_foods.create(
+        IngredientFoodSave(name="lemon", plural_name="lemons", group_id=unique_user.group_id)
+    )
+    unit = unique_user.repos.ingredient_units.create(
+        IngredientUnitSave(name="gram", abbreviation="g", group_id=unique_user.group_id)
+    )
+    foreign_food = g2_user.repos.ingredient_foods.create(IngredientFoodSave(name="lemon", group_id=g2_user.group_id))
+    with as_user(unique_user):
+        _, units = await server.call_tool("list_units", {"search": "gram"})
+        assert str(unit.id) in {item["id"] for item in units["items"]}
+        _, created = await server.call_tool(
+            "create_recipe",
+            {
+                "data": {
+                    "name": random_string(),
+                    "servings": 1,
+                    "ingredients": [
+                        "2 lemons",
+                        {"quantity": 1, "text": "pinch of salt"},
+                        {"quantity": 30, "food_id": str(food.id), "unit_id": str(unit.id)},
+                    ],
+                    "instructions": ["Mix the ingredients."],
+                }
+            },
+        )
+        recipe_id = created["id"]
+        original = created["structured_ingredients"]
+        assert original[2]["food"]["id"] == str(food.id)
+        assert original[2]["unit"]["id"] == str(unit.id)
+        recipe_path = api_routes.recipes_slug(created["slug"])
+        native = api_client.get(recipe_path, headers=unique_user.token).json()
+        native["recipeInstructions"][0]["ingredientReferences"] = [{"referenceId": original[0]["referenceId"]}]
+        response = api_client.put(recipe_path, json=native, headers=unique_user.token)
+        assert response.status_code == 200, response.text
+        unique_user.repos.session.execute(
+            update(RecipeIngredientModel)
+            .where(RecipeIngredientModel.recipe_id == UUID(recipe_id), RecipeIngredientModel.position == 1)
+            .values(reference_id=None)
+        )
+        unique_user.repos.session.commit()
+        _, created = await server.call_tool("get_recipe", {"recipe": recipe_id})
+        original = created["structured_ingredients"]
+        assert created["instructions"][0]["ingredientReferences"] == [{"referenceId": original[0]["referenceId"]}]
+        _, preview = await server.call_tool("preview_recipe_ingredient_normalization", {"recipe_id": recipe_id})
+        proposal = preview["changes"][0]["proposed"]
+        assert proposal["food_id"] == str(food.id)
+        assert proposal["quantity"] == 2
+        assert proposal["unit_id"] is None
+        _, unchanged = await server.call_tool("get_recipe", {"recipe": recipe_id})
+        assert unchanged == created
+
+        args = {"recipe_id": recipe_id, "revision": preview["revision"], "changes": [proposal]}
+        await server.call_tool(
+            "update_recipe", {"recipe_id": recipe_id, "changes": {"description": "Keep this recipe description."}}
+        )
+        with pytest.raises(ToolError, match="changed after preview"):
+            await server.call_tool("apply_recipe_ingredient_normalization", args)
+        _, preview = await server.call_tool("preview_recipe_ingredient_normalization", {"recipe_id": recipe_id})
+        args["revision"] = preview["revision"]
+        with pytest.raises(ToolError, match="food was not found"):
+            await server.call_tool(
+                "apply_recipe_ingredient_normalization",
+                {**args, "changes": [{**proposal, "food_id": str(foreign_food.id)}]},
+            )
+        _, result = await server.call_tool("apply_recipe_ingredient_normalization", args)
+        updated = result["recipe"]["structured_ingredients"]
+        assert [item["referenceId"] for item in updated] == [item["referenceId"] for item in original]
+        assert updated[0]["originalText"] == "2 lemons"
+        assert updated[0]["food"]["id"] == str(food.id)
+        assert updated[1:] == original[1:]
+        assert result["recipe"]["description"] == "Keep this recipe description."
+        assert result["recipe"]["instructions"] == created["instructions"]
+        with pytest.raises(ToolError, match="changed after preview"):
+            await server.call_tool("apply_recipe_ingredient_normalization", args)
+        _, next_preview = await server.call_tool("preview_recipe_ingredient_normalization", {"recipe_id": recipe_id})
+        assert updated[0]["referenceId"] not in {line["reference_id"] for line in next_preview["changes"]}
+        _, edited = await server.call_tool(
+            "update_recipe",
+            {
+                "recipe_id": recipe_id,
+                "changes": {
+                    "ingredients": [
+                        {"food_id": str(food.id), "reference_id": updated[0]["referenceId"], "quantity": 3},
+                        "Salt to taste",
+                        {"food_id": str(food.id), "reference_id": updated[2]["referenceId"]},
+                    ]
+                },
+            },
+        )
+        assert edited["structured_ingredients"][0]["quantity"] == 3
+        assert edited["structured_ingredients"][2] == updated[2]
+        assert edited["instructions"] == created["instructions"]
+
+
+@pytest.mark.asyncio
+async def test_match_ingredient_keeps_alias_collisions(server: FastMCP, unique_user: TestUser) -> None:
+    foods = [
+        unique_user.repos.ingredient_foods.create(
+            IngredientFoodSave(
+                name=name,
+                aliases=[IngredientFoodAliasCreate(name="pepper")],
+                group_id=unique_user.group_id,
+            )
+        )
+        for name in ("bell pepper", "black pepper")
+    ]
+    with as_user(unique_user):
+        _, match = await server.call_tool("match_ingredient", {"text": "1 pepper"})
+        _, ranged = await server.call_tool("match_ingredient", {"text": "1-2 peppers"})
+    assert match["requires_review"]
+    assert {candidate["id"] for candidate in match["food_candidates"]} == {str(food.id) for food in foods}
+    assert ranged["requires_review"]
+    assert ranged["quantity"] is None
+    assert ranged["measurement_to_review"] == "1-2"
 
 
 @pytest.mark.asyncio

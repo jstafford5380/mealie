@@ -86,7 +86,7 @@ class UnitConverter:
                 raise UnitNotFound(f"Unit '{unit}' not found in unit registry") from e
             return unit
 
-    def can_convert(self, unit: str | Unit, to_unit: str | Unit) -> bool:
+    def can_convert(self, unit: str | Unit, to_unit: str | Unit, *, assume_fluid_ounces: bool = True) -> bool:
         """Whether or not a given unit can be converted into another unit."""
         from pint import Unit
 
@@ -96,7 +96,8 @@ class UnitConverter:
         if not (isinstance(unit, Unit) and isinstance(to_unit, Unit)):
             return False
 
-        unit, to_unit = self._resolve_ounce(unit, to_unit)
+        if assume_fluid_ounces:
+            unit, to_unit = self._resolve_ounce(unit, to_unit)
         return unit.is_compatible_with(to_unit)
 
     def convert(self, quantity: float, unit: str | Unit, to_unit: str | Unit) -> tuple[float, Unit]:

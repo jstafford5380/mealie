@@ -1,10 +1,79 @@
+from uuid import uuid4
+
 import pytest
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
+from mealie.mcp.meal_plan import register_meal_plan_tools
+from mealie.mcp.recipes import register_recipe_tools
 from mealie.mcp.shopping_lists import register_shopping_list_tools
+from mealie.schema.recipe.recipe_ingredient import IngredientFoodSave, IngredientUnitSave
 from tests.integration_tests.mcp_tests.test_meal_plan_tools import as_user
 from tests.utils.fixture_schemas import TestUser
+
+
+@pytest.mark.asyncio
+async def test_shopping_list_consolidates_canonical_ingredients_with_scales(unique_user: TestUser) -> None:
+    server = FastMCP()
+    register_recipe_tools(server)
+    register_shopping_list_tools(server)
+    register_meal_plan_tools(server)
+    food = unique_user.repos.ingredient_foods.create(
+        IngredientFoodSave(name="olive oil", group_id=unique_user.group_id)
+    )
+    unit = unique_user.repos.ingredient_units.create(
+        IngredientUnitSave(name="tablespoon", abbreviation="tbsp", group_id=unique_user.group_id)
+    )
+    with as_user(unique_user):
+        recipes = []
+        for name, quantity, scale in (("Dressing", 1, 2), ("Marinade", 2, 0.5)):
+            _, recipe = await server.call_tool(
+                "create_recipe",
+                {
+                    "data": {
+                        "name": name,
+                        "servings": 4,
+                        "ingredients": [
+                            {"food_id": str(food.id), "unit_id": str(unit.id), "quantity": quantity},
+                            "Salt to taste",
+                        ],
+                        "instructions": ["Mix the ingredients."],
+                    }
+                },
+            )
+            recipes.append({"recipe_id": recipe["id"], "scale": scale})
+        _, shopping_list = await server.call_tool("create_shopping_list", {"name": "Groceries"})
+        _, result = await server.call_tool(
+            "add_recipes_to_shopping_list", {"list_id": shopping_list["id"], "recipes": recipes}
+        )
+        batch_id = str(uuid4())
+        for recipe, day, details in (
+            (recipes[0], 2, {"recipe_batch_id": batch_id, "recipe_scale": 0.25}),
+            (recipes[0], 3, {"leftover_batch_id": batch_id, "recipe_scale": 0.25}),
+            (recipes[1], 4, {"recipe_scale": 0.5}),
+        ):
+            await server.call_tool(
+                "create_meal_plan_entry",
+                {"recipe_id": recipe["recipe_id"], "date": f"2040-01-0{day}", "entry_type": "dinner", **details},
+            )
+        _, calendar_list = await server.call_tool(
+            "create_shopping_list", {"name": "Calendar groceries", "start_date": "2040-01-02", "end_date": "2040-01-04"}
+        )
+    (oil,) = [item for item in result["items"] if item["food_id"] == str(food.id)]
+    assert oil["unit_id"] == str(unit.id)
+    assert oil["quantity"] == oil["measured_quantity"] == 3
+    assert {(ref["recipe_id"], ref["scale"]) for ref in oil["recipe_references"]} == {
+        (recipe["recipe_id"], recipe["scale"]) for recipe in recipes
+    }
+    (salt,) = [item for item in result["items"] if item["food_id"] is None]
+    assert salt["quantity"] == 0
+    assert salt["measured_quantity"] is None
+    (calendar_oil,) = [item for item in calendar_list["items"] if item["food_id"] == str(food.id)]
+    assert calendar_oil["measured_quantity"] == 2
+    assert {recipe["recipe_id"]: recipe["scale"] for recipe in calendar_list["recipes"]} == {
+        recipes[0]["recipe_id"]: 1,
+        recipes[1]["recipe_id"]: 0.5,
+    }
 
 
 @pytest.mark.asyncio

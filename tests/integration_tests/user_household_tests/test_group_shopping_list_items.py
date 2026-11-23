@@ -713,6 +713,40 @@ def test_shopping_list_merge_standard_unit(
     assert item_out["quantity"] == (list_item_1_data["quantity"] + (list_item_2_data["quantity"] * 2)) / 2
 
 
+@pytest.mark.parametrize(
+    ("large_unit", "small_standard_unit", "small_standard_quantity", "small_quantity", "expected"),
+    [("cup", "fluid_ounce", 0.5, 2, 1.125), ("pound", "ounce", 1, 8, 1.5)],
+)
+def test_shopping_list_merge_across_compatible_standard_units(
+    api_client: TestClient,
+    unique_user: TestUser,
+    shopping_list: ShoppingListOut,
+    large_unit: str,
+    small_standard_unit: str,
+    small_standard_quantity: float,
+    small_quantity: int,
+    expected: float,
+) -> None:
+    item_data = []
+    for standard_unit, standard_quantity, quantity in (
+        (large_unit, 1, 1),
+        (small_standard_unit, small_standard_quantity, small_quantity),
+    ):
+        response = api_client.post(
+            api_routes.units,
+            json={"name": random_string(), "standardQuantity": standard_quantity, "standardUnit": standard_unit},
+            headers=unique_user.token,
+        )
+        unit = IngredientUnitOut.model_validate(response.json())
+        item_data.append(create_item(shopping_list.id, unit_id=str(unit.id), quantity=quantity, note="mealie-food"))
+    response = api_client.post(
+        api_routes.households_shopping_items_create_bulk, json=item_data, headers=unique_user.token
+    )
+    (item,) = utils.assert_deserialize(response, 201)["createdItems"]
+    assert item["unitId"] == item_data[0]["unit_id"]
+    assert item["quantity"] == pytest.approx(expected)
+
+
 def test_shopping_list_merge_standard_unit_different_foods(
     api_client: TestClient, unique_user: TestUser, shopping_list: ShoppingListOut
 ):
@@ -743,11 +777,12 @@ def test_shopping_list_merge_standard_unit_different_foods(
         assert in_data["note"] == out_data["note"]
 
 
+@pytest.mark.parametrize("mass_unit", ["gram", "ounce"])
 def test_shopping_list_merge_standard_unit_incompatible_units(
-    api_client: TestClient, unique_user: TestUser, shopping_list: ShoppingListOut
+    api_client: TestClient, unique_user: TestUser, shopping_list: ShoppingListOut, mass_unit: str
 ):
     unit_1_data = {"name": random_string(), "standardQuantity": 1, "standardUnit": "cup"}
-    unit_2_data = {"name": random_string(), "standardQuantity": 2, "standardUnit": "gram"}
+    unit_2_data = {"name": random_string(), "standardQuantity": 2, "standardUnit": mass_unit}
     unit_1_out = api_client.post(api_routes.units, json=unit_1_data, headers=unique_user.token)
     unit_2_out = api_client.post(api_routes.units, json=unit_2_data, headers=unique_user.token)
 

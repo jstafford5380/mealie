@@ -2,6 +2,7 @@ from base64 import b64decode
 from binascii import Error as Base64Error
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
+from hashlib import sha256
 from io import BytesIO
 from json import dumps
 from math import isfinite
@@ -32,6 +33,7 @@ from starlette.concurrency import run_in_threadpool
 from mealie.core import exceptions
 from mealie.lang.providers import get_locale_provider
 from mealie.mcp.context import offload, tool_context
+from mealie.mcp.ingredient_matching import IngredientMatch, IngredientMatchingParser
 from mealie.pkgs import safehttp
 from mealie.repos.all_repositories import get_repositories
 from mealie.schema.recipe.recipe import RecipeDraft, RecipeOut, RecipeSummary
@@ -82,6 +84,49 @@ class RecipeToolInput(BaseModel):
 class IngredientAmount(RecipeToolInput):
     quantity: Annotated[float, Field(ge=0, le=100_000, allow_inf_nan=False)]
     text: Text = Field(description="Ingredient and unit text following the quantity, e.g. 'cups diced apples'.")
+
+
+class CanonicalIngredient(RecipeToolInput):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "food_id": "c9052338-d59c-4069-9df2-dbe1175e0a49",
+                    "unit_id": None,
+                    "quantity": 1,
+                    "note": "juiced",
+                    "original_text": "1 lemon, juiced",
+                }
+            ]
+        }
+    )
+
+    reference_id: UUID | None = None
+    quantity: Annotated[float, Field(ge=0, le=100_000, allow_inf_nan=False)] | None = None
+    food_id: UUID
+    unit_id: UUID | None = None
+    note: str | None = None
+    original_text: str | None = None
+
+
+class ReviewedIngredient(CanonicalIngredient):
+    model_config = ConfigDict(
+        json_schema_extra={
+            "examples": [
+                {
+                    "reference_id": "04409abb-e815-4ead-b91e-5c309d1a5989",
+                    "food_id": "c9052338-d59c-4069-9df2-dbe1175e0a49",
+                    "unit_id": None,
+                    "quantity": 1,
+                    "note": "juiced",
+                }
+            ]
+        }
+    )
+
+    reference_id: UUID
+    unit_id: UUID | None
+    quantity: Annotated[float, Field(ge=0, le=100_000, allow_inf_nan=False)] | None
 
 
 class NutritionEntry(BaseModel):
@@ -155,7 +200,7 @@ class RecipeChanges(RecipeToolInput):
 
     name: Text | MISSING = MISSING
     servings: Positive | MISSING = MISSING
-    ingredients: list[Text | IngredientAmount] | None = None
+    ingredients: list[Text | IngredientAmount | CanonicalIngredient] | None = None
     instructions: list[Text] | None = None
     description: str | None = None
     yield_quantity: Positive | None = None
@@ -194,7 +239,7 @@ class RecipeChanges(RecipeToolInput):
 class RecipeInput(RecipeChanges):
     name: Text
     servings: Positive
-    ingredients: list[Text | IngredientAmount] = Field(min_length=1)
+    ingredients: list[Text | IngredientAmount | CanonicalIngredient] = Field(min_length=1)
     instructions: list[Text] = Field(min_length=1)
 
 
@@ -227,6 +272,19 @@ class FoodPage(BaseModel):
     next_page: int | None
 
 
+class UnitResult(FoodResult):
+    abbreviation: str
+    plural_abbreviation: str | None
+    standard_unit: str | None
+    standard_quantity: float | None
+
+
+class UnitPage(BaseModel):
+    items: list[UnitResult]
+    total: int
+    next_page: int | None
+
+
 class RecipeOrganizer(BaseModel):
     id: UUID
     name: str
@@ -248,6 +306,7 @@ class RecipeDetails(RecipeResult):
     cook_time_seconds: int | None
     total_time_seconds: int | None
     ingredients: list[str]
+    structured_ingredients: list[RecipeIngredient]
     instructions: list[RecipeStep]
     nutrition: Nutrition
     nutrition_provenance: dict[str, NutritionEntry]
@@ -255,6 +314,26 @@ class RecipeDetails(RecipeResult):
     categories: list[RecipeOrganizer]
     tags: list[RecipeOrganizer]
     tools: list[RecipeOrganizer]
+
+
+class NormalizationLine(BaseModel):
+    reference_id: UUID
+    status: Literal["exact", "alias", "ambiguous", "unmatched", "measurement_review", "parse_failure"]
+    match: IngredientMatch | None = None
+    proposed: CanonicalIngredient | None = None
+
+
+class NormalizationPreview(BaseModel):
+    recipe_id: UUID
+    name: str
+    revision: str
+    current: list[RecipeIngredient]
+    changes: list[NormalizationLine]
+
+
+class NormalizationResult(BaseModel):
+    recipe: RecipeDetails
+    unresolved: list[UUID]
 
 
 class ScaledIngredient(BaseModel):
@@ -394,7 +473,47 @@ def _resolve_organizers(
     return list(resolved.values())
 
 
-def _draft_fields(data: RecipeChanges, service: RecipeService) -> dict[str, Any]:
+def _resolve_ingredients(
+    inputs: list[str | IngredientAmount | CanonicalIngredient],
+    service: RecipeService,
+    existing: RecipeOut | None,
+) -> list[RecipeIngredient]:
+    previous = {item.reference_id: item for item in existing.recipe_ingredient} if existing else {}
+    used: set[UUID] = set()
+    ingredients: list[RecipeIngredient] = []
+    for item in inputs:
+        if isinstance(item, str):
+            ingredients.append(RecipeIngredient(note=item, quantity=None))
+            continue
+        if isinstance(item, IngredientAmount):
+            ingredients.append(RecipeIngredient(quantity=item.quantity, note=item.text))
+            continue
+
+        base: dict[str, Any] = {}
+        if item.reference_id is not None:
+            if item.reference_id not in previous or item.reference_id in used:
+                raise ToolError("Supply each existing ingredient reference ID at most once.")
+            base = previous[item.reference_id].model_dump()
+            used.add(item.reference_id)
+
+        food = service.repos.ingredient_foods.get_one(item.food_id)
+        if food is None:
+            raise ToolError("The ingredient food was not found in your group.")
+        unit = service.repos.ingredient_units.get_one(item.unit_id) if item.unit_id else None
+        if item.unit_id and unit is None:
+            raise ToolError("The ingredient unit was not found in your group.")
+
+        changes = item.model_dump(exclude_unset=True, exclude={"food_id", "unit_id", "reference_id"})
+        changes.update(food=food, display="")
+        if "unit_id" in item.model_fields_set:
+            changes["unit"] = unit
+        if not base and "quantity" not in changes:
+            changes["quantity"] = None
+        ingredients.append(RecipeIngredient.model_validate(base | changes))
+    return ingredients
+
+
+def _draft_fields(data: RecipeChanges, service: RecipeService, existing: RecipeOut | None = None) -> dict[str, Any]:
     values = data.model_dump(
         exclude_unset=True,
         exclude={
@@ -416,12 +535,7 @@ def _draft_fields(data: RecipeChanges, service: RecipeService) -> dict[str, Any]
     }
     fields = {rename.get(field, field): value for field, value in values.items()}
     if data.ingredients is not None:
-        fields["recipe_ingredient"] = [
-            RecipeIngredient(note=item, quantity=None)
-            if isinstance(item, str)
-            else RecipeIngredient(quantity=item.quantity, note=item.text)
-            for item in data.ingredients
-        ]
+        fields["recipe_ingredient"] = _resolve_ingredients(data.ingredients, service, existing)
     if data.instructions is not None:
         fields["recipe_instructions"] = [RecipeStep(text=step) for step in data.instructions]
     if data.categories is not MISSING:
@@ -458,6 +572,7 @@ def _details(recipe: RecipeOut, group_slug: str) -> RecipeDetails:
         cook_time_seconds=recipe.perform_time_seconds,
         total_time_seconds=recipe.total_time_seconds,
         ingredients=[item.display for item in recipe.recipe_ingredient],
+        structured_ingredients=recipe.recipe_ingredient,
         instructions=recipe.recipe_instructions,
         nutrition=recipe.nutrition,
         nutrition_provenance=provenance,
@@ -493,7 +608,153 @@ def _scale_recipe(recipe: RecipeOut, multiplier: float) -> RecipeScale:
     )
 
 
+def _register_ingredient_tools(server: FastMCP) -> None:
+    @server.tool(annotations=READ_ONLY)
+    @offload
+    def list_units(
+        search: str | None = None,
+        page: Annotated[int, Field(ge=1)] = 1,
+        per_page: Annotated[int, Field(ge=1, le=100)] = 50,
+    ) -> UnitPage:
+        """List canonical measurement units in your group. Follow next_page for more."""
+        with tool_context() as (_, _, repos):
+            results = repos.ingredient_units.page_all(
+                pagination=PaginationQuery(
+                    page=page, per_page=per_page, order_by="name", order_direction=OrderDirection.asc
+                ),
+                search=search,
+            )
+            return UnitPage(
+                items=[
+                    UnitResult(
+                        id=unit.id,
+                        name=unit.name,
+                        plural_name=unit.plural_name,
+                        aliases=[alias.name for alias in unit.aliases],
+                        abbreviation=unit.abbreviation,
+                        plural_abbreviation=unit.plural_abbreviation,
+                        standard_unit=unit.standard_unit,
+                        standard_quantity=unit.standard_quantity,
+                    )
+                    for unit in results.items
+                ],
+                total=results.total,
+                next_page=page + 1 if page < results.total_pages else None,
+            )
+
+    @server.tool(annotations=READ_ONLY)
+    @offload
+    def match_ingredient(text: Text) -> IngredientMatch:
+        """Parse ingredient text and return all exact food and unit candidates in your group."""
+        with tool_context() as (session, user, _):
+            parser = IngredientMatchingParser(user.group_id, session, get_locale_provider("en-US"))
+            return parser.match(text)
+
+    @server.tool(annotations=READ_ONLY)
+    @offload
+    def preview_recipe_ingredient_normalization(recipe_id: UUID) -> NormalizationPreview:
+        """Review proposed changes without saving. Pass the revision and selected changes to apply."""
+        with _recipe_service() as service:
+            recipe = service.get_one(recipe_id)
+            parser = IngredientMatchingParser(service.user.group_id, service.repos.session, service.translator)
+            return NormalizationPreview(
+                recipe_id=recipe.id,
+                name=recipe.name,
+                revision=_recipe_revision(recipe),
+                current=recipe.recipe_ingredient,
+                changes=[
+                    _preview_ingredient(parser, ingredient)
+                    for ingredient in recipe.recipe_ingredient
+                    if _needs_normalization(ingredient)
+                ],
+            )
+
+    @server.tool(annotations=UPDATE)
+    @offload
+    def apply_recipe_ingredient_normalization(
+        recipe_id: UUID,
+        revision: str,
+        changes: Annotated[list[ReviewedIngredient], Field(min_length=1)],
+    ) -> NormalizationResult:
+        """Apply only reviewed changes. Set unit_id to null for a unitless ingredient."""
+        with _recipe_service() as service:
+            return _apply_ingredient_changes(service, recipe_id, revision, changes)
+
+
+def _recipe_revision(recipe: RecipeOut) -> str:
+    snapshot = recipe.model_dump(mode="json")
+    return sha256(dumps(snapshot, sort_keys=True).encode()).hexdigest()
+
+
+def _needs_normalization(ingredient: RecipeIngredient) -> bool:
+    return (
+        not ingredient.referenced_recipe
+        and not (ingredient.title and not ingredient.display)
+        and (not ingredient.food or not ingredient.food.id or bool(ingredient.unit and not ingredient.unit.id))
+    )
+
+
+def _preview_ingredient(parser: IngredientMatchingParser, ingredient: RecipeIngredient) -> NormalizationLine:
+    ref = ingredient.reference_id
+    source = ingredient.original_text if ingredient.original_text is not None else ingredient.display
+    try:
+        match = parser.match(source) if source else None
+    except ValueError:
+        match = None
+    if match is None:
+        return NormalizationLine(reference_id=ref, status="parse_failure")
+    if match.measurement_to_review:
+        return NormalizationLine(reference_id=ref, status="measurement_review", match=match)
+    if match.requires_review:
+        ambiguous = len(match.food_candidates) > 1 or len(match.unit_candidates) > 1
+        return NormalizationLine(reference_id=ref, status="ambiguous" if ambiguous else "unmatched", match=match)
+
+    food = match.food_candidates[0]
+    unit = next(iter(match.unit_candidates), None)
+    alias = food.match_type == "alias" or (unit is not None and unit.match_type == "alias")
+    return NormalizationLine(
+        reference_id=ref,
+        status="alias" if alias else "exact",
+        match=match,
+        proposed=CanonicalIngredient(
+            reference_id=ref,
+            food_id=food.id,
+            unit_id=unit.id if unit else None,
+            quantity=match.quantity,
+            note=match.note,
+            original_text=source,
+        ),
+    )
+
+
+def _apply_ingredient_changes(
+    service: RecipeService, recipe_id: UUID, revision: str, changes: list[ReviewedIngredient]
+) -> NormalizationResult:
+    with service.group_recipes.transaction():
+        service.group_recipes.lock_for_ingredient_normalization(recipe_id)
+        recipe = service.get_one(recipe_id)
+        if _recipe_revision(recipe) != revision:
+            raise ToolError("The recipe changed after preview. Preview it again before applying changes.")
+        eligible = {item.reference_id for item in recipe.recipe_ingredient if _needs_normalization(item)}
+        if any(change.reference_id not in eligible for change in changes):
+            raise ToolError("Each approved change must refer to an unresolved ingredient in this recipe.")
+        replacements = {item.reference_id: item for item in _resolve_ingredients(list(changes), service, recipe)}
+        ingredients = []
+        for item in recipe.recipe_ingredient:
+            replacement = replacements.get(item.reference_id)
+            if replacement is not None:
+                replacement.original_text = item.original_text if item.original_text is not None else item.display
+            ingredients.append(replacement or item)
+        updated = service.patch_one(recipe_id, RecipeDraft(recipe_ingredient=ingredients))
+    return NormalizationResult(
+        recipe=_publish_and_format(service, updated, EventOperation.update),
+        unresolved=[item.reference_id for item in updated.recipe_ingredient if _needs_normalization(item)],
+    )
+
+
 def register_recipe_tools(server: FastMCP) -> None:
+    _register_ingredient_tools(server)
+
     @server.tool(annotations=READ_ONLY)
     @offload
     def list_foods(
@@ -657,7 +918,8 @@ def register_recipe_tools(server: FastMCP) -> None:
         annotations=UPDATE,
         description=(
             "Update a recipe by ID. Supply only changed fields and give full lists to replace ingredients or steps. "
-            "To replace the photo, supply image_url or image_base64. "
+            "Include reference_id on retained structured ingredients to preserve instruction links. "
+            "Legacy ingredient inputs create new rows. To replace the photo, supply image_url or image_base64. "
             f"{ORGANIZER_GUIDANCE} "
             f"{NUTRITION_GUIDANCE} Omit a nutrient to keep it or pass null to clear it.\n"
             "Example request:\n"
@@ -702,7 +964,7 @@ def register_recipe_tools(server: FastMCP) -> None:
 def _update_recipe(recipe_id: UUID, changes: RecipeChanges) -> RecipeDetails:
     with _recipe_service() as service:
         recipe = service.get_one(recipe_id)
-        fields = _draft_fields(changes, service)
+        fields = _draft_fields(changes, service, recipe)
         if changes.nutrition is not None:
             fields.update(_apply_nutrition(recipe, changes.nutrition))
         has_image = changes.image_url is not None or changes.image_base64 is not None

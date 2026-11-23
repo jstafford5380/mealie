@@ -43,15 +43,25 @@ class ListSummary(BaseModel):
         return cls(id=shopping_list.id, name=shopping_list.name)
 
 
+class ListItemRecipe(BaseModel):
+    recipe_id: UUID
+    scale: float | None
+    quantity_per_recipe: float | None
+
+
 class ListItem(BaseModel):
     id: UUID
     display: str
     note: str | None
     quantity: float
+    measured_quantity: float | None
     checked: bool
     food: str | None
+    food_id: UUID | None
     unit: str | None
+    unit_id: UUID | None
     label: str | None
+    recipe_references: list[ListItemRecipe]
 
 
 class ListRecipe(BaseModel):
@@ -75,10 +85,21 @@ class ListDetails(ListSummary):
                     display=item.display,
                     note=item.note,
                     quantity=item.quantity,
+                    measured_quantity=None if item.recipe_references and item.quantity == 0 else item.quantity,
                     checked=item.checked,
                     food=item.food.name if item.food else None,
+                    food_id=item.food_id,
                     unit=item.unit.name if item.unit else None,
+                    unit_id=item.unit_id,
                     label=item.label.name if item.label else None,
+                    recipe_references=[
+                        ListItemRecipe(
+                            recipe_id=ref.recipe_id,
+                            scale=ref.recipe_scale,
+                            quantity_per_recipe=ref.recipe_quantity or None,
+                        )
+                        for ref in item.recipe_references
+                    ],
                 )
                 for item in shopping_list.list_items
             ],

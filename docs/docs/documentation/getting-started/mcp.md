@@ -8,6 +8,38 @@ Use `list_categories`, `list_tags`, and `list_tools` to find existing recipe org
 
 Use `list_foods` to look up canonical ingredient IDs by name or browse your group's food catalog. Results include the stored name, plural name, and aliases. Follow `next_page` for more results.
 
+### Structured ingredients
+
+`get_recipe` returns the existing `ingredients` string array and a `structured_ingredients` array in the same order. The structured records include the native `referenceId`, `quantity`, `food`, `unit`, `note`, `originalText`, and `display` fields.
+
+Use `list_units` to find unit IDs and any standard conversion mappings. Use `match_ingredient` to parse an ingredient and see exact food and unit candidates, including aliases. Review ambiguous matches before choosing IDs.
+
+Pass strings, legacy objects with `quantity` and `text`, or canonical objects in the same recipe ingredient array. This example shows the arguments to `create_recipe` using an illustrative food ID.
+
+```json
+{
+  "data": {
+    "name": "Lemon dressing",
+    "servings": 2,
+    "ingredients": [
+      {
+        "quantity": 1,
+        "food_id": "c9052338-d59c-4069-9df2-dbe1175e0a49",
+        "unit_id": null,
+        "note": "juiced",
+        "original_text": "1 lemon, juiced"
+      },
+      "Salt to taste"
+    ],
+    "instructions": ["Mix and season to taste."]
+  }
+}
+```
+
+On update, omit `ingredients` to keep the list. A supplied array replaces it. Include the saved `referenceId` as `reference_id` on a retained canonical ingredient to preserve its instruction links. Strings and legacy quantity-and-text objects create new ingredient rows.
+
+Call `preview_recipe_ingredient_normalization` with a recipe ID to review its current ingredients, proposals, and unresolved lines. The preview is read-only. To save reviewed changes, call `apply_recipe_ingredient_normalization` with the same `recipe_id`, the preview's `revision`, and a `changes` array containing only approved rows. Each change supplies `reference_id`, `food_id`, `quantity` (or null), and `unit_id` (or null for a unitless ingredient). Include a `note` if you want to replace the existing note. Use IDs from the current group. If the recipe changes after preview, request a fresh preview before applying.
+
 ## Before you begin
 
 - Confirm that your ChatGPT account supports adding custom MCP servers and selecting an OpenAI Secure MCP Tunnel. Use the personal Platform organization for that account and associate the tunnel with the ChatGPT context where you will install the plugin.
@@ -79,6 +111,8 @@ Values use kcal for calories, mg for sodium and cholesterol, and g for other nut
 ## Manage shopping lists
 
 Use `list_shopping_lists` to find a household list and `get_shopping_list` to read its items, quantities, and checked states. Use `create_shopping_list` for a new list. Include both `start_date` and `end_date` to add ingredients from the live meal plan for that inclusive range.
+
+List items include canonical `food_id` and `unit_id` when available, plus their recipe references and scales. The existing numeric `quantity` reflects Mealie's stored total. For a recipe-linked item with a stored total of zero, `measured_quantity` is null because Mealie stores missing recipe quantities as zero. Native consolidation uses food IDs and same or compatible units with configured standard conversions.
 
 Use `add_shopping_list_items` to add groceries by name and quantity. Use `add_recipes_to_shopping_list` to add ingredients by recipe ID and scale. Use `update_shopping_list_item` with `checked: true` to mark an item as purchased. Supply only the fields you want to change.
 

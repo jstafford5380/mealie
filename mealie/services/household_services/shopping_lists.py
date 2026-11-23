@@ -78,7 +78,8 @@ class ShoppingListService:
                 return False
 
             uc = UnitConverter()
-            if not uc.can_convert(item1_unit.standard_unit, item2_unit.standard_unit):
+            # Canonical units already distinguish weight ounces from fluid ounces.
+            if not uc.can_convert(item1_unit.standard_unit, item2_unit.standard_unit, assume_fluid_ounces=False):
                 return False
 
         # if foods match, we can merge, otherwise compare the notes

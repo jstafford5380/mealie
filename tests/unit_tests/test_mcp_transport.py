@@ -145,6 +145,9 @@ def test_mcp_http_authenticated_read_and_write(
             "list_tags",
             "list_tools",
             "list_foods",
+            "list_units",
+            "match_ingredient",
+            "preview_recipe_ingredient_normalization",
             "list_meal_plan",
             "list_leftover_batches",
             "list_saved_meal_plans",
@@ -156,6 +159,7 @@ def test_mcp_http_authenticated_read_and_write(
             "create_recipe",
             "import_recipe_url",
             "update_recipe",
+            "apply_recipe_ingredient_normalization",
             "create_meal_plan_entry",
             "update_meal_plan_entry",
             "create_saved_meal_plan",
@@ -181,12 +185,23 @@ def test_mcp_http_authenticated_read_and_write(
             validator = Draft202012Validator(schema)
             example = loads(tool["description"].split("Example request:\n", 1)[1])
             validator.validate(example)
+            canonical = schema["$defs"]["CanonicalIngredient"]["examples"][0]
+            example[envelope]["ingredients"] = ["Salt to taste", {"quantity": 2, "text": "cloves garlic"}, canonical]
+            validator.validate(example)
 
             values = example[envelope]["nutrition"]["values"]
             values["proteinContent"] = 37
             validator.validate(example)
             values["protein_content"] = values.pop("proteinContent")
             assert not validator.is_valid(example)
+
+        review_schema = tools["apply_recipe_ingredient_normalization"]["inputSchema"]
+        reviewed = review_schema["$defs"]["ReviewedIngredient"]["examples"][0]
+        Draft202012Validator(review_schema).validate(
+            {"recipe_id": "0f01eb0d-6dff-481f-90e6-6bc700d714a7", "revision": "example", "changes": [reviewed]}
+        )
+        match_schema = tools["match_ingredient"]["outputSchema"]
+        Draft202012Validator(match_schema).validate(match_schema["examples"][0])
 
         def call(request_id: int, name: str, arguments: dict[str, Any]) -> dict[str, Any]:
             response = client.post(
