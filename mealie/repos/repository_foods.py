@@ -7,6 +7,7 @@ from sqlalchemy.orm import joinedload, with_expression
 
 from mealie.db.models.household.shopping_list import ShoppingListItem
 from mealie.db.models.recipe.ingredient import (
+    IngredientFoodAliasModel,
     IngredientFoodModel,
     IngredientFoodSubstitutionModel,
     RecipeIngredientModel,
@@ -31,6 +32,33 @@ class RepositoryFood(GroupRepositoryGeneric[IngredientFoodOut, IngredientFoodMod
     def _get_food(self, id: UUID4) -> IngredientFoodModel:
         stmt = select(self.model).filter_by(**self._filter_builder(**{"id": id}))
         return self.session.execute(stmt).scalars().one()
+
+    def update_identity(
+        self,
+        food_id: UUID4,
+        *,
+        name: str | None = None,
+        plural_name: str | None,
+        replace_plural_name: bool,
+        aliases: list[str] | None = None,
+    ) -> IngredientFoodOut:
+        with self.transaction():
+            # Lock the parent before loading its alias list so concurrent replacements cannot interleave.
+            self.session.execute(
+                update(self.model)
+                .filter_by(**self._filter_builder(id=food_id))
+                .values(updated_at=self.model.updated_at)
+                .execution_options(synchronize_session=False)
+            )
+            food = self._get_food(food_id)
+            if name is not None:
+                food.name = name
+            if replace_plural_name:
+                food.plural_name = plural_name
+            if aliases is not None and aliases != [alias.name for alias in food.aliases]:
+                food.aliases = [IngredientFoodAliasModel(session=self.session, name=alias) for alias in aliases]
+            self._finish_write()
+            return self.schema.model_validate(food)
 
     def update_with_reverse_substitutions(
         self, item_id: UUID4, data: IngredientFoodSave, add: set[UUID4], remove: set[UUID4]

@@ -45,6 +45,45 @@ def server() -> FastMCP:
 
 
 @pytest.mark.asyncio
+async def test_food_tools_create_and_update_group_catalog(
+    server: FastMCP, unique_user: TestUser, g2_user: TestUser
+) -> None:
+    foreign_food = g2_user.repos.ingredient_foods.create(IngredientFoodSave(name="farro", group_id=g2_user.group_id))
+    with as_user(unique_user):
+        _, food = await server.call_tool(
+            "create_food",
+            {"data": {"name": "whole-wheat pasta", "aliases": ["wholegrain pasta"]}},
+        )
+        assert food["aliases"] == ["wholegrain pasta"]
+        with pytest.raises(ToolError, match="already exists"):
+            await server.call_tool("create_food", {"data": {"name": food["name"]}})
+        _, updated = await server.call_tool(
+            "update_food",
+            {"food_id": food["id"], "changes": {"plural_name": "whole-wheat pastas"}},
+        )
+        assert updated == {**food, "plural_name": "whole-wheat pastas"}
+        _, updated = await server.call_tool(
+            "update_food", {"food_id": food["id"], "changes": {"aliases": ["whole wheat pasta"]}}
+        )
+        assert updated["aliases"] == ["whole wheat pasta"]
+        _, cleared = await server.call_tool(
+            "update_food", {"food_id": food["id"], "changes": {"plural_name": None, "aliases": []}}
+        )
+        assert cleared["plural_name"] is None
+        assert cleared["aliases"] == []
+        _, listed = await server.call_tool("list_foods", {"search": "whole-wheat pasta"})
+        assert cleared in listed["items"]
+        with pytest.raises(ToolError, match="not found in your group"):
+            await server.call_tool("update_food", {"food_id": str(foreign_food.id), "changes": {"name": "pasta"}})
+
+    with as_user(g2_user):
+        with pytest.raises(ToolError, match="do not have permission"):
+            await server.call_tool("update_food", {"food_id": str(foreign_food.id), "changes": {"name": "pasta"}})
+        with pytest.raises(ToolError, match="do not have permission"):
+            await server.call_tool("create_food", {"data": {"name": "pasta"}})
+
+
+@pytest.mark.asyncio
 async def test_structured_ingredient_round_trip_and_review(
     server: FastMCP, api_client: TestClient, unique_user: TestUser, g2_user: TestUser
 ) -> None:

@@ -8,6 +8,8 @@ Use `list_categories`, `list_tags`, and `list_tools` to find existing recipe org
 
 Use `list_foods` to look up canonical ingredient IDs by name or browse your group's food catalog. Results include the stored name, plural name, and aliases. Follow `next_page` for more results.
 
+Users with permission to organize the group can add a canonical food with `create_food`. For example, send `{"data":{"name":"whole-wheat pasta","aliases":["wholegrain pasta"]}}`. Use the returned ID with `update_food` to edit its name, plural name, or aliases. Omit fields to keep them. Supply the complete alias list, or send an empty list to clear it. Set `plural_name` to null to clear it.
+
 ### Structured ingredients
 
 `get_recipe` returns the existing `ingredients` string array and a `structured_ingredients` array in the same order. The structured records include the native `referenceId`, `quantity`, `food`, `unit`, `note`, `originalText`, and `display` fields.

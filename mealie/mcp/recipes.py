@@ -27,7 +27,7 @@ from pydantic import (
     field_validator,
     model_validator,
 )
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from starlette.concurrency import run_in_threadpool
 
 from mealie.core import exceptions
@@ -37,7 +37,12 @@ from mealie.mcp.ingredient_matching import IngredientMatch, IngredientMatchingPa
 from mealie.pkgs import safehttp
 from mealie.repos.all_repositories import get_repositories
 from mealie.schema.recipe.recipe import RecipeDraft, RecipeOut, RecipeSummary
-from mealie.schema.recipe.recipe_ingredient import RecipeIngredient
+from mealie.schema.recipe.recipe_ingredient import (
+    IngredientFoodAliasCreate,
+    IngredientFoodOut,
+    IngredientFoodSave,
+    RecipeIngredient,
+)
 from mealie.schema.recipe.recipe_notes import RecipeNote
 from mealie.schema.recipe.recipe_nutrition import Nutrition
 from mealie.schema.recipe.recipe_organizers import OrganizerOut
@@ -264,6 +269,24 @@ class FoodResult(BaseModel):
     name: str
     plural_name: str | None
     aliases: list[str]
+
+    @classmethod
+    def from_food(cls, food: IngredientFoodOut) -> FoodResult:
+        return cls(
+            id=food.id, name=food.name, plural_name=food.plural_name, aliases=[alias.name for alias in food.aliases]
+        )
+
+
+class FoodInput(RecipeToolInput):
+    name: Text
+    plural_name: Text | None = None
+    aliases: list[Text] = Field(default_factory=list)
+
+
+class FoodChanges(RecipeToolInput):
+    name: Text | MISSING = MISSING
+    plural_name: Text | None | MISSING = MISSING
+    aliases: list[Text] | MISSING = MISSING
 
 
 class FoodPage(BaseModel):
@@ -609,6 +632,49 @@ def _scale_recipe(recipe: RecipeOut, multiplier: float) -> RecipeScale:
 
 
 def _register_ingredient_tools(server: FastMCP) -> None:
+    @server.tool(annotations=WRITE)
+    @offload
+    def create_food(data: FoodInput) -> FoodResult:
+        """Create a canonical food in your Mealie group. Use list_foods to find existing foods first."""
+        with tool_context() as (_, user, repos):
+            if not user.can_organize:
+                raise ToolError("You do not have permission to organize foods in this group.")
+            try:
+                food = repos.ingredient_foods.create(
+                    IngredientFoodSave(
+                        group_id=user.group_id,
+                        name=data.name,
+                        plural_name=data.plural_name,
+                        aliases=[IngredientFoodAliasCreate(name=alias) for alias in dict.fromkeys(data.aliases)],
+                    )
+                )
+            except IntegrityError:
+                raise ToolError("A food with this name already exists in your group.") from None
+            return FoodResult.from_food(food)
+
+    @server.tool(annotations=UPDATE)
+    @offload
+    def update_food(food_id: UUID, changes: FoodChanges) -> FoodResult:
+        """Edit a food by ID. Omit fields to keep them. Supply the complete alias list, or [] to clear it."""
+        with tool_context() as (_, user, repos):
+            if not user.can_organize:
+                raise ToolError("You do not have permission to organize foods in this group.")
+            if not changes.model_fields_set:
+                raise ToolError("Supply at least one food field to update.")
+            try:
+                food = repos.ingredient_foods.update_identity(
+                    food_id,
+                    name=None if changes.name is MISSING else changes.name,
+                    plural_name=None if changes.plural_name is MISSING else changes.plural_name,
+                    replace_plural_name=changes.plural_name is not MISSING,
+                    aliases=None if changes.aliases is MISSING else list(dict.fromkeys(changes.aliases)),
+                )
+            except NoResultFound:
+                raise ToolError("The food was not found in your group.") from None
+            except IntegrityError:
+                raise ToolError("A food with this name already exists in your group.") from None
+            return FoodResult.from_food(food)
+
     @server.tool(annotations=READ_ONLY)
     @offload
     def list_units(
@@ -774,15 +840,7 @@ def register_recipe_tools(server: FastMCP) -> None:
                 search=search,
             )
             return FoodPage(
-                items=[
-                    FoodResult(
-                        id=food.id,
-                        name=food.name,
-                        plural_name=food.plural_name,
-                        aliases=[alias.name for alias in food.aliases],
-                    )
-                    for food in results.items
-                ],
+                items=[FoodResult.from_food(food) for food in results.items],
                 total=results.total,
                 next_page=page + 1 if page < results.total_pages else None,
             )

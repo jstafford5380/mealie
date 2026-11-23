@@ -156,6 +156,8 @@ def test_mcp_http_authenticated_read_and_write(
             "get_shopping_list",
         }
         writes = {
+            "create_food",
+            "update_food",
             "create_recipe",
             "import_recipe_url",
             "update_recipe",
