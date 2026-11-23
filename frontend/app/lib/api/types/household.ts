@@ -538,6 +538,11 @@ export interface ShoppingListCreate {
   createdAt?: string | null;
   updatedAt?: string | null;
 }
+export interface ShoppingListFromMealPlan {
+  name: string;
+  startDate: string;
+  endDate: string;
+}
 export interface ShoppingListItemBase {
   quantity?: number;
   unit?: IngredientUnitOut | IngredientUnitCreate | null;

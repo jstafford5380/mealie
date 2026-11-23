@@ -30,6 +30,15 @@ MEALPLAN_EVENTS = {
 }
 
 
+def meal_plan_date_filters(start_date: date | None, end_date: date | None) -> list[str]:
+    filters = []
+    if start_date:
+        filters.append(f"(date >= {start_date} OR end_date >= {start_date})")
+    if end_date:
+        filters.append(f"date <= {end_date}")
+    return filters
+
+
 class MealPlanEntryNotFound(LookupError):
     pass
 
@@ -66,13 +75,9 @@ class MealPlanService(BaseService):
         *,
         include_week_entries: bool,
     ) -> PaginationBase[PlanEntryOut]:
-        filters = [query.query_filter]
+        filters = [query.query_filter, *meal_plan_date_filters(start_date, end_date)]
         if not include_week_entries:
             filters.append("end_date IS NULL")
-        if start_date:
-            filters.append(f"(date >= {start_date} OR end_date >= {start_date})")
-        if end_date:
-            filters.append(f"date <= {end_date}")
         query.query_filter = QueryFilterBuilder.combine_filters(*filters)
         return self.repos.meals.page_all(pagination=query)
 

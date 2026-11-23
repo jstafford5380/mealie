@@ -1007,6 +1007,11 @@
     "send-test-email-to": "Send a test email to"
   },
   "shopping-list": {
+    "include-meal-plan": "Add Ingredients from Meal Plan",
+    "meal-plan-start": "Start Date",
+    "meal-plan-end": "End Date",
+    "no-meal-plan-recipes": "There are no meals that need ingredients in this date range.",
+    "create-list-error": "Could not create the shopping list.",
     "all-lists": "All Lists",
     "create-shopping-list": "Create Shopping List",
     "ingredient-of-recipe": "Ingredient of {recipe}",

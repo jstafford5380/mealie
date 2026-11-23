@@ -12,6 +12,7 @@ from mealie.routes._base.permissions import not_found
 from mealie.schema.household.group_shopping_list import (
     ShoppingListAddRecipeParamsBulk,
     ShoppingListCreate,
+    ShoppingListFromMealPlan,
     ShoppingListItemBase,
     ShoppingListItemCreate,
     ShoppingListItemOut,
@@ -31,8 +32,10 @@ from mealie.schema.recipe.recipe_ingredient import (
     RecipeIngredient,
 )
 from mealie.schema.response.pagination import OrderDirection, PaginationQuery
+from mealie.services.meal_plan_service import meal_plan_date_filters
 from mealie.services.parser_services._base import DataMatcher
 from mealie.services.parser_services.parser_utils import UnitConverter, merge_quantity_and_unit
+from mealie.services.query_filter.builder import QueryFilterBuilder
 
 
 class ShoppingListService:
@@ -673,6 +676,30 @@ class ShoppingListService:
             break
 
         return updated_list, items
+
+    def create_list_from_meal_plan(
+        self, data: ShoppingListFromMealPlan, owner_id: UUID4
+    ) -> tuple[ShoppingListOut, ShoppingListItemsCollectionOut] | None:
+        query = PaginationQuery(
+            per_page=-1,
+            query_filter=QueryFilterBuilder.combine_filters(*meal_plan_date_filters(data.start_date, data.end_date)),
+        )
+        recipe_items = [
+            ShoppingListAddRecipeParamsBulk(
+                recipe_id=entry.recipe_id,
+                recipe_increment_quantity=1 if entry.recipe_batch_id else entry.recipe_scale,
+            )
+            for entry in self.repos.meals.page_all(query).items
+            if entry.recipe_id and not entry.leftover_batch_id
+        ]
+        if not recipe_items:
+            return None
+
+        with self.shopping_lists.transaction():
+            shopping_list = self.create_one_list(ShoppingListCreate(name=data.name), owner_id)
+            if shopping_list is None:
+                raise UnexpectedNone()
+            return self.add_recipe_ingredients_to_list(shopping_list.id, recipe_items)
 
     def create_one_list(self, data: ShoppingListCreate, owner_id: UUID4):
         create_data = data.cast(ShoppingListSave, group_id=self.repos.group_id, user_id=owner_id)

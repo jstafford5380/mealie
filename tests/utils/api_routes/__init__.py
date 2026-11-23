@@ -133,6 +133,8 @@ households_shopping_items_create_bulk = "/api/households/shopping/items/create-b
 """`/api/households/shopping/items/create-bulk`"""
 households_shopping_lists = "/api/households/shopping/lists"
 """`/api/households/shopping/lists`"""
+households_shopping_lists_from_meal_plan = "/api/households/shopping/lists/from-meal-plan"
+"""`/api/households/shopping/lists/from-meal-plan`"""
 households_statistics = "/api/households/statistics"
 """`/api/households/statistics`"""
 households_webhooks = "/api/households/webhooks"

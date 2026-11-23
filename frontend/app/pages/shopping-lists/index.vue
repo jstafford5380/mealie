@@ -8,7 +8,9 @@
       :title="$t('shopping-list.create-shopping-list')"
       :icon="$globals.icons.formatListCheck"
       can-submit
-      :submit-disabled="!isCreateNameValid"
+      keep-open
+      :loading="state.creating"
+      :submit-disabled="!canCreate"
       @submit="createOne"
     >
       <div class="px-6 pb-2">
@@ -16,7 +18,19 @@
           v-model.trim="state.createName"
           autofocus
           :label="$t('shopping-list.new-list')"
+          :disabled="state.creating"
         />
+        <label class="my-2 flex items-center justify-between gap-3 text-sm font-semibold">
+          {{ $t('shopping-list.include-meal-plan') }}
+          <Switch v-model="state.includeMealPlan" :disabled="state.creating" />
+        </label>
+        <div v-if="state.includeMealPlan" class="grid gap-x-3 sm:grid-cols-2">
+          <TextField v-model="state.startDate" type="date" :label="$t('shopping-list.meal-plan-start')" :disabled="state.creating" />
+          <TextField v-model="state.endDate" type="date" :label="$t('shopping-list.meal-plan-end')" :disabled="state.creating" />
+        </div>
+        <p v-if="state.createError" role="alert" class="mb-0 mt-2 text-sm text-destructive">
+          {{ state.createError }}
+        </p>
       </div>
     </BaseDialog>
 
@@ -154,6 +168,8 @@
 
 <script setup lang="ts">
 import { ChevronRightIcon, EllipsisVerticalIcon, PlusIcon } from "@lucide/vue";
+import { isAxiosError } from "axios";
+import { format } from "date-fns";
 import { Button } from "~/components/ui/button";
 import {
   DropdownMenu,
@@ -192,12 +208,26 @@ const preferences = useShoppingListPreferences();
 const state = reactive({
   createName: "",
   createDialog: false,
+  creating: false,
+  createError: "",
+  includeMealPlan: false,
+  startDate: "",
+  endDate: "",
   deleteDialog: false,
   deleteTarget: null as ShoppingListOut | null,
   ownerDialog: false,
   ownerTarget: ref<ShoppingListOut | null>(null),
 });
-const isCreateNameValid = computed(() => state.createName.trim().length > 0);
+const canCreate = computed(() => !state.creating && !!state.createName.trim()
+  && (!state.includeMealPlan || (!!state.startDate && !!state.endDate && state.startDate <= state.endDate)));
+
+watch(() => state.createDialog, (open) => {
+  if (open) {
+    state.createError = "";
+    state.startDate ||= format(new Date(), "yyyy-MM-dd");
+    state.endDate ||= state.startDate;
+  }
+});
 
 const { data: shoppingLists } = useAsyncData(useAsyncKey(), async () => {
   return await fetchShoppingLists();
@@ -249,12 +279,29 @@ async function refresh() {
 }
 
 async function createOne() {
-  if (!isCreateNameValid.value) return;
-  const { data } = await userApi.shopping.lists.createOne({ name: state.createName.trim() });
-
-  if (data) {
-    refresh();
+  if (!canCreate.value) return;
+  state.creating = true;
+  state.createError = "";
+  const name = state.createName.trim();
+  try {
+    const { data, error } = state.includeMealPlan
+      ? await userApi.shopping.lists.createFromMealPlan({ name, startDate: state.startDate, endDate: state.endDate })
+      : await userApi.shopping.lists.createOne({ name });
+    if (!data) {
+      state.createError = i18n.t(state.includeMealPlan && isAxiosError(error) && error.response?.status === 422
+        ? "shopping-list.no-meal-plan-recipes"
+        : "shopping-list.create-list-error");
+      return;
+    }
+    state.createDialog = false;
     state.createName = "";
+    state.includeMealPlan = false;
+    state.startDate = "";
+    state.endDate = "";
+    await refresh();
+  }
+  finally {
+    state.creating = false;
   }
 }
 

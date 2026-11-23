@@ -3,6 +3,7 @@ import type { ApiRequestInstance } from "~/lib/api/types/non-generated";
 import type {
   ShoppingListAddRecipeParamsBulk,
   ShoppingListCreate,
+  ShoppingListFromMealPlan,
   ShoppingListItemCreate,
   ShoppingListItemOut,
   ShoppingListItemsCollectionOut,
@@ -29,6 +30,10 @@ const routes = {
 export class ShoppingListsApi extends BaseCRUDAPI<ShoppingListCreate, ShoppingListOut, ShoppingListUpdate> {
   baseRoute = routes.shoppingLists;
   itemRoute = routes.shoppingListsId;
+
+  createFromMealPlan(data: ShoppingListFromMealPlan) {
+    return this.requests.post<ShoppingListOut>(`${this.baseRoute}/from-meal-plan`, data);
+  }
 
   async addRecipes(itemId: string, data: ShoppingListAddRecipeParamsBulk[]) {
     return await this.requests.post(routes.shoppingListIdAddRecipe(itemId), data);

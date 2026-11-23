@@ -1,6 +1,8 @@
 import random
 from concurrent.futures import ThreadPoolExecutor
+from datetime import date
 from threading import Barrier
+from uuid import uuid4
 
 import pytest
 from fastapi.testclient import TestClient
@@ -14,6 +16,7 @@ from mealie.schema.household.group_shopping_list import (
     ShoppingListItemUpdateBulk,
     ShoppingListOut,
 )
+from mealie.schema.meal_plan.new_meal import PlanEntrySave
 from mealie.schema.recipe.recipe import RecipeDraft, RecipeOut
 from mealie.schema.recipe.recipe_ingredient import IngredientFoodSave, RecipeIngredient
 from mealie.services.household_services.shopping_lists import ShoppingListService
@@ -67,6 +70,42 @@ def test_shopping_lists_get_one(api_client: TestClient, unique_user: TestUser, s
     assert response_list["groupId"] == str(shopping_list.group_id)
     assert response_list["householdId"] == str(unique_user.household_id)
     assert response_list["userId"] == str(shopping_list.user_id)
+
+
+def test_shopping_list_from_meal_plan(api_client: TestClient, unique_user: TestUser, h2_user: TestUser) -> None:
+    recipe = unique_user.repos.recipes.create(
+        RecipeDraft(
+            user_id=unique_user.user_id,
+            group_id=unique_user.group_id,
+            name=random_string(),
+            recipe_ingredient=[RecipeIngredient(quantity=4, note="Ingredient")],
+        )
+    )
+    common = {"group_id": unique_user.group_id, "user_id": unique_user.user_id, "recipe_id": recipe.id}
+    batch_id = uuid4()
+    unique_user.repos.meals.create_many(
+        [
+            PlanEntrySave(**common, date=date(2042, 2, 1), end_date=date(2042, 2, 7), recipe_scale=0.5),
+            PlanEntrySave(**common, date=date(2042, 2, 3), recipe_batch_id=batch_id, recipe_scale=0.25),
+            PlanEntrySave(**common, date=date(2042, 2, 4), leftover_batch_id=batch_id, recipe_scale=0.25),
+            PlanEntrySave(**common, date=date(2042, 2, 5), recipe_scale=5),
+        ]
+    )
+    route = api_routes.households_shopping_lists_from_meal_plan
+    payload = {"name": "Meal plan shop", "startDate": "2042-02-03", "endDate": "2042-02-04"}
+    assert api_client.post(route, json=payload, headers=h2_user.token).status_code == 422
+    response = api_client.post(route, json=payload, headers=unique_user.token)
+    assert response.status_code == 201, response.text
+    shopping_list = response.json()
+    assert shopping_list["name"] == payload["name"]
+    assert shopping_list["recipeReferences"][0]["recipeQuantity"] == 1.5
+    assert sum(item["quantity"] for item in shopping_list["listItems"]) == 6
+
+    for start, end in (("2042-02-08", "2042-02-09"), ("2042-02-04", "2042-02-03")):
+        before = unique_user.repos.group_shopping_lists.get_all()
+        invalid = {"name": "No list", "startDate": start, "endDate": end}
+        assert api_client.post(route, json=invalid, headers=unique_user.token).status_code == 422
+        assert len(unique_user.repos.group_shopping_lists.get_all()) == len(before)
 
 
 def test_shopping_lists_update_one(

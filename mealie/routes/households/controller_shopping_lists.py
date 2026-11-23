@@ -11,6 +11,7 @@ from mealie.schema.household.group_shopping_list import (
     ShoppingListAddRecipeParams,
     ShoppingListAddRecipeParamsBulk,
     ShoppingListCreate,
+    ShoppingListFromMealPlan,
     ShoppingListItemCreate,
     ShoppingListItemOut,
     ShoppingListItemPagination,
@@ -187,15 +188,27 @@ class ShoppingListController(BaseCrudController):
     def create_one(self, data: ShoppingListCreate):
         shopping_list = self.service.create_one_list(data, self.user.id)
         if shopping_list:
-            self.publish_event(
-                event_type=EventTypes.shopping_list_created,
-                document_data=EventShoppingListData(operation=EventOperation.create, shopping_list_id=shopping_list.id),
-                group_id=shopping_list.group_id,
-                household_id=shopping_list.household_id,
-                message=self.t("notifications.generic-created", name=shopping_list.name),
-            )
-
+            self._publish_list_created(shopping_list)
         return shopping_list
+
+    @router.post("/from-meal-plan", response_model=ShoppingListOut, status_code=201)
+    def create_from_meal_plan(self, data: ShoppingListFromMealPlan) -> ShoppingListOut:
+        result = self.service.create_list_from_meal_plan(data, self.user.id)
+        if result is None:
+            raise HTTPException(status_code=422, detail="No meals that need ingredients in this date range.")
+        shopping_list, items = result
+        self._publish_list_created(shopping_list)
+        publish_list_item_events(self.publish_event, items)
+        return shopping_list
+
+    def _publish_list_created(self, shopping_list: ShoppingListOut) -> None:
+        self.publish_event(
+            event_type=EventTypes.shopping_list_created,
+            document_data=EventShoppingListData(operation=EventOperation.create, shopping_list_id=shopping_list.id),
+            group_id=shopping_list.group_id,
+            household_id=shopping_list.household_id,
+            message=self.t("notifications.generic-created", name=shopping_list.name),
+        )
 
     @router.get("/{item_id}", response_model=ShoppingListOut)
     def get_one(self, item_id: UUID4):

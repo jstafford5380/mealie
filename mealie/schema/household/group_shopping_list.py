@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import date, datetime
+from typing import Annotated, Self
 from uuid import UUID
 
-from pydantic import UUID4, ConfigDict, field_validator, model_validator
+from pydantic import UUID4, ConfigDict, StringConstraints, field_validator, model_validator
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.orm.interfaces import LoaderOption
 
@@ -185,6 +186,18 @@ class ShoppingListCreate(MealieModel):
             return v
 
         return {x.key_name: x.value for x in v} if v else {}
+
+
+class ShoppingListFromMealPlan(MealieModel):
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
+    start_date: date
+    end_date: date
+
+    @model_validator(mode="after")
+    def validate_range(self) -> Self:
+        if self.end_date < self.start_date:
+            raise ValueError("End date must be on or after the start date")
+        return self
 
 
 class ShoppingListRecipeRefOut(MealieOutModel):
