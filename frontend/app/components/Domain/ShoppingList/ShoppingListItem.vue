@@ -31,6 +31,7 @@
         <div class="min-w-0 flex-1 py-0.5">
           <RecipeIngredientListItem
             :ingredient="listItem"
+            :amount="listItem.shoppingAmount"
             :class="listItem.checked && 'text-muted-foreground [&_.ing-inline]:line-through'"
           />
           <button

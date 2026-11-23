@@ -14,6 +14,7 @@ from sqlalchemy.exc import NoResultFound
 from mealie.lang.providers import get_locale_provider
 from mealie.mcp.context import offload, tool_context
 from mealie.schema.household.group_shopping_list import (
+    ShoppingAmount,
     ShoppingListAddRecipeParamsBulk,
     ShoppingListCreate,
     ShoppingListFromMealPlan,
@@ -55,6 +56,9 @@ class ListItem(BaseModel):
     note: str | None
     quantity: float
     measured_quantity: float | None
+    shopping_amount: ShoppingAmount | None = Field(
+        description="Suggested grocery amount. Use quantity and unit on the item for the exact amount."
+    )
     checked: bool
     food: str | None
     food_id: UUID | None
@@ -86,6 +90,7 @@ class ListDetails(ListSummary):
                     note=item.note,
                     quantity=item.quantity,
                     measured_quantity=None if item.recipe_references and item.quantity == 0 else item.quantity,
+                    shopping_amount=item.shopping_amount,
                     checked=item.checked,
                     food=item.food.name if item.food else None,
                     food_id=item.food_id,

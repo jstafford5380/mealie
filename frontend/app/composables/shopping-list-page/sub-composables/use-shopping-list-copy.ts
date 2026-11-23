@@ -34,7 +34,7 @@ export function useShoppingListCopy() {
   }
 
   function formatCopiedListItem(copyType: CopyTypes, item: ShoppingListItemOut): string {
-    const display = item.display || "";
+    const display = item.shoppingAmount?.display || item.display || "";
     switch (copyType) {
       case "markdown":
         return `- [ ] ${display}`;

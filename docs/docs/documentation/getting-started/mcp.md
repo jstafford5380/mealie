@@ -116,6 +116,8 @@ Use `list_shopping_lists` to find a household list and `get_shopping_list` to re
 
 List items include canonical `food_id` and `unit_id` when available, plus their recipe references and scales. The existing numeric `quantity` reflects Mealie's stored total. For a recipe-linked item with a stored total of zero, `measured_quantity` is null because Mealie stores missing recipe quantities as zero. Native consolidation uses food IDs and same or compatible units with configured standard conversions.
 
+Use `shopping_amount.display` for grocery lists when it is available. For example, 2 tablespoons plus 3 teaspoons yields 3 tablespoons, and adding 5 more tablespoons displays 0.5 cup. Recipe-linked amounts round up to a practical increment. Fixed measurements can move up within customary volume, metric volume, customary weight, or metric weight. Counts and units without a fixed conversion round up in their own unit. For example, 1.5 cans displays as 2 cans. The exact quantity and unit still drive edits, recipe scaling, and later merges. REST returns the same display data as `shoppingAmount`. Manual items and free-text ingredients keep their existing display.
+
 Use `add_shopping_list_items` to add groceries by name and quantity. Use `add_recipes_to_shopping_list` to add ingredients by recipe ID and scale. Use `update_shopping_list_item` with `checked: true` to mark an item as purchased. Supply only the fields you want to change.
 
 Use `rename_shopping_list` to change its name and `remove_shopping_list_items` to remove specific entries by ID. Confirm the intended list before calling `delete_shopping_list`. If an add or create call times out, read the list before retrying.

@@ -1,6 +1,7 @@
 from uuid import uuid4
 
 import pytest
+from fastapi.testclient import TestClient
 from mcp.server.fastmcp import FastMCP
 from mcp.server.fastmcp.exceptions import ToolError
 
@@ -9,7 +10,62 @@ from mealie.mcp.recipes import register_recipe_tools
 from mealie.mcp.shopping_lists import register_shopping_list_tools
 from mealie.schema.recipe.recipe_ingredient import IngredientFoodSave, IngredientUnitSave
 from tests.integration_tests.mcp_tests.test_meal_plan_tools import as_user
+from tests.utils import api_routes
 from tests.utils.fixture_schemas import TestUser
+
+
+@pytest.mark.asyncio
+async def test_shopping_amount_promotes_merged_volume_without_changing_exact_total(
+    unique_user: TestUser, api_client: TestClient
+) -> None:
+    server = FastMCP()
+    register_recipe_tools(server)
+    register_shopping_list_tools(server)
+    food = unique_user.repos.ingredient_foods.create(IngredientFoodSave(name="sugar", group_id=unique_user.group_id))
+    units = {
+        name: unique_user.repos.ingredient_units.create(
+            IngredientUnitSave(
+                name=f"sugar test {name}",
+                group_id=unique_user.group_id,
+                standard_unit="fluid_ounce",
+                standard_quantity=factor,
+            )
+        )
+        for name, factor in (("tablespoon", 0.5), ("teaspoon", 1 / 6))
+    }
+    with as_user(unique_user):
+        refs = []
+        for index, (amount, unit) in enumerate(((2, "tablespoon"), (3, "teaspoon"), (5, "tablespoon"))):
+            _, recipe = await server.call_tool(
+                "create_recipe",
+                {
+                    "data": {
+                        "name": f"Sugar recipe {index}",
+                        "servings": 1,
+                        "ingredients": [{"food_id": str(food.id), "unit_id": str(units[unit].id), "quantity": amount}],
+                        "instructions": ["Add sugar."],
+                    }
+                },
+            )
+            refs.append({"recipe_id": recipe["id"]})
+        _, shopping_list = await server.call_tool("create_shopping_list", {"name": "Sugar"})
+        args = {"list_id": shopping_list["id"]}
+        _, result = await server.call_tool("add_recipes_to_shopping_list", args | {"recipes": refs[:2]})
+        (sugar,) = result["items"]
+        assert sugar["shopping_amount"] == {"quantity": 3, "unit": "tbsp", "display": "3 tbsp sugar"}
+        _, result = await server.call_tool("add_recipes_to_shopping_list", args | {"recipes": refs[2:]})
+        (sugar,) = result["items"]
+        assert sugar["quantity"] == pytest.approx(8)
+        assert sugar["unit_id"] == str(units["tablespoon"].id)
+        assert sugar["shopping_amount"] == {"quantity": 0.5, "unit": "cup", "display": "0.5 cup sugar"}
+        assert sorted(ref["quantity_per_recipe"] for ref in sugar["recipe_references"]) == [2, 3, 5]
+
+    response = api_client.get(
+        api_routes.households_shopping_lists_item_id(shopping_list["id"]), headers=unique_user.token
+    )
+    assert response.status_code == 200
+    (rest_sugar,) = response.json()["listItems"]
+    assert rest_sugar["shoppingAmount"] == sugar["shopping_amount"]
 
 
 @pytest.mark.asyncio
@@ -70,6 +126,7 @@ async def test_shopping_list_consolidates_canonical_ingredients_with_scales(uniq
     assert salt["measured_quantity"] is None
     (calendar_oil,) = [item for item in calendar_list["items"] if item["food_id"] == str(food.id)]
     assert calendar_oil["measured_quantity"] == 2
+    assert calendar_oil["shopping_amount"]["quantity"] == 2
     assert {recipe["recipe_id"]: recipe["scale"] for recipe in calendar_list["recipes"]} == {
         recipes[0]["recipe_id"]: 1,
         recipes[1]["recipe_id"]: 0.5,
@@ -94,6 +151,7 @@ async def test_shopping_list_tools_read_and_modify_household_items(unique_user: 
         )
         assert updated["items"][0]["checked"] is True
         assert updated["items"][0]["quantity"] == 3
+        assert updated["items"][0]["shopping_amount"] is None
         await server.call_tool("rename_shopping_list", {"list_id": list_id, "name": "Weekend groceries"})
         _, loaded = await server.call_tool("get_shopping_list", {"list_id": list_id})
         assert loaded["name"] == "Weekend groceries"

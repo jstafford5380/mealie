@@ -1,12 +1,12 @@
 <template>
   <div class="ingredient-item text-[15.5px] leading-normal text-foreground">
     <SafeMarkdown
-      v-if="parsedIng.quantity"
+      v-if="amount ? amount.quantity : parsedIng.quantity"
       class="ing-inline ing-quantity font-semibold"
-      :source="parsedIng.quantity"
+      :source="amount ? $n(amount.quantity) : parsedIng.quantity"
     />
-    <template v-if="parsedIng.unit">
-      <span class="font-semibold">{{ parsedIng.unit }}</span>{{ " " }}
+    <template v-if="amount ? amount.unit : parsedIng.unit">
+      <span class="font-semibold">{{ amount ? amount.unit : parsedIng.unit }}</span>{{ " " }}
     </template>
     <template v-if="parsedIng.note && !parsedIng.name">
       <SafeMarkdown
@@ -63,6 +63,7 @@ import RecipeIngredientSubstitutions from "~/components/Domain/Recipe/RecipeIngr
 
 interface Props {
   ingredient: RecipeIngredient;
+  amount?: { quantity: number; unit: string } | null;
   scale?: number;
   // off by default: the shopping list and the add-to-list dialog reuse this row, and a menu
   // button is noise in both. the recipe renderer opts in

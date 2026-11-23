@@ -4,7 +4,7 @@ from datetime import date, datetime
 from typing import Annotated, Self
 from uuid import UUID
 
-from pydantic import UUID4, ConfigDict, StringConstraints, field_validator, model_validator
+from pydantic import UUID4, ConfigDict, StringConstraints, computed_field, field_validator, model_validator
 from sqlalchemy.orm import joinedload, selectinload
 from sqlalchemy.orm.interfaces import LoaderOption
 
@@ -22,11 +22,13 @@ from mealie.schema.labels.multi_purpose_label import MultiPurposeLabelSummary
 from mealie.schema.recipe.recipe import RecipeSummary
 from mealie.schema.recipe.recipe_ingredient import (
     IngredientFoodOut,
+    IngredientUnitCreate,
     IngredientUnitOut,
     RecipeIngredient,
     RecipeIngredientBase,
 )
 from mealie.schema.response.pagination import PaginationBase
+from mealie.services.household_services.shopping_amounts import shopping_quantity
 
 
 class ShoppingListItemRecipeRefCreate(MealieModel):
@@ -103,6 +105,12 @@ class ShoppingListItemUpdateBulk(ShoppingListItemUpdate):
     id: UUID4
 
 
+class ShoppingAmount(MealieOutModel):
+    quantity: float
+    unit: str
+    display: str
+
+
 class ShoppingListItemOut(ShoppingListItemBase, MealieOutModel):
     id: UUID4
     group_id: UUID4
@@ -116,6 +124,29 @@ class ShoppingListItemOut(ShoppingListItemBase, MealieOutModel):
 
     created_at: datetime | None = None
     updated_at: datetime | None = UpdatedAtField(None)
+
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def shopping_amount(self) -> ShoppingAmount | None:
+        if not self.recipe_references or not (self.food_id or self.unit_id):
+            return None
+        if self.unit_id and self.unit is None:
+            return None
+        amount = shopping_quantity(
+            self.quantity,
+            self.unit.standard_unit if self.unit else None,
+            self.unit.standard_quantity if self.unit else None,
+        )
+        if amount is None:
+            return None
+        quantity, unit = amount
+        display_unit = IngredientUnitCreate(name=unit, fraction=False) if unit else self.unit
+        if display_unit and display_unit.fraction:
+            display_unit = display_unit.model_copy(update={"fraction": False})
+        display_item = self.model_copy(update={"quantity": quantity, "unit": display_unit})
+        return ShoppingAmount(
+            quantity=quantity, unit=display_item._format_unit_for_display(), display=display_item._format_display()
+        )
 
     @model_validator(mode="after")
     def populate_missing_label(self):

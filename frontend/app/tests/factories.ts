@@ -148,6 +148,7 @@ export function makeShoppingListItem(overrides: Partial<ShoppingListItemOut> = {
   return {
     id: "item-id",
     shoppingListId: "shopping-list-id",
+    shoppingAmount: null,
     groupId: "group-id",
     householdId: "household-id",
     quantity: 1,

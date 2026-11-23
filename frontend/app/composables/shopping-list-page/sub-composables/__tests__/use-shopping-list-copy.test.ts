@@ -105,6 +105,15 @@ describe("Shopping list copy composable", () => {
   });
 
   describe("formatCopiedListItem", () => {
+    test("uses the grocery amount when available", () => {
+      const { formatCopiedListItem } = wrapper();
+      const item = {
+        ...MOCK_ITEM,
+        display: "8 tbsp sugar",
+        shoppingAmount: { quantity: 0.5, unit: "cup", display: "0.5 cup sugar" },
+      };
+      expect(formatCopiedListItem("markdown", item)).toEqual("- [ ] 0.5 cup sugar");
+    });
     test("copies markdown items correctly", () => {
       const { formatCopiedListItem } = wrapper();
       const header = formatCopiedListItem("markdown", MOCK_ITEM);

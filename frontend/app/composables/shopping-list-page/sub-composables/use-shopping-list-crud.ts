@@ -23,6 +23,7 @@ export function useShoppingListCrud(
     return {
       id: uuid4(),
       shoppingListId: shoppingList.value?.id || "",
+      shoppingAmount: null,
       groupId: shoppingList.value?.groupId || "",
       householdId: shoppingList.value?.householdId || "",
       checked: false,

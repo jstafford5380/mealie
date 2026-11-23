@@ -18,6 +18,7 @@ from .group_recipe_action import (
     GroupRecipeActionType,
 )
 from .group_shopping_list import (
+    ShoppingAmount,
     ShoppingListAddRecipeParams,
     ShoppingListAddRecipeParamsBulk,
     ShoppingListCreate,
@@ -88,6 +89,7 @@ __all__ = [
     "GroupEventNotifierUpdate",
     "GroupEventPagination",
     "HouseholdStatistics",
+    "ShoppingAmount",
     "ShoppingListAddRecipeParams",
     "ShoppingListAddRecipeParamsBulk",
     "ShoppingListCreate",

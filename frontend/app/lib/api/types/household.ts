@@ -287,6 +287,11 @@ export interface SetPermissions {
   canInvite?: boolean;
   canOrganize?: boolean;
 }
+export interface ShoppingAmount {
+  quantity: number;
+  unit: string;
+  display: string;
+}
 export interface ShoppingListAddRecipeParams {
   recipeIncrementQuantity?: number;
   recipeIngredients?: RecipeIngredient[] | null;
@@ -608,6 +613,7 @@ export interface ShoppingListItemOut {
   recipeReferences: ShoppingListItemRecipeRefOut[];
   createdAt: string | null;
   updatedAt: string | null;
+  shoppingAmount: ShoppingAmount | null;
 }
 export interface ShoppingListItemRecipeRefOut {
   recipeId: string;
