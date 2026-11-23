@@ -122,6 +122,7 @@ class AuthenticatedMCP:
 def build_mcp_server(settings: AppSettings) -> tuple[AuditedMCP, tuple[Route, Route]]:
     from mealie.mcp.meal_plan import register_meal_plan_tools
     from mealie.mcp.recipes import register_recipe_tools
+    from mealie.mcp.shopping_lists import register_shopping_list_tools
 
     resource = _https_url(settings.MCP_RESOURCE_URL, "MCP_RESOURCE_URL")
     resource_parts = urlsplit(resource)
@@ -152,7 +153,9 @@ def build_mcp_server(settings: AppSettings) -> tuple[AuditedMCP, tuple[Route, Ro
             "so use them once. Flag any requested nutrient listed as missing, since its total is incomplete. "
             "Use list_categories, list_tags, and list_tools to find existing organizers before assigning them "
             "to recipes. When updating a recipe, keep any existing organizers the user wants to retain. "
-            "Keep estimated nutrition distinct from published values."
+            "Keep estimated nutrition distinct from published values. "
+            "Use list_shopping_lists and get_shopping_list to find list and item IDs. "
+            "Check items off using update_shopping_list_item. Confirm before deleting a list."
         ),
         streamable_http_path=MCP_PATH,
         stateless_http=True,
@@ -173,6 +176,7 @@ def build_mcp_server(settings: AppSettings) -> tuple[AuditedMCP, tuple[Route, Ro
     )
     register_recipe_tools(server)
     register_meal_plan_tools(server)
+    register_shopping_list_tools(server)
 
     metadata_path = f"/.well-known/oauth-protected-resource{MCP_PATH}"
     metadata_url = urlunsplit((resource_parts.scheme, resource_parts.netloc, metadata_path, "", ""))

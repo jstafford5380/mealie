@@ -148,6 +148,8 @@ def test_mcp_http_authenticated_read_and_write(
             "list_leftover_batches",
             "list_saved_meal_plans",
             "get_saved_meal_plan",
+            "list_shopping_lists",
+            "get_shopping_list",
         }
         writes = {
             "create_recipe",
@@ -158,6 +160,13 @@ def test_mcp_http_authenticated_read_and_write(
             "create_saved_meal_plan",
             "update_saved_meal_plan",
             "copy_saved_meal_plan",
+            "create_shopping_list",
+            "rename_shopping_list",
+            "delete_shopping_list",
+            "add_shopping_list_items",
+            "add_recipes_to_shopping_list",
+            "update_shopping_list_item",
+            "remove_shopping_list_items",
         }
         assert tools.keys() == reads | writes | {"check_user_context"}
         assert all(tools[name]["annotations"]["readOnlyHint"] is True for name in reads)

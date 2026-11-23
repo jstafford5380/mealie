@@ -74,6 +74,14 @@ Example request for ChatGPT. “Create a reusable week in Meal Configurator. Coo
 
 Values use kcal for calories, mg for sodium and cholesterol, and g for other nutrients. The totals add available amounts and mark nutrients that are missing from at least one entry, including meals entered as notes.
 
+## Manage shopping lists
+
+Use `list_shopping_lists` to find a household list and `get_shopping_list` to read its items, quantities, and checked states. Use `create_shopping_list` for a new list. Include both `start_date` and `end_date` to add ingredients from the live meal plan for that inclusive range.
+
+Use `add_shopping_list_items` to add groceries by name and quantity. Use `add_recipes_to_shopping_list` to add ingredients by recipe ID and scale. Use `update_shopping_list_item` with `checked: true` to mark an item as purchased. Supply only the fields you want to change.
+
+Use `rename_shopping_list` to change its name and `remove_shopping_list_items` to remove specific entries by ID. Confirm the intended list before calling `delete_shopping_list`. If an add or create call times out, read the list before retrying.
+
 ## Coolify Compose
 
 The `docker/docker-compose.coolify.yml` file includes an optional `mealie-tunnel` service. It uses Mealie's network namespace to reach the app through loopback.

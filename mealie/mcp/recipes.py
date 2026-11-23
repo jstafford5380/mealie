@@ -1,8 +1,7 @@
 from base64 import b64decode
 from binascii import Error as Base64Error
-from collections.abc import Callable, Coroutine, Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
-from functools import wraps
 from io import BytesIO
 from json import dumps
 from math import isfinite
@@ -32,7 +31,7 @@ from starlette.concurrency import run_in_threadpool
 
 from mealie.core import exceptions
 from mealie.lang.providers import get_locale_provider
-from mealie.mcp.context import tool_context
+from mealie.mcp.context import offload, tool_context
 from mealie.pkgs import safehttp
 from mealie.repos.all_repositories import get_repositories
 from mealie.schema.recipe.recipe import RecipeDraft, RecipeOut, RecipeSummary
@@ -262,14 +261,6 @@ class RecipeScale(BaseModel):
     ingredients: list[ScaledIngredient]
 
 
-def _offload[**P, R](func: Callable[P, R]) -> Callable[P, Coroutine[Any, Any, R]]:
-    @wraps(func)
-    async def execute(*args: P.args, **kwargs: P.kwargs) -> R:
-        return await run_in_threadpool(func, *args, **kwargs)
-
-    return execute
-
-
 @contextmanager
 def _recipe_errors() -> Iterator[None]:
     try:
@@ -491,7 +482,7 @@ def _scale_recipe(recipe: RecipeOut, multiplier: float) -> RecipeScale:
 
 def register_recipe_tools(server: FastMCP) -> None:
     @server.tool(annotations=READ_ONLY)
-    @_offload
+    @offload
     def list_categories() -> list[RecipeOrganizer]:
         """List all existing recipe categories in your group, including their IDs, names, and slugs."""
         with tool_context() as (_, _, repos):
@@ -501,7 +492,7 @@ def register_recipe_tools(server: FastMCP) -> None:
             ]
 
     @server.tool(annotations=READ_ONLY)
-    @_offload
+    @offload
     def list_tags() -> list[RecipeOrganizer]:
         """List all existing recipe tags in your group, including their IDs, names, and slugs."""
         with tool_context() as (_, _, repos):
@@ -511,7 +502,7 @@ def register_recipe_tools(server: FastMCP) -> None:
             ]
 
     @server.tool(annotations=READ_ONLY)
-    @_offload
+    @offload
     def list_tools() -> list[RecipeOrganizer]:
         """List all existing kitchen tools in your group, including their IDs, names, and slugs."""
         with tool_context() as (_, _, repos):
@@ -521,7 +512,7 @@ def register_recipe_tools(server: FastMCP) -> None:
             ]
 
     @server.tool(annotations=READ_ONLY)
-    @_offload
+    @offload
     def search_recipes(
         search: str | None = None,
         tags: list[str] | None = None,
@@ -562,7 +553,7 @@ def register_recipe_tools(server: FastMCP) -> None:
             )
 
     @server.tool(annotations=READ_ONLY)
-    @_offload
+    @offload
     def get_recipe(recipe: str) -> RecipeDetails:
         """Get a recipe by ID or slug, with ingredients, instructions, nutrition provenance, and organizers."""
         with _recipe_service() as service:
@@ -587,7 +578,7 @@ def register_recipe_tools(server: FastMCP) -> None:
             )
         ),
     )
-    @_offload
+    @offload
     def create_recipe(data: RecipeInput) -> RecipeDetails:
         with _recipe_service() as service:
             draft = RecipeDraft(id=uuid4(), **_draft_fields(data, service))
@@ -633,12 +624,12 @@ def register_recipe_tools(server: FastMCP) -> None:
             )
         ),
     )
-    @_offload
+    @offload
     def update_recipe(recipe_id: UUID, changes: RecipeChanges) -> RecipeDetails:
         return _update_recipe(recipe_id, changes)
 
     @server.tool(annotations=READ_ONLY)
-    @_offload
+    @offload
     def preview_recipe_scale(
         recipe: str,
         multiplier: Positive | None = None,
