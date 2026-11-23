@@ -687,6 +687,7 @@ def test_saved_plan_import_maps_weekdays_and_preserves_existing_meals(
     assert api_client.get(route, headers=h2_user.token).json() == []
     assert api_client.get(plan_route, headers=h2_user.token).status_code == 404
     assert api_client.put(plan_route, json=payload, headers=h2_user.token).status_code == 404
+    assert api_client.delete(plan_route, headers=h2_user.token).status_code == 404
     assert api_client.post(import_route, json={"weekStart": "2040-01-02"}, headers=h2_user.token).status_code == 404
 
     payload["name"] = "Favorites"
@@ -732,6 +733,13 @@ def test_saved_plan_import_maps_weekdays_and_preserves_existing_meals(
         ).json()["items"]
         == []
     )
+    before_delete = api_client.get(calendar, headers=token).json()["items"]
+    response = api_client.delete(plan_route, headers=token)
+    assert response.status_code == 200, response.text
+    assert response.json() == {"id": plan["id"], "name": "Favorites"}
+    assert api_client.get(plan_route, headers=token).status_code == 404
+    assert api_client.delete(plan_route, headers=token).status_code == 404
+    assert api_client.get(calendar, headers=token).json()["items"] == before_delete
 
 
 def test_saved_plan_import_remaps_batches_and_calendar_filters_them(

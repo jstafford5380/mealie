@@ -1,6 +1,8 @@
 from datetime import date, timedelta
 from uuid import UUID, uuid4
 
+from sqlalchemy.exc import NoResultFound
+
 from mealie.lang.providers import Translator
 from mealie.repos.all_repositories import AllRepositories
 from mealie.schema import mapper
@@ -158,6 +160,13 @@ class MealPlanService(BaseService):
 
     def get_saved_plan(self, plan_id: UUID) -> SavedMealPlanOut:
         return self._saved_plan_out(self._get_saved_plan(plan_id))
+
+    def delete_saved_plan(self, plan_id: UUID) -> SavedMealPlanSummary:
+        try:
+            plan = self.repos.saved_meal_plans.delete(plan_id)
+        except NoResultFound:
+            raise SavedMealPlanNotFound from None
+        return SavedMealPlanSummary(id=plan.id, name=plan.name)
 
     def _saved_plan_out(self, plan: SavedMealPlanSave) -> SavedMealPlanOut:
         group_recipes = AllRepositories(self.repos.session, group_id=self.user.group_id, household_id=None).recipes

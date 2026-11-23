@@ -167,6 +167,13 @@ class GroupMealplanController(BaseCrudController):
         except SavedMealPlanNotFound, MealPlanRecipeNotFound:
             raise not_found() from None
 
+    @router.delete("/saved/{plan_id}", response_model=SavedMealPlanSummary)
+    def delete_saved_plan(self, plan_id: UUID) -> SavedMealPlanSummary:
+        try:
+            return self.service.delete_saved_plan(plan_id)
+        except SavedMealPlanNotFound:
+            raise not_found() from None
+
     @router.post("/saved/{plan_id}/import", response_model=list[PlanEntryOut], status_code=201)
     def import_saved_plan(self, plan_id: UUID, data: SavedMealPlanImport) -> list[PlanEntryOut]:
         try:

@@ -31,6 +31,10 @@ export class MealPlanAPI extends BaseCRUDAPI<PlanEntryCreate, PlanEntryOut, Plan
     return this.requests.put<SavedMealPlanOut, SavedMealPlanCreate>(`${routes.saved}/${id}`, payload);
   }
 
+  deleteSavedPlan(id: string) {
+    return this.requests.delete<SavedMealPlanSummary>(`${routes.saved}/${id}`);
+  }
+
   importSavedPlan(id: string, payload: SavedMealPlanImport) {
     return this.requests.post<PlanEntryOut[]>(`${routes.saved}/${id}/import`, payload);
   }

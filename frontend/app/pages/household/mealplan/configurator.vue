@@ -1,6 +1,6 @@
 <template>
   <div class="mx-auto w-full max-w-[1440px] px-4 pb-16 pt-4 font-sans sm:px-6 lg:px-8 lg:pt-8">
-    <Button as-child variant="ghost" class="mb-3">
+    <Button as-child variant="ghost" class="mb-3 -ms-4">
       <NuxtLink to="/household/mealplan/planner/view">
         {{ $t("meal-plan.meal-planner") }}
       </NuxtLink>
@@ -19,7 +19,7 @@
         class="w-full sm:w-64"
         @update:model-value="openPlan"
       />
-      <Button :disabled="busy" variant="outline" @click="newPlan">
+      <Button :disabled="busy" :class="savedPlans.length > 0 && 'mb-1.5'" size="lg" variant="outline" @click="newPlan">
         {{ $t("meal-plan.new-saved-plan") }}
       </Button>
     </div>
@@ -32,17 +32,25 @@
     </p>
 
     <template v-if="draft">
-      <form class="mb-6 flex flex-wrap items-end gap-3" @submit.prevent="save">
+      <form class="mb-6 flex flex-wrap items-end gap-3" @submit.prevent="save()">
         <TextField
           v-model="draft.name"
           :label="$t('meal-plan.saved-plan-name')"
           :disabled="busy"
-          maxlength="120"
+          :maxlength="nameLimit"
           class="w-full sm:w-64"
         />
-        <Button type="submit" :disabled="busy || !dirty || !draft.name.trim()">
-          {{ $t("general.save") }}
-        </Button>
+        <div class="flex flex-wrap gap-2 py-1.5">
+          <Button type="submit" size="lg" :disabled="busy || !dirty || !draft.name.trim()">
+            {{ $t("general.save") }}
+          </Button>
+          <Button type="button" size="lg" variant="outline" :disabled="busy || !draft.id || !draft.name.trim()" @click="save(true)">
+            {{ $t("meal-plan.save-plan-copy") }}
+          </Button>
+          <Button type="button" size="lg" variant="destructive" :disabled="busy || !draft.id" @click="deletePlan">
+            {{ $t("general.delete") }}
+          </Button>
+        </div>
       </form>
       <MealPlanBoard
         :key="draft.id ?? 'new'"
@@ -91,6 +99,7 @@ const error = ref("");
 const status = ref("");
 let nextEntryId = 1;
 const lastSaved = ref("");
+const nameLimit = 120;
 
 const payload = computed<SavedMealPlanCreate | null>(() => draft.value && ({
   name: draft.value.name,
@@ -196,16 +205,22 @@ async function openPlan(id: unknown) {
   }
 }
 
-async function save() {
-  if (!draft.value || !payload.value || busy.value || !dirty.value) return;
+async function save(asCopy = false) {
+  if (!draft.value || !payload.value || busy.value || !payload.value.name.trim() || (asCopy ? !draft.value.id : !dirty.value)) return;
+
+  const request = { ...payload.value };
+  const id = draft.value.id;
+  if (asCopy) {
+    const suffix = i18n.t("meal-plan.saved-plan-copy-suffix");
+    const name = Array.from(request.name.trim()).slice(0, nameLimit - Array.from(suffix).length - 1).join("").trimEnd();
+    request.name = `${name} ${suffix}`;
+  }
 
   busy.value = true;
   error.value = "";
   status.value = "";
   try {
-    const { data } = draft.value.id
-      ? await api.updateSavedPlan(draft.value.id, payload.value)
-      : await api.createSavedPlan(payload.value);
+    const { data } = id && !asCopy ? await api.updateSavedPlan(id, request) : await api.createSavedPlan(request);
     if (!data) {
       error.value = i18n.t("meal-plan.saved-plan-save-error");
       return;
@@ -215,7 +230,31 @@ async function save() {
       { id: data.id, name: data.name },
     ].sort((a, b) => a.name.localeCompare(b.name));
     loadDraft(data);
-    status.value = i18n.t("meal-plan.saved-plan-saved");
+    status.value = i18n.t(asCopy ? "meal-plan.saved-plan-copy-saved" : "meal-plan.saved-plan-saved");
+  }
+  finally {
+    busy.value = false;
+  }
+}
+
+async function deletePlan() {
+  const plan = savedPlans.value.find(({ id }) => id === draft.value?.id);
+  if (busy.value || !plan || !window.confirm(i18n.t("meal-plan.saved-plan-delete-confirm", { name: plan.name }))) return;
+
+  busy.value = true;
+  error.value = "";
+  status.value = "";
+  try {
+    const { data } = await api.deleteSavedPlan(plan.id);
+    if (!data) {
+      error.value = i18n.t("meal-plan.saved-plan-delete-error");
+      return;
+    }
+    savedPlans.value = savedPlans.value.filter(({ id }) => id !== plan.id);
+    draft.value = null;
+    meals.value = [];
+    lastSaved.value = "";
+    status.value = i18n.t("meal-plan.saved-plan-deleted");
   }
   finally {
     busy.value = false;
