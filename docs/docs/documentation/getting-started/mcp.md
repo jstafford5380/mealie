@@ -6,6 +6,8 @@ URL imports need a public page with structured recipe data. They save the recipe
 
 Use `list_categories`, `list_tags`, and `list_tools` to find existing recipe organizers in your Mealie group. Pass their IDs or exact slugs in the `categories`, `tags`, and `tools` arrays when calling `create_recipe` or `update_recipe`. On update, each supplied array replaces that recipe's corresponding assignments. Omit an array to keep its assignments, or send `[]` to clear them. To add one tag while keeping the others, read the recipe first and include its current tags alongside the new one.
 
+Use `list_foods` to look up canonical ingredient IDs by name or browse your group's food catalog. Results include the stored name, plural name, and aliases. Follow `next_page` for more results.
+
 ## Before you begin
 
 - Confirm that your ChatGPT account supports adding custom MCP servers and selecting an OpenAI Secure MCP Tunnel. Use the personal Platform organization for that account and associate the tunnel with the ChatGPT context where you will install the plugin.

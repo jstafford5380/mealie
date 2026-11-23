@@ -16,6 +16,7 @@ from mealie.mcp.recipes import register_recipe_tools
 from mealie.pkgs import safehttp
 from mealie.pkgs.safehttp import FetchResult
 from mealie.repos.repository_generic import GroupRepositoryGeneric
+from mealie.schema.recipe.recipe_ingredient import IngredientFoodAliasCreate, IngredientFoodSave
 from mealie.schema.recipe.recipe_organizers import CategorySave, TagSave, ToolSave
 from mealie.schema.recipe.recipe_timeline_events import RecipeTimelineEventCreate
 from mealie.services.scraper import recipe_scraper
@@ -38,6 +39,37 @@ def server() -> FastMCP:
     server = FastMCP()
     register_recipe_tools(server)
     return server
+
+
+@pytest.mark.asyncio
+async def test_list_foods_returns_group_ids_and_paginates(
+    server: FastMCP, unique_user: TestUser, g2_user: TestUser
+) -> None:
+    marker = random_string()
+    food = unique_user.repos.ingredient_foods.create(
+        IngredientFoodSave(
+            name=f"{marker} bell pepper",
+            plural_name=f"{marker} bell peppers",
+            aliases=[IngredientFoodAliasCreate(name="capsicum")],
+            group_id=unique_user.group_id,
+        )
+    )
+    second = unique_user.repos.ingredient_foods.create(
+        IngredientFoodSave(name=f"{marker} onion", group_id=unique_user.group_id)
+    )
+    g2_user.repos.ingredient_foods.create(IngredientFoodSave(name=f"{marker} tomato", group_id=g2_user.group_id))
+    with as_user(unique_user):
+        _, first_page = await server.call_tool("list_foods", {"search": marker, "per_page": 1})
+        assert first_page == {
+            "items": [
+                {"id": str(food.id), "name": food.name, "plural_name": food.plural_name, "aliases": ["capsicum"]}
+            ],
+            "total": 2,
+            "next_page": 2,
+        }
+        _, second_page = await server.call_tool("list_foods", {"search": marker, "per_page": 1, "page": 2})
+        assert second_page["items"][0]["id"] == str(second.id)
+        assert second_page["next_page"] is None
 
 
 @pytest.mark.asyncio

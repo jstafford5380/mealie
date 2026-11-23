@@ -144,6 +144,7 @@ def test_mcp_http_authenticated_read_and_write(
             "list_categories",
             "list_tags",
             "list_tools",
+            "list_foods",
             "list_meal_plan",
             "list_leftover_batches",
             "list_saved_meal_plans",

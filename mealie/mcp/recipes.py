@@ -40,7 +40,7 @@ from mealie.schema.recipe.recipe_notes import RecipeNote
 from mealie.schema.recipe.recipe_nutrition import Nutrition
 from mealie.schema.recipe.recipe_organizers import OrganizerOut
 from mealie.schema.recipe.recipe_step import RecipeStep
-from mealie.schema.response.pagination import PaginationQuery
+from mealie.schema.response.pagination import OrderDirection, PaginationQuery
 from mealie.services import urls
 from mealie.services.event_bus_service.event_bus_service import EventBusService
 from mealie.services.event_bus_service.event_types import EventOperation
@@ -212,6 +212,19 @@ class RecipeSearchResult(BaseModel):
     page: int
     total_pages: int
     total: int
+
+
+class FoodResult(BaseModel):
+    id: UUID
+    name: str
+    plural_name: str | None
+    aliases: list[str]
+
+
+class FoodPage(BaseModel):
+    items: list[FoodResult]
+    total: int
+    next_page: int | None
 
 
 class RecipeOrganizer(BaseModel):
@@ -481,6 +494,38 @@ def _scale_recipe(recipe: RecipeOut, multiplier: float) -> RecipeScale:
 
 
 def register_recipe_tools(server: FastMCP) -> None:
+    @server.tool(annotations=READ_ONLY)
+    @offload
+    def list_foods(
+        search: Text | None = None,
+        page: Annotated[int, Field(ge=1)] = 1,
+        per_page: Annotated[int, Field(ge=1, le=100)] = 50,
+    ) -> FoodPage:
+        """List canonical foods in your Mealie group. Search by food name or omit search to browse.
+
+        Each result contains the stored food ID, name, plural name, and aliases. Follow next_page for more.
+        """
+        with tool_context() as (_, _, repos):
+            results = repos.ingredient_foods.page_all(
+                pagination=PaginationQuery(
+                    page=page, per_page=per_page, order_by="name", order_direction=OrderDirection.asc
+                ),
+                search=search,
+            )
+            return FoodPage(
+                items=[
+                    FoodResult(
+                        id=food.id,
+                        name=food.name,
+                        plural_name=food.plural_name,
+                        aliases=[alias.name for alias in food.aliases],
+                    )
+                    for food in results.items
+                ],
+                total=results.total,
+                next_page=page + 1 if page < results.total_pages else None,
+            )
+
     @server.tool(annotations=READ_ONLY)
     @offload
     def list_categories() -> list[RecipeOrganizer]:
