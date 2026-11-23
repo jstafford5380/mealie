@@ -480,3 +480,20 @@ def register_meal_plan_tools(server: FastMCP) -> None:
                 return SavedMealPlanWithNutrition.from_plan(service.save_plan(plan.to_create(service), plan_id))
 
         return await run_in_threadpool(update)
+
+    @server.tool(annotations=ToolAnnotations(readOnlyHint=False, destructiveHint=False, idempotentHint=False))
+    async def copy_saved_meal_plan(
+        plan_id: Annotated[UUID, Field(description="ID of the source saved Meal Configurator plan.")],
+        name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=120)] | None = None,
+    ) -> SavedMealPlanWithNutrition:
+        """Copy a saved Meal Configurator plan and return the copy's new ID, entries, and nutrition totals.
+
+        Omit name to append (copy) to the source name. The original plan and live calendar stay intact.
+        After a timeout, check list_saved_meal_plans for the intended copy before retrying.
+        """
+
+        def copy() -> SavedMealPlanWithNutrition:
+            with _meal_plan() as (service, _):
+                return SavedMealPlanWithNutrition.from_plan(service.copy_saved_plan(plan_id, name))
+
+        return await run_in_threadpool(copy)

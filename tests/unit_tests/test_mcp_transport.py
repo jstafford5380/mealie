@@ -157,6 +157,7 @@ def test_mcp_http_authenticated_read_and_write(
             "update_meal_plan_entry",
             "create_saved_meal_plan",
             "update_saved_meal_plan",
+            "copy_saved_meal_plan",
         }
         assert tools.keys() == reads | writes | {"check_user_context"}
         assert all(tools[name]["annotations"]["readOnlyHint"] is True for name in reads)

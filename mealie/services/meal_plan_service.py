@@ -173,6 +173,13 @@ class MealPlanService(BaseService):
             raise SavedMealPlanNotFound from None
         return SavedMealPlanSummary(id=plan.id, name=plan.name)
 
+    def copy_saved_plan(self, plan_id: UUID, name: str | None = None) -> SavedMealPlanOut:
+        source = self._get_saved_plan(plan_id)
+        if name is None:
+            suffix = " (copy)"
+            name = source.name[: 120 - len(suffix)].rstrip() + suffix
+        return self.save_plan(SavedMealPlanCreate(name=name, entries=source.entries))
+
     def _saved_plan_out(self, plan: SavedMealPlanSave) -> SavedMealPlanOut:
         group_recipes = AllRepositories(self.repos.session, group_id=self.user.group_id, household_id=None).recipes
         recipes: dict[UUID, RecipeSummary | None] = {

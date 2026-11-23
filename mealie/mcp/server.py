@@ -141,6 +141,7 @@ def build_mcp_server(settings: AppSettings) -> tuple[AuditedMCP, tuple[Route, Ro
         instructions=(
             "Manage recipes and household meal plans in Mealie. "
             "Use saved meal plan tools for reusable weeks in Meal Configurator. "
+            "Use copy_saved_meal_plan to duplicate a saved plan by ID. Use the new ID for edits to the copy. "
             "Write to the live calendar only when the user explicitly asks to schedule meals there. "
             "Scale previews are read-only. To persist a scale, update the meal-plan entry's multiplier. "
             "A meal's scale is the portion eaten. To cook a full batch, give its entry a fresh recipe batch UUID. "

@@ -253,7 +253,7 @@ async def test_live_leftover_tools_discover_and_reserve_portions(
 
 @pytest.mark.asyncio
 async def test_saved_plan_tools_preserve_and_validate_batch_links(
-    server: FastMCP, api_client: TestClient, unique_user: TestUser
+    server: FastMCP, api_client: TestClient, unique_user: TestUser, h2_user: TestUser
 ) -> None:
     recipe = create_recipe(api_client, unique_user)
     batch_id = str(uuid4())
@@ -278,6 +278,13 @@ async def test_saved_plan_tools_preserve_and_validate_batch_links(
         plan_id = created["id"]
         _, loaded = await server.call_tool("get_saved_meal_plan", {"plan_id": plan_id})
         assert loaded["entries"][0]["recipeBatchId"] == loaded["entries"][1]["leftoverBatchId"] == batch_id
+        _, copied = await server.call_tool("copy_saved_meal_plan", {"plan_id": plan_id})
+        assert copied["id"] != plan_id
+        assert copied["name"] == "Batch (copy)"
+        assert copied["entries"] == loaded["entries"]
+        assert copied["nutritionTotals"] == loaded["nutritionTotals"]
+        _, named_copy = await server.call_tool("copy_saved_meal_plan", {"plan_id": plan_id, "name": "Next week"})
+        assert named_copy["name"] == "Next week" and named_copy["id"] not in {plan_id, copied["id"]}
         with pytest.raises(ToolError, match="more servings"):
             await server.call_tool(
                 "update_saved_meal_plan",
@@ -289,10 +296,14 @@ async def test_saved_plan_tools_preserve_and_validate_batch_links(
         )
         assert updated["entries"][0]["recipeBatchId"] == updated["entries"][1]["leftoverBatchId"] == batch_id
         assert updated["entries"][1]["recipeScale"] == 0.5
+        _, read_copy = await server.call_tool("get_saved_meal_plan", {"plan_id": copied["id"]})
+        assert read_copy == copied
         _, batches = await server.call_tool(
             "list_leftover_batches", {"date": "2040-01-03", "entry_type": "lunch", "recipe_id": recipe["id"]}
         )
         assert batches["result"] == []
+    with as_user(h2_user), pytest.raises(ToolError, match="saved meal plan was not found"):
+        await server.call_tool("copy_saved_meal_plan", {"plan_id": plan_id})
 
 
 @pytest.mark.asyncio

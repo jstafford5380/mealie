@@ -80,6 +80,8 @@ import type { PlanEntryOut, SavedMealPlanCreate, SavedMealPlanOut, SavedMealPlan
 definePageMeta({ middleware: ["auth"] });
 
 const i18n = useI18n();
+const route = useRoute();
+const router = useRouter();
 useSeoMeta({ title: i18n.t("meal-plan.configurator") });
 
 const { mealplans: api } = useUserApi();
@@ -181,11 +183,18 @@ function loadDraft(plan?: SavedMealPlanOut) {
   lastSaved.value = JSON.stringify(payload.value);
 }
 
-function newPlan() {
+async function rememberPlan(id?: string) {
+  if (route.query.plan !== id) {
+    await router.replace({ query: { ...route.query, plan: id }, hash: route.hash });
+  }
+}
+
+async function newPlan() {
   if (canLeaveDraft()) {
     error.value = "";
     status.value = "";
     loadDraft();
+    await rememberPlan();
   }
 }
 
@@ -197,8 +206,13 @@ async function openPlan(id: unknown) {
   status.value = "";
   try {
     const { data } = await api.getSavedPlan(id);
-    if (data) loadDraft(data);
-    else error.value = i18n.t("meal-plan.saved-plan-load-error");
+    if (data) {
+      loadDraft(data);
+      await rememberPlan(data.id);
+    }
+    else {
+      error.value = i18n.t("meal-plan.saved-plan-load-error");
+    }
   }
   finally {
     busy.value = false;
@@ -230,6 +244,7 @@ async function save(asCopy = false) {
       { id: data.id, name: data.name },
     ].sort((a, b) => a.name.localeCompare(b.name));
     loadDraft(data);
+    await rememberPlan(data.id);
     status.value = i18n.t(asCopy ? "meal-plan.saved-plan-copy-saved" : "meal-plan.saved-plan-saved");
   }
   finally {
@@ -254,6 +269,7 @@ async function deletePlan() {
     draft.value = null;
     meals.value = [];
     lastSaved.value = "";
+    await rememberPlan();
     status.value = i18n.t("meal-plan.saved-plan-deleted");
   }
   finally {
@@ -271,5 +287,6 @@ onMounted(async () => {
   finally {
     busy.value = false;
   }
+  await openPlan(route.query.plan);
 });
 </script>

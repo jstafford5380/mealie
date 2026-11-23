@@ -64,6 +64,8 @@ Use `create_saved_meal_plan` for a reusable week. On the source weekday, set a f
 
 Use `get_saved_meal_plan` before `update_saved_meal_plan`, which replaces the full list. Keep the source and consumer links for entries you want to preserve. Batch IDs in a saved plan belong to that plan, and importing it into the calendar gives each batch a new ID.
 
+Use `copy_saved_meal_plan` with the source `plan_id` to create an independent reusable week. Supply an optional `name` or use the default name with `(copy)` appended. The result includes the copy's new `id`, meals, and nutrition totals. Use that ID for edits to the copy.
+
 Example request for ChatGPT. “Create a reusable week in Meal Configurator. Cook the full four-serving chicken recipe Monday, plan one serving for Monday dinner, then use one serving from the same batch for Tuesday lunch.”
 
 ### Read nutrition totals
